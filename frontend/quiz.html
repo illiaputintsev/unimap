@@ -606,6 +606,38 @@
         let confirmedAnswers = []; // Track which answers have been confirmed
         // Select comprehensive quiz for root node (moduleId = 1), default for others
         const questions = moduleId === "1" ? quizQuestions.comprehensive : quizQuestions.default;
+        let shuffledQuestions = []; // Store questions with shuffled options
+
+        // Shuffle array function (Fisher-Yates)
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Shuffle options for each question
+        function createShuffledQuestions() {
+            shuffledQuestions = questions.map(q => {
+                // Create array of indices [0, 1, 2, 3, ...]
+                const indices = Array.from({ length: q.options.length }, (_, i) => i);
+                // Shuffle the indices
+                const shuffledIndices = shuffleArray(indices);
+                // Find the new position of the correct answer
+                const newCorrectIndex = shuffledIndices.indexOf(q.correct);
+                // Create new options array based on shuffled indices
+                const newOptions = shuffledIndices.map(i => q.options[i]);
+                
+                return {
+                    ...q,
+                    originalOptions: q.options,
+                    options: newOptions,
+                    correct: newCorrectIndex
+                };
+            });
+        }
 
         // Initialize quiz
         function initQuiz() {
@@ -616,6 +648,9 @@
                 document.getElementById('quiz-title').textContent = topicName || 'Module Quiz';
                 document.getElementById('quiz-subtitle').textContent = 'Test your knowledge on this topic';
             }
+            
+            // Shuffle questions and their options
+            createShuffledQuestions();
             
             // Initialize answer arrays
             userAnswers = new Array(questions.length).fill(-1);
@@ -628,7 +663,7 @@
             const container = document.getElementById('questions-container');
             container.innerHTML = '';
             
-            questions.forEach((q, index) => {
+            shuffledQuestions.forEach((q, index) => {
                 const questionDiv = document.createElement('div');
                 questionDiv.className = `question ${index === currentQuestion ? 'active' : ''}`;
                 
@@ -761,7 +796,7 @@
 
         function calculateScore() {
             let correct = 0;
-            questions.forEach((q, index) => {
+            shuffledQuestions.forEach((q, index) => {
                 if (userAnswers[index] === q.correct) {
                     correct++;
                 }
@@ -804,7 +839,7 @@
             // Build wrong answers summary
             let wrongAnswersHTML = '';
             const wrongAnswers = [];
-            questions.forEach((q, index) => {
+            shuffledQuestions.forEach((q, index) => {
                 if (userAnswers[index] !== q.correct && userAnswers[index] !== -1) {
                     wrongAnswers.push({
                         questionNum: index + 1,
