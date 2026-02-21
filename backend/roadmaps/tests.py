@@ -1,3 +1,93 @@
-from django.test import TestCase
+from django.contrib.auth import get_user_model
+from django.test import override_settings
+from rest_framework import status
+from rest_framework.test import APITestCase
 
-# Create your tests here.
+from courses.models import Course, University
+
+
+User = get_user_model()
+
+
+@override_settings(GEMINI_API_KEY="")
+class RoadmapAPITests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="student1", password="strong-pass-123")
+        self.client.force_authenticate(self.user)
+
+        self.university = University.objects.create(name="Example University")
+        self.course = Course.objects.create(
+            university=self.university,
+            title="Computer Science BSc",
+        )
+
+    def test_generate_roadmap_with_manual_course(self):
+        payload = {
+            "manual_course_title": "Computer Science",
+            "module_names": ["Programming Foundations", "Mathematics for Computing", "Data Science"],
+            "career_goal": "Data Scientist",
+        }
+        response = self.client.post("/api/roadmaps/generate/", payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["generation_source"], "fallback")
+        self.assertEqual(len(response.data["modules"]), 3)
+
+        first_module = response.data["modules"][0]
+        self.assertGreaterEqual(len(first_module["topics"]), 1)
+
+        edge_types = {edge["edge_type"] for edge in response.data["edges"]}
+        self.assertIn("contains", edge_types)
+
+    def test_generate_roadmap_from_course_id(self):
+        payload = {"course_id": self.course.id}
+        response = self.client.post("/api/roadmaps/generate/", payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["course"]["id"], self.course.id)
+
+    def test_generate_roadmap_uses_scraped_modules_when_course_selected(self):
+        self.course.scraped_modules = ["Module A", "Module B", "Module C"]
+        self.course.save(update_fields=["scraped_modules"])
+
+        response = self.client.post(
+            "/api/roadmaps/generate/",
+            {"course_id": self.course.id},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        returned_titles = [module["title"] for module in response.data["modules"]]
+        self.assertEqual(returned_titles[:3], ["Module A", "Module B", "Module C"])
+        self.assertIn("Used modules scraped from course URL.", response.data["generation_notes"])
+
+    def test_generate_roadmap_with_only_module_names(self):
+        response = self.client.post(
+            "/api/roadmaps/generate/",
+            {"module_names": ["Intro", "Advanced"]},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["manual_course_title"], "Custom Course")
+
+    def test_update_topic_progress_updates_module_and_overall_progress(self):
+        generate_response = self.client.post(
+            "/api/roadmaps/generate/",
+            {"manual_course_title": "Computer Science"},
+            format="json",
+        )
+        self.assertEqual(generate_response.status_code, status.HTTP_201_CREATED)
+
+        topic_id = generate_response.data["modules"][0]["topics"][0]["id"]
+
+        update_response = self.client.patch(
+            f"/api/roadmaps/topics/{topic_id}/progress/",
+            {"mastery_percent": 80},
+            format="json",
+        )
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
+
+        updated_topic = update_response.data["modules"][0]["topics"][0]
+        self.assertEqual(updated_topic["mastery_percent"], 80.0)
+        self.assertGreater(update_response.data["modules"][0]["progress_percent"], 0)
+        self.assertGreater(update_response.data["overall_progress_percent"], 0)
