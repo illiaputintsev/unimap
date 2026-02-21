@@ -75,12 +75,83 @@
         #logo:hover {
             width: 300px;
         }
+        /* Menu button */
+        #menu-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+            background-color: #2196F3;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background-color 0.3s;
+        }
+        #menu-btn:hover {
+            background-color: #1976D2;
+        }
+        #menu-btn span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            margin: 3px 0;
+            border-radius: 2px;
+        }
+        /* Menu dropdown */
+        #menu-dropdown {
+            display: none;
+            position: fixed;
+            top: 65px;
+            left: 15px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            min-width: 180px;
+        }
+        #menu-dropdown a {
+            display: block;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        #menu-dropdown a:last-child {
+            border-bottom: none;
+        }
+        #menu-dropdown a:hover {
+            background-color: #f5f5f5;
+            color: #2196F3;
+        }
     </style>
 </head>
 <body>
+    <!-- Menu Button -->
+    <button id="menu-btn" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    
+    <!-- Menu Dropdown -->
+    <div id="menu-dropdown">
+        <a href="index.html">🏠 Return to Home</a>
+    </div>
+
     <h1>Student Roadmap</h1>
     <p id="input-display"></p>
-    <img id="logo" src="assets\Gemini_Generated_Image_9eplpw9eplpw9epl__1_-removebg-preview.png" alt="Logo" style="position: fixed; top: 5px; left: 5px; cursor: default; z-index: 10;">
+    <img id="logo" src="assets\Gemini_Generated_Image_9eplpw9eplpw9epl__1_-removebg-preview.png" alt="Logo" style="position: fixed; top: 5px; right: 5px; cursor: default; z-index: 10;">
     <div id="roadmap"></div>
 
     <div id="node-modal" class="modal">
@@ -94,7 +165,9 @@
         // Get input from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const input = urlParams.get('input');
-        document.getElementById('input-display').textContent = input ? `Tailored Roadmap for: ${input}` : 'Sample roadmap (no input provided)';
+        // Display only the first node (main course name)
+        const firstNode = input ? input.split(',')[0].trim() : null;
+        document.getElementById('input-display').textContent = firstNode ? `Tailored Roadmap for: ${firstNode}` : 'Sample roadmap (no input provided)';
         // Draggable logo
         const logo = document.getElementById('logo');
         let isDragging = false;
@@ -140,7 +213,7 @@
                 physics: false,
                 interaction: {
                     dragNodes: false,
-                    dragView: true, // Set to true so you can scroll if the list is long
+                    dragView: false,
                     zoomView: false // Disable zoom to allow page scroll with mouse wheel
                 },
                 nodes: {
@@ -195,6 +268,20 @@
         function closeModal() {
             document.getElementById('node-modal').style.display = 'none';
         }
+
+        function toggleMenu() {
+            const menu = document.getElementById('menu-dropdown');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close menu when clicking outside
+        window.addEventListener('click', function(e) {
+            const menu = document.getElementById('menu-dropdown');
+            const menuBtn = document.getElementById('menu-btn');
+            if (!menuBtn.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
 
         if (input) {
             const moduleNames = input.split(',').map(name => name.trim()).filter(name => name);
