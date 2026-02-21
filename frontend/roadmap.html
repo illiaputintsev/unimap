@@ -6,55 +6,96 @@
     <title>Student Roadmap</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            background-attachment: fixed;
             min-height: 100vh;
             overflow-y: auto;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(255,255,255,.05) 10px,
+                    rgba(255,255,255,.05) 20px
+                );
+            pointer-events: none;
+            z-index: 0;
         }
         h1 {
             text-align: center;
-            color: #2196F3; /* Blue to match theme */
-            margin: 10px 0;
+            color: #dc3545;
+            margin: 20px 0 10px;
+            font-size: 36px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
         }
         p {
             text-align: center;
             margin: 5px 0;
+            position: relative;
+            z-index: 1;
         }
         #roadmap {
-            width: 100%;
-            height: 800px; /* Initial height, will be adjusted dynamically */
+            width: 95%;
+            max-width: 1400px;
+            margin: 20px auto;
+            height: 800px;
             background-color: white;
-            margin-top: 10px;
-            margin-bottom: 50px; /* Add space at bottom */
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 1;
+            border: 3px solid #e0e0e0;
         }
         .modal {
             display: none;
             position: fixed;
-            top: 30%;
-            left: 5%;
-            transform: translateY(-50%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background-color: white;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            z-index: 1000;
-            max-width: 90vw;
+            padding: 30px;
+            border: 3px solid #dc3545;
+            border-radius: 15px;
+            box-shadow: 0 15px 50px rgba(220, 53, 69, 0.3);
+            z-index: 2000;
+            max-width: 500px;
             max-height: 80vh;
             overflow: auto;
-            width: 400px;
+            width: 90%;
         }
         .modal h2 {
             margin-top: 0;
+            color: #dc3545;
+            border-bottom: 2px solid #dc3545;
+            padding-bottom: 10px;
         }
         .modal-close {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 20px;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 28px;
+            color: #dc3545;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .modal-close:hover {
+            color: #c82333;
         }
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -80,11 +121,11 @@
             position: fixed;
             top: 15px;
             left: 15px;
-            width: 40px;
-            height: 40px;
-            background-color: #2196F3;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
             z-index: 1001;
             display: flex;
@@ -92,11 +133,13 @@
             justify-content: center;
             align-items: center;
             padding: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: background-color 0.3s;
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+            transition: all 0.3s;
         }
         #menu-btn:hover {
-            background-color: #1976D2;
+            background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
         }
         #menu-btn span {
             display: block;
@@ -131,27 +174,32 @@
             border-bottom: none;
         }
         #menu-dropdown a:hover {
-            background-color: #f5f5f5;
-            color: #2196F3;
+            background-color: #fff5f5;
+            color: #dc3545;
         }
         /* User info */
         #user-info {
             position: fixed;
             top: 70px;
             left: 15px;
-            background-color: white;
-            padding: 8px 15px;
-            border-radius: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            font-size: 12px;
-            color: #2196F3;
+            background: linear-gradient(135deg, white 0%, #fff5f5 100%);
+            padding: 10px 18px;
+            border-radius: 20px;
+            box-shadow: 0 3px 10px rgba(220, 53, 69, 0.2);
+            font-size: 13px;
+            color: #dc3545;
             z-index: 999;
+            border: 2px solid #ffc7ce;
+            font-weight: 600;
         }
         .course-info {
             text-align: center;
-            font-size: 14px;
-            color: #666;
-            margin: 5px 0;
+            font-size: 15px;
+            color: #555;
+            margin: 8px 0;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
         }
     </style>
 </head>
@@ -285,15 +333,61 @@
                     zoomView: false // Disable zoom to allow page scroll with mouse wheel
                 },
                 nodes: {
-                    color: '#2196F3',
+                    color: {
+                        background: '#dc3545',
+                        border: '#c82333',
+                        highlight: {
+                            background: '#c82333',
+                            border: '#bd2130'
+                        },
+                        hover: {
+                            background: '#e15361',
+                            border: '#dc3545'
+                        }
+                    },
                     shape: 'box',
-                    margin: 10,
-                    font: { size: 16, color: 'white' }
+                    margin: 12,
+                    font: { 
+                        size: 16, 
+                        color: 'white',
+                        face: 'Segoe UI',
+                        bold: {
+                            color: 'white'
+                        }
+                    },
+                    borderWidth: 3,
+                    borderWidthSelected: 4,
+                    shadow: {
+                        enabled: true,
+                        color: 'rgba(220, 53, 69, 0.3)',
+                        size: 10,
+                        x: 3,
+                        y: 3
+                    },
+                    shapeProperties: {
+                        borderRadius: 8
+                    }
                 },
                 edges: {
-                    arrows: { to: { enabled: false } }, // Removes the arrows
-                    color: '#495057',
-                    width: 2
+                    arrows: { to: { enabled: false } },
+                    color: {
+                        color: '#6c757d',
+                        highlight: '#dc3545',
+                        hover: '#dc3545'
+                    },
+                    width: 3,
+                    smooth: {
+                        type: 'cubicBezier',
+                        forceDirection: 'vertical',
+                        roundness: 0.4
+                    },
+                    shadow: {
+                        enabled: true,
+                        color: 'rgba(0,0,0,0.1)',
+                        size: 5,
+                        x: 2,
+                        y: 2
+                    }
                 }
             };
 

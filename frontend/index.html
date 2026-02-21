@@ -12,7 +12,7 @@
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -43,7 +43,7 @@
             display: block;
             width: 25px;
             height: 3px;
-            background-color: #667eea;
+            background-color: #dc3545;
             margin: 3px 0;
             border-radius: 2px;
         }
@@ -72,9 +72,45 @@
         }
         #menu-dropdown a:hover {
             background-color: #f5f5f5;
-            color: #667eea;
+            color: #dc3545;
         }
-        /* User info (top right) */
+        /* Auth buttons (top right) */
+        .auth-buttons {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        .auth-btn {
+            padding: 10px 20px;
+            border: 2px solid #dc3545;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .auth-btn.login {
+            background-color: white;
+            color: #dc3545;
+        }
+        .auth-btn.login:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+        .auth-btn.signup {
+            background-color: #dc3545;
+            color: white;
+        }
+        .auth-btn.signup:hover {
+            background-color: #b52a3a;
+            border-color: #b52a3a;
+        }
+        /* User info when logged in */
         #user-info {
             position: fixed;
             top: 15px;
@@ -84,8 +120,9 @@
             border-radius: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             font-size: 14px;
-            color: #667eea;
+            color: #dc3545;
             z-index: 1000;
+            display: none;
         }
         .container {
             background-color: white;
@@ -97,7 +134,7 @@
         }
         h1 {
             text-align: center;
-            color: #667eea;
+            color: #dc3545;
             margin-bottom: 10px;
             font-size: 32px;
         }
@@ -129,7 +166,7 @@
         input[type="text"]:focus,
         select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #dc3545;
         }
         select {
             cursor: pointer;
@@ -139,7 +176,7 @@
             display: block;
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -151,11 +188,11 @@
         }
         button.primary-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 20px rgba(220, 53, 69, 0.4);
         }
         .info-box {
-            background-color: #f0f4ff;
-            border-left: 4px solid #667eea;
+            background-color: #fff5f5;
+            border-left: 4px solid #dc3545;
             padding: 15px;
             border-radius: 5px;
             margin-top: 20px;
@@ -166,7 +203,7 @@
             display: none;
             text-align: center;
             margin-top: 20px;
-            color: #667eea;
+            color: #dc3545;
         }
     </style>
 </head>
@@ -181,14 +218,18 @@
     <!-- Menu Dropdown -->
     <div id="menu-dropdown">
         <a href="index.html">🏠 Home</a>
-        <a href="login.html">🔑 Login</a>
-        <a href="signup.html">📝 Sign Up</a>
         <a href="#" onclick="logout(); return false;">🚪 Logout</a>
     </div>
 
-    <!-- User Info (if logged in) -->
+    <!-- Auth Buttons (visible when not logged in) -->
+    <div class="auth-buttons" id="auth-buttons">
+        <a href="login.html" class="auth-btn login">Login</a>
+        <a href="signup.html" class="auth-btn signup">Sign Up</a>
+    </div>
+
+    <!-- User Info (visible when logged in) -->
     <div id="user-info">
-        <span id="username">Guest</span>
+        👤 <span id="username">Guest</span>
     </div>
 
     <div class="container">
@@ -253,11 +294,17 @@
         // Check if user is logged in
         function checkLoginStatus() {
             const user = localStorage.getItem('currentUser');
+            const authButtons = document.getElementById('auth-buttons');
+            const userInfo = document.getElementById('user-info');
+            
             if (user) {
                 const userData = JSON.parse(user);
                 document.getElementById('username').textContent = userData.name || userData.email;
+                authButtons.style.display = 'none';
+                userInfo.style.display = 'block';
             } else {
-                document.getElementById('username').textContent = 'Guest';
+                authButtons.style.display = 'flex';
+                userInfo.style.display = 'none';
             }
         }
 
