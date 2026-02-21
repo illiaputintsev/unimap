@@ -396,6 +396,50 @@
                 opacity: 0;
             }
         }
+        .related-topics-section {
+            margin-top: 40px;
+            padding: 30px;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            border-top: 3px solid #d63031;
+        }
+        .related-topics-section h3 {
+            margin: 0 0 20px 0;
+            font-size: 20px;
+            color: #333;
+            font-weight: 600;
+        }
+        .related-topics-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .topic-card {
+            background-color: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .topic-card:hover {
+            border-color: #d63031;
+            box-shadow: 0 4px 12px rgba(214, 48, 49, 0.2);
+            transform: translateY(-3px);
+        }
+        .topic-card h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .topic-card p {
+            margin: 0;
+            color: #666;
+            font-size: 13px;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -432,6 +476,13 @@
                 <h2 id="result-title">Great Job!</h2>
                 <p id="result-message">You've completed the quiz</p>
                 <button class="finish-button" onclick="goBack()">← Back to Roadmap</button>
+                
+                <div class="related-topics-section" id="related-topics-section">
+                    <h3>📚 Related Topics</h3>
+                    <div class="related-topics-list" id="related-topics-list">
+                        <!-- Related topics will be populated by backend -->
+                    </div>
+                </div>
             </div>
 
             <div class="quiz-footer" id="quiz-footer">
@@ -936,6 +987,39 @@
 
         function goBack() {
             window.history.back();
+        }
+
+        // Function to populate related topics (to be called by backend)
+        function setRelatedTopics(topicsData) {
+            const relatedTopicsList = document.getElementById('related-topics-list');
+            relatedTopicsList.innerHTML = ''; // Clear existing content
+            
+            if (!topicsData || topicsData.length === 0) {
+                // Hide the section if no related topics
+                document.getElementById('related-topics-section').style.display = 'none';
+                return;
+            }
+            
+            // Display the section
+            document.getElementById('related-topics-section').style.display = 'block';
+            
+            // Populate topics
+            topicsData.forEach(topic => {
+                const topicCard = document.createElement('div');
+                topicCard.className = 'topic-card';
+                topicCard.innerHTML = `
+                    <h4>${topic.name}</h4>
+                    <p>${topic.description || ''}</p>
+                `;
+                
+                // Add click handler if topic has a link
+                if (topic.link) {
+                    topicCard.style.cursor = 'pointer';
+                    topicCard.onclick = () => window.location.href = topic.link;
+                }
+                
+                relatedTopicsList.appendChild(topicCard);
+            });
         }
 
         // Initialize on page load
