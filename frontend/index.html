@@ -3,62 +3,329 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Roadmap Generator</title>
+    <title>Student Roadmap - Home</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-            background-color: #f4f4f4;
+        }
+        /* Menu button */
+        #menu-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1001;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: background-color 0.3s;
+        }
+        #menu-btn:hover {
+            background-color: #f0f0f0;
+        }
+        #menu-btn span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: #667eea;
+            margin: 3px 0;
+            border-radius: 2px;
+        }
+        /* Menu dropdown */
+        #menu-dropdown {
+            display: none;
+            position: fixed;
+            top: 65px;
+            left: 15px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 180px;
+        }
+        #menu-dropdown a {
+            display: block;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        #menu-dropdown a:last-child {
+            border-bottom: none;
+        }
+        #menu-dropdown a:hover {
+            background-color: #f5f5f5;
+            color: #667eea;
+        }
+        /* User info (top right) */
+        #user-info {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background-color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-size: 14px;
+            color: #667eea;
+            z-index: 1000;
         }
         .container {
             background-color: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 50px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             max-width: 600px;
-            width: 100%;
+            margin: 80px auto 40px;
         }
         h1 {
             text-align: center;
-            color: #000000; /* Purple to match theme */
+            color: #667eea;
             margin-bottom: 10px;
+            font-size: 32px;
         }
-        input[type="text"] {
+        p.subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input[type="text"],
+        select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
             font-size: 16px;
+            transition: border-color 0.3s;
         }
-        button {
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        select {
+            cursor: pointer;
+            background-color: white;
+        }
+        button.primary-btn {
             display: block;
             width: 100%;
-            padding: 12px;
-            background-color: #2196F3; /* Blue instead of green */
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 18px;
+            font-weight: 600;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 30px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        button:hover {
-            background-color: #1976D2; /* Darker blue on hover */
+        button.primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .info-box {
+            background-color: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
         }
     </style>
 </head>
 <body>
+    <!-- Menu Button -->
+    <button id="menu-btn" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    
+    <!-- Menu Dropdown -->
+    <div id="menu-dropdown">
+        <a href="index.html">🏠 Home</a>
+        <a href="login.html">🔑 Login</a>
+        <a href="signup.html">📝 Sign Up</a>
+        <a href="#" onclick="logout(); return false;">🚪 Logout</a>
+    </div>
+
+    <!-- User Info (if logged in) -->
+    <div id="user-info">
+        <span id="username">Guest</span>
+    </div>
+
     <div class="container">
         <h1>Student Roadmap Generator</h1>
-        <form action="roadmap.html" method="get">
-            <input type="text" name="input" placeholder="Enter modules separated by commas (e.g., Math, Physics, Chemistry)" required>
-            <button type="submit">Generate Roadmap</button>
+        <p class="subtitle">Select your course and university to generate a personalized learning roadmap</p>
+        
+        <form id="roadmap-form" onsubmit="generateRoadmap(event)">
+            <div class="form-group">
+                <label for="university">University</label>
+                <select id="university" name="university" required>
+                    <option value="">-- Select University --</option>
+                    <option value="ucl">University College London (UCL)</option>
+                    <option value="imperial">Imperial College London</option>
+                    <option value="oxford">University of Oxford</option>
+                    <option value="cambridge">University of Cambridge</option>
+                    <option value="edinburgh">University of Edinburgh</option>
+                    <option value="manchester">University of Manchester</option>
+                    <option value="kcl">King's College London</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="course-search">Course Name or UCAS Code</label>
+                <input 
+                    type="text" 
+                    id="course-search" 
+                    name="course" 
+                    placeholder="e.g., Computer Science, G400, Artificial Intelligence" 
+                    required
+                >
+            </div>
+
+            <div class="info-box">
+                ℹ️ <strong>Tip:</strong> You can enter either the course name or the UCAS code. Our system will find the matching course modules and create your roadmap.
+            </div>
+
+            <button type="submit" class="primary-btn">Generate Roadmap</button>
+
+            <div class="loading" id="loading">
+                <p>🔄 Generating your personalized roadmap...</p>
+            </div>
         </form>
     </div>
+
+    <script>
+        // Toggle menu
+        function toggleMenu() {
+            const menu = document.getElementById('menu-dropdown');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close menu when clicking outside
+        window.addEventListener('click', function(e) {
+            const menu = document.getElementById('menu-dropdown');
+            const menuBtn = document.getElementById('menu-btn');
+            if (!menuBtn.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
+
+        // Check if user is logged in
+        function checkLoginStatus() {
+            const user = localStorage.getItem('currentUser');
+            if (user) {
+                const userData = JSON.parse(user);
+                document.getElementById('username').textContent = userData.name || userData.email;
+            } else {
+                document.getElementById('username').textContent = 'Guest';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                alert('Logged out successfully!');
+                checkLoginStatus();
+            }
+        }
+
+        // Generate roadmap function
+        async function generateRoadmap(event) {
+            event.preventDefault();
+            
+            const university = document.getElementById('university').value;
+            const course = document.getElementById('course-search').value;
+            const loading = document.getElementById('loading');
+            
+            // Show loading
+            loading.style.display = 'block';
+
+            // TODO: Backend API call placeholder
+            // This is where you'll make the API call to your backend
+            try {
+                // Example API call (uncomment when backend is ready):
+                /*
+                const response = await fetch('/api/get-course-roadmap', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || '')
+                    },
+                    body: JSON.stringify({
+                        university: university,
+                        course: course
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch roadmap');
+                }
+                
+                const data = await response.json();
+                // The backend should return: { courseName: string, modules: string[] }
+                
+                // Redirect to roadmap page with data
+                const modules = data.modules.join(',');
+                window.location.href = `roadmap.html?input=${encodeURIComponent(modules)}&course=${encodeURIComponent(data.courseName)}&university=${encodeURIComponent(university)}`;
+                */
+                
+                // TEMPORARY: For now, use a mock response
+                setTimeout(() => {
+                    // Mock modules based on course input
+                    const mockModules = `${course},Introduction to ${course},Core Concepts,Advanced Topics,Practical Applications,Research Methods,Final Project`;
+                    window.location.href = `roadmap.html?input=${encodeURIComponent(mockModules)}&course=${encodeURIComponent(course)}&university=${encodeURIComponent(university)}`;
+                }, 1500);
+                
+            } catch (error) {
+                loading.style.display = 'none';
+                alert('Error generating roadmap: ' + error.message);
+                console.error('Error:', error);
+            }
+        }
+
+        // Initialize
+        checkLoginStatus();
+    </script>
 </body>
 </html>

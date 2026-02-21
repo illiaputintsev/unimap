@@ -134,6 +134,25 @@
             background-color: #f5f5f5;
             color: #2196F3;
         }
+        /* User info */
+        #user-info {
+            position: fixed;
+            top: 70px;
+            left: 15px;
+            background-color: white;
+            padding: 8px 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-size: 12px;
+            color: #2196F3;
+            z-index: 999;
+        }
+        .course-info {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -146,10 +165,19 @@
     
     <!-- Menu Dropdown -->
     <div id="menu-dropdown">
-        <a href="index.html">🏠 Return to Home</a>
+        <a href="index.html">🏠 Home</a>
+        <a href="login.html">🔑 Login</a>
+        <a href="signup.html">📝 Sign Up</a>
+        <a href="#" onclick="logout(); return false;">🚪 Logout</a>
+    </div>
+
+    <!-- User Info -->
+    <div id="user-info">
+        <span id="username">Guest</span>
     </div>
 
     <h1>Student Roadmap</h1>
+    <p class="course-info" id="university-display"></p>
     <p id="input-display"></p>
     <img id="logo" src="assets\Gemini_Generated_Image_9eplpw9eplpw9epl__1_-removebg-preview.png" alt="Logo" style="position: fixed; top: 5px; right: 5px; cursor: default; z-index: 10;">
     <div id="roadmap"></div>
@@ -165,9 +193,49 @@
         // Get input from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const input = urlParams.get('input');
-        // Display only the first node (main course name)
+        const courseName = urlParams.get('course');
+        const universityName = urlParams.get('university');
+        
+        // Display course and university info
         const firstNode = input ? input.split(',')[0].trim() : null;
-        document.getElementById('input-display').textContent = firstNode ? `Tailored Roadmap for: ${firstNode}` : 'Sample roadmap (no input provided)';
+        document.getElementById('input-display').textContent = firstNode ? `Tailored Roadmap for: ${courseName || firstNode}` : 'Sample roadmap (no input provided)';
+        
+        if (universityName) {
+            const universityDisplayMap = {
+                'ucl': 'University College London',
+                'imperial': 'Imperial College London',
+                'oxford': 'University of Oxford',
+                'cambridge': 'University of Cambridge',
+                'edinburgh': 'University of Edinburgh',
+                'manchester': 'University of Manchester',
+                'kcl': "King's College London"
+            };
+            document.getElementById('university-display').textContent = `📚 ${universityDisplayMap[universityName] || universityName}`;
+        }
+        
+        // Check login status
+        function checkLoginStatus() {
+            const user = localStorage.getItem('currentUser');
+            if (user) {
+                const userData = JSON.parse(user);
+                document.getElementById('username').textContent = userData.name || userData.email;
+            } else {
+                document.getElementById('username').textContent = 'Guest';
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                alert('Logged out successfully!');
+                checkLoginStatus();
+            }
+        }
+        
+        // Initialize login status
+        checkLoginStatus();
+        
         // Draggable logo
         const logo = document.getElementById('logo');
         let isDragging = false;
