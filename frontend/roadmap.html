@@ -312,8 +312,7 @@
             <button onclick="addModuleToRoadmap()">Add Module</button>
         </div>
         
-        <div class="menu-section">⚙️ Navigation</div>
-        <a href="progress.html">📊 Your Progress</a>
+        <div class="menu-section">⚙️ Navigation</div>        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">🗺️ My Roadmaps</a>        <a href="progress.html">📊 Your Progress</a>
         <a href="index.html">🏠 Home</a>
         <a href="login.html">🔑 Login</a>
         <a href="signup.html">📝 Sign Up</a>
@@ -371,17 +370,101 @@
             if (user) {
                 const userData = JSON.parse(user);
                 document.getElementById('username').textContent = userData.name || userData.email;
+                // Show My Roadmaps button for logged-in users
+                const myRoadsBtn = document.getElementById('my-roads-btn');
+                if (myRoadsBtn) myRoadsBtn.style.display = 'block';
             } else {
                 document.getElementById('username').textContent = 'Guest';
             }
+        }
+        
+        // Save roadmap state to localStorage
+        function saveRoadmapState() {
+            if (!window.network || !window.nodes) return;
+            
+            const state = {
+                nodes: window.nodes.get(),
+                edges: window.edges.get(),
+                viewportState: {
+                    scale: window.network.getScale(),
+                    position: window.network.getViewPosition()
+                },
+                inputModules: document.getElementById('input-display')?.textContent || ''
+            };
+            
+            localStorage.setItem('roadmapState', JSON.stringify(state));
+        }
+        
+        // Restore roadmap state from localStorage
+        function restoreRoadmapState() {
+            const savedState = localStorage.getItem('roadmapState');
+            if (savedState) {
+                try {
+                    const state = JSON.parse(savedState);
+                    // State will be restored after network initialization
+                    return state;
+                } catch (e) {
+                    console.error('Error restoring roadmap state:', e);
+                }
+            }
+            return null;
         }
         
         // Logout function
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('currentUser');
+                // Hide My Roadmaps button
+                const myRoadsBtn = document.getElementById('my-roads-btn');
+                if (myRoadsBtn) myRoadsBtn.style.display = 'none';
                 alert('Logged out successfully!');
                 checkLoginStatus();
+            }
+        }
+        
+        // Open My Roadmaps modal
+        function openMyRoadmaps() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) {
+                alert('Please login to view your roadmaps');
+                return;
+            }
+            
+            // Fetch user roadmaps from localStorage (or backend when available)
+            const userRoadmaps = JSON.parse(localStorage.getItem('userRoadmaps')) || [];
+            
+            let html = '<h2>🗺️ My Roadmaps</h2>';
+            
+            if (userRoadmaps.length === 0) {
+                html += '<p style="color: #666; text-align: center; padding: 20px;">No saved roadmaps yet. Create one and save it!</p>';
+            } else {
+                html += '<div style="display: flex; flex-direction: column; gap: 10px;">';
+                userRoadmaps.forEach((roadmap, index) => {
+                    html += `
+                        <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #d63031;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapSnapshot(${index})">
+                            <strong>${roadmap.name || 'Unnamed Roadmap'}</strong><br>
+                            <small style="color: #999;">${roadmap.createdAt || 'No date'}</small>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            // Show in modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                modal.innerHTML = html + '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #d63031; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
+                modal.style.display = 'block';
+            }
+        }
+        
+        // Load a saved roadmap snapshot
+        function loadRoadmapSnapshot(index) {
+            const userRoadmaps = JSON.parse(localStorage.getItem('userRoadmaps')) || [];
+            if (userRoadmaps[index]) {
+                const roadmap = userRoadmaps[index];
+                localStorage.setItem('roadmapState', JSON.stringify(roadmap.state));
+                location.reload();
             }
         }
         
@@ -638,7 +721,24 @@
             }
         });
 
-        if (input) {
+        // Try to restore saved state first
+        const savedState = restoreRoadmapState();
+        
+        if (savedState && savedState.nodes && savedState.nodes.length > 0) {
+            // Restore from saved state
+            createNetwork(savedState.nodes, savedState.edges);
+            
+            // Restore viewport position after network is created
+            setTimeout(() => {
+                if (window.network && savedState.viewportState) {
+                    window.network.moveTo({
+                        scale: savedState.viewportState.scale,
+                        position: savedState.viewportState.position
+                    });
+                }
+            }, 200);
+        } else if (input) {
+            // Create from input if no saved state exists
             const moduleNames = input.split(',').map(name => name.trim()).filter(name => name);
     
             // Create Nodes
@@ -656,8 +756,8 @@
                 });
             }
 
-        createNetwork(nodesData, edgesData);
-    }
+            createNetwork(nodesData, edgesData);
+        }
     
     // Paper plane animation - flies across every 35-50 seconds
     function triggerPaperPlane() {
@@ -673,7 +773,9 @@
     }
     
     // Start paper plane animation after page loads
-    setTimeout(triggerPaperPlane, 10000); // First plane after 10 seconds
-    </script>
+    setTimeout(triggerPaperPlane, 10000); // First plane after 10 seconds        
+        // Save roadmap state before leaving page
+        window.addEventListener('beforeunload', saveRoadmapState);
+        window.addEventListener('pagehide', saveRoadmapState);    </script>
 </body>
 </html>
