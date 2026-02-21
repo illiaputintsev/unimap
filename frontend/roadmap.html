@@ -54,7 +54,8 @@
             width: 95%;
             max-width: 1400px;
             margin: 20px auto;
-            height: 800px;
+            min-height: 600px;
+            height: auto;
             background-color: white;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
@@ -895,7 +896,8 @@
             container.style.position = 'relative';
             container.style.width = '95%';
             container.style.maxWidth = '1400px';
-            container.style.height = '800px';
+            container.style.minHeight = '600px';
+            container.style.height = 'auto';
             container.style.margin = '20px auto';
             container.style.backgroundColor = 'white';
             container.style.borderRadius = '15px';
@@ -1023,9 +1025,9 @@
 
             // Calculate and set container height based on number of nodes
             const nodeCount = nodesData.length;
-            const levelSeparation = 150;
-            const estimatedHeight = Math.max(800, (nodeCount * levelSeparation) + 400);
-            container.style.height = estimatedHeight + 'px';
+            const levelSeparation = 200;
+            const estimatedHeight = Math.max(600, (nodeCount * levelSeparation) + 500);
+            container.style.minHeight = estimatedHeight + 'px';
 
             // Position nodes properly
             setTimeout(() => {
