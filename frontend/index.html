@@ -248,16 +248,16 @@
             animation: walkRight 15s linear infinite;
         }
         .student1::before {
-            content: '🎓🚶🏽‍♂️'; /* Medium skin tone male */
+            content: '🧑🏽‍🎓'; /* Student with medium skin tone */
             display: block;
             animation: bob 0.5s ease-in-out infinite;
         }
         .student2 {
-            right: -100px;
-            animation: walkLeft 18s linear infinite 5s; /* Delayed start */
+            left: -100px;
+            animation: walkRight 18s linear infinite 5s; /* Delayed start */
         }
         .student2::before {
-            content: '🎓🚶🏾‍♀️'; /* Medium-dark skin tone female */
+            content: '🧑🏾‍🎓'; /* Student with medium-dark skin tone */
             display: block;
             animation: bob 0.5s ease-in-out infinite;
         }
@@ -266,7 +266,7 @@
             animation: walkRight 20s linear infinite 10s; /* Delayed start */
         }
         .student3::before {
-            content: '🎓🚶🏻'; /* Light skin tone */
+            content: '🧑🏻‍🎓'; /* Student with light skin tone */
             display: block;
             animation: bob 0.5s ease-in-out infinite;
         }
@@ -276,14 +276,6 @@
             }
             100% {
                 left: calc(100% + 100px);
-            }
-        }
-        @keyframes walkLeft {
-            0% {
-                right: -100px;
-            }
-            100% {
-                right: calc(100% + 100px);
             }
         }
         @keyframes bob {
