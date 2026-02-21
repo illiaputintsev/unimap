@@ -1554,11 +1554,15 @@
         // Initialize on DOMContentLoaded
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
+                console.log('[DEBUG] DOMContentLoaded event fired');
                 setTimeout(initializeRoadmap, 50);
             });
         } else {
+            console.log('[DEBUG] DOM already loaded, initializing...');
             setTimeout(initializeRoadmap, 50);
         }
+        
+        console.log('[DEBUG] Roadmap script loaded, waiting for initialization...');
     
     // Save roadmap state before leaving page
         window.addEventListener('beforeunload', saveRoadmapState);
