@@ -368,8 +368,24 @@
                 >
             </div>
 
+            <div class="form-group">
+                <label onclick="toggleModulesInput()" style="cursor: pointer; color: #dc3545; display: flex; align-items: center; gap: 8px;">
+                    <span id="expand-arrow">▶</span>
+                    <span>(Optional) Custom Module Names</span>
+                </label>
+                <div id="modules-input-section" style="display: none; margin-top: 10px;">
+                    <textarea 
+                        id="modules-input" 
+                        name="modules" 
+                        placeholder="Enter module names separated by commas&#10;e.g., Fundamentals, Data Structures, Algorithms, Advanced Concepts"
+                        style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Segoe UI'; font-size: 14px; resize: vertical; min-height: 80px; transition: border-color 0.3s;"
+                    ></textarea>
+                    <p style="font-size: 12px; color: #999; margin-top: 8px;">💡 Leave empty to auto-generate modules based on your course</p>
+                </div>
+            </div>
+
             <div class="info-box">
-                ℹ️ <strong>Tip:</strong> You can enter either the course name or the UCAS code. Our system will find the matching course modules and create your roadmap.
+                ℹ️ <strong>Tip:</strong> You can enter either the course name or the UCAS code. Our system will find the matching course modules and create your roadmap. Optionally, customize your module names above!
             </div>
 
             <button type="submit" class="primary-btn">Generate Roadmap</button>
@@ -381,6 +397,20 @@
     </div>
 
     <script>
+        // Toggle modules input section
+        function toggleModulesInput() {
+            const section = document.getElementById('modules-input-section');
+            const arrow = document.getElementById('expand-arrow');
+            
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                arrow.textContent = '▼';
+            } else {
+                section.style.display = 'none';
+                arrow.textContent = '▶';
+            }
+        }
+
         // Toggle menu
         function toggleMenu() {
             const menu = document.getElementById('menu-dropdown');
@@ -428,6 +458,7 @@
             
             const university = document.getElementById('university').value;
             const course = document.getElementById('course-search').value;
+            const customModules = document.getElementById('modules-input').value.trim();
             const loading = document.getElementById('loading');
             
             // Show loading
@@ -446,7 +477,8 @@
                     },
                     body: JSON.stringify({
                         university: university,
-                        course: course
+                        course: course,
+                        customModules: customModules
                     })
                 });
                 
@@ -464,9 +496,14 @@
                 
                 // TEMPORARY: For now, use a mock response
                 setTimeout(() => {
-                    // Mock modules based on course input
-                    const mockModules = `${course},Introduction to ${course},Core Concepts,Advanced Topics,Practical Applications,Research Methods,Final Project`;
-                    window.location.href = `roadmap.html?input=${encodeURIComponent(mockModules)}&course=${encodeURIComponent(course)}&university=${encodeURIComponent(university)}`;
+                    // Use custom modules if provided, otherwise generate mock modules
+                    let modules;
+                    if (customModules) {
+                        modules = customModules;
+                    } else {
+                        modules = `${course},Introduction to ${course},Core Concepts,Advanced Topics,Practical Applications,Research Methods,Final Project`;
+                    }
+                    window.location.href = `roadmap.html?input=${encodeURIComponent(modules)}&course=${encodeURIComponent(course)}&university=${encodeURIComponent(university)}`;
                 }, 1500);
                 
             } catch (error) {

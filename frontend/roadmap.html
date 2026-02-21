@@ -160,9 +160,11 @@
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             z-index: 1000;
-            min-width: 180px;
+            min-width: 250px;
+            max-height: 400px;
+            overflow-y: auto;
         }
-        #menu-dropdown a {
+        #menu-dropdown a, #menu-dropdown .menu-section {
             display: block;
             padding: 12px 20px;
             color: #333;
@@ -170,12 +172,49 @@
             border-bottom: 1px solid #f0f0f0;
             transition: background-color 0.2s;
         }
-        #menu-dropdown a:last-child {
-            border-bottom: none;
-        }
         #menu-dropdown a:hover {
             background-color: #fff5f5;
             color: #dc3545;
+        }
+        .menu-section {
+            background-color: #f9f9f9;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            cursor: default;
+        }
+        .menu-section:hover {
+            background-color: #f9f9f9;
+            color: #666;
+        }
+        #module-input-container {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        #module-input-container input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            box-sizing: border-box;
+            margin-bottom: 8px;
+        }
+        #module-input-container button {
+            width: 100%;
+            padding: 8px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        #module-input-container button:hover {
+            background-color: #c82333;
         }
         /* User info */
         #user-info {
@@ -262,6 +301,18 @@
     
     <!-- Menu Dropdown -->
     <div id="menu-dropdown">
+        <div class="menu-section">📚 Manage Modules</div>
+        <div id="module-input-container">
+            <input 
+                type="text" 
+                id="new-module-input" 
+                placeholder="Add new module..." 
+                onkeypress="if(event.key==='Enter') addModuleToRoadmap()"
+            >
+            <button onclick="addModuleToRoadmap()">Add Module</button>
+        </div>
+        
+        <div class="menu-section">⚙️ Navigation</div>
         <a href="index.html">🏠 Home</a>
         <a href="login.html">🔑 Login</a>
         <a href="signup.html">📝 Sign Up</a>
@@ -283,6 +334,8 @@
         <span class="modal-close" onclick="closeModal()">&times;</span>
         <h2 id="modal-title"></h2>
         <p id="modal-content"></p>
+        <button id="quiz-button" style="margin-top: 15px; padding: 10px 20px; background-color: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="openQuiz()">📝 Take Quiz</button>
+        <p id="quiz-score" style="margin-top: 10px; font-size: 14px; color: #666; display: none;"></p>
     </div>
 
     <script src="https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.js"></script>
@@ -365,6 +418,11 @@
                 edges: new vis.DataSet(edgesData) 
             };
 
+            // Store globally for later access
+            window.nodes = data.nodes;
+            window.edges = data.edges;
+            window.nodesData = nodesData;
+
             const options = {
                 autoResize: true,
                 layout: {
@@ -441,6 +499,9 @@
             };
 
             const network = new vis.Network(container, data, options);
+            
+            // Store network globally for later access
+            window.network = network;
 
             // Prevent canvas from capturing scroll wheel - allow page scroll
             container.addEventListener('wheel', (e) => {
@@ -454,31 +515,8 @@
             const estimatedHeight = Math.max(800, (nodeCount * levelSeparation) + 400);
             container.style.height = estimatedHeight + 'px';
 
-            // Domino effect: Show nodes one by one using hidden property
-            // Start with all nodes hidden
-            const allNodeIds = nodesData.map(n => n.id);
-            allNodeIds.forEach(id => {
-                data.nodes.update({ id: id, hidden: true });
-            });
-            
-            // Also hide all edges initially
-            edgesData.forEach(edge => {
-                data.edges.update({ ...edge, hidden: true });
-            });
-
-            // Reveal nodes one by one
-            nodesData.forEach((node, index) => {
-                setTimeout(() => {
-                    data.nodes.update({ id: node.id, hidden: false });
-                }, index * 300); // 300ms delay between each node
-            });
-
-            // Show all edges after all nodes are visible
-            setTimeout(() => {
-                edgesData.forEach(edge => {
-                    data.edges.update({ ...edge, hidden: false });
-                });
-            }, nodesData.length * 300);
+            // Show all nodes and edges immediately (no animation lag)
+            // This ensures fast loading without the domino effect delay
 
             // Show all nodes and position properly
             network.once('stabilized', function() {
@@ -492,10 +530,26 @@
             network.on('click', function(params) {
                 if (params.nodes.length > 0) {
                     const nodeId = params.nodes[0];
-                    const node = nodesData.find(n => n.id === nodeId);
+                    const node = window.nodesData.find(n => n.id === nodeId);
                     if (node) {
+                        // Store current node ID for quiz button
+                        window.currentNodeId = nodeId;
+                        
                         document.getElementById('modal-title').textContent = node.label;
                         document.getElementById('modal-content').textContent = `Step ${node.id}: Detailed resources for learning ${node.label} will appear here`;
+                        
+                        // Check if quiz has been completed for this module
+                        const quizResultsKey = `quiz-${nodeId}`;
+                        const quizResults = JSON.parse(localStorage.getItem(quizResultsKey));
+                        
+                        if (quizResults) {
+                            // Show quiz score
+                            document.getElementById('quiz-score').textContent = `Your Quiz Score: ${quizResults.score}%`;
+                            document.getElementById('quiz-score').style.display = 'block';
+                        } else {
+                            document.getElementById('quiz-score').style.display = 'none';
+                        }
+                        
                         document.getElementById('node-modal').style.display = 'block';
                     }
                 }
@@ -506,9 +560,71 @@
             document.getElementById('node-modal').style.display = 'none';
         }
 
+        function openQuiz() {
+            const nodeId = window.currentNodeId;
+            if (!nodeId || !window.nodesData) {
+                alert('Error: Could not load quiz. Please try again.');
+                return;
+            }
+            
+            const node = window.nodesData.find(n => n.id === nodeId);
+            if (node) {
+                // Open quiz page with topic name and module ID
+                window.location.href = `quiz.html?moduleId=${nodeId}&topic=${encodeURIComponent(node.label)}`;
+            } else {
+                alert('Error: Module not found');
+            }
+        }
+
         function toggleMenu() {
             const menu = document.getElementById('menu-dropdown');
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Add new module to the roadmap
+        function addModuleToRoadmap() {
+            const input = document.getElementById('new-module-input');
+            const moduleName = input.value.trim();
+            
+            if (!moduleName) {
+                alert('Please enter a module name');
+                return;
+            }
+            
+            // Get the highest existing node ID
+            const nodeIds = nodes.get().map(n => n.id);
+            const maxId = nodeIds.length > 0 ? Math.max(...nodeIds) : 0;
+            const newId = maxId + 1;
+            
+            // Add new node to the network
+            const newNode = {
+                id: newId,
+                label: moduleName
+            };
+            nodes.add([newNode]);
+            
+            // Connect the new module to the last module in the sequence
+            if (nodeIds.length > 0) {
+                const lastNodeId = nodeIds[nodeIds.length - 1];
+                edges.add([{
+                    from: lastNodeId,
+                    to: newId
+                }]);
+            }
+            
+            // Clear input field
+            input.value = '';
+            
+            // Trigger network animation to fit the new node
+            network.fit({
+                animation: {
+                    duration: 400,
+                    easingFunction: 'easeInOutQuad'
+                }
+            });
+            
+            // Close menu
+            document.getElementById('menu-dropdown').style.display = 'none';
         }
 
         // Close menu when clicking outside

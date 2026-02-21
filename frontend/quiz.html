@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic Quiz - Student Roadmap</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .quiz-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .quiz-header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .quiz-header h1 {
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .quiz-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .back-button {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            padding: 10px 20px;
+            background-color: white;
+            border: 2px solid #dc3545;
+            color: #dc3545;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            z-index: 100;
+        }
+        .back-button:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+        .quiz-content {
+            padding: 30px;
+        }
+        .question {
+            margin-bottom: 30px;
+            display: none;
+        }
+        .question.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .question-number {
+            font-size: 12px;
+            color: #dc3545;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: white;
+        }
+        .option:hover {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+        .option input[type="radio"] {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .option label {
+            cursor: pointer;
+            font-size: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+        .option.selected {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+        .quiz-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .progress {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #e0e0e0;
+            border-radius: 2px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+            transition: width 0.3s ease;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-next, .btn-finish {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        .btn-next:hover, .btn-finish:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(220, 53, 69, 0.4);
+        }
+        .btn-prev {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .btn-prev:hover {
+            background-color: #e0e0e0;
+        }
+        .results-container {
+            display: none;
+            text-align: center;
+            padding: 40px 30px;
+        }
+        .results-container.show {
+            display: block;
+        }
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            font-size: 48px;
+            font-weight: 700;
+        }
+        .results-container h2 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .results-container p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .finish-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .finish-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(220, 53, 69, 0.4);
+        }
+        .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .confirm-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #28a745 0%, #217039 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: none;
+        }
+        .confirm-btn.show {
+            display: block;
+        }
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
+        }
+        .confirm-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .feedback-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            animation: slideIn 0.3s ease-in;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+            display: block;
+        }
+        .feedback-incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+            display: block;
+        }
+        .explanation-box {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            border-radius: 5px;
+            color: #0c5aa0;
+            display: none;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .explanation-box.show {
+            display: block;
+        }
+        .wrong-answers-section {
+            background-color: #fff5f5;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border: 2px solid #dc3545;
+        }
+        .wrong-answers-section h3 {
+            color: #dc3545;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        .wrong-answer-item {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+        }
+        .wrong-answer-item h4 {
+            color: #dc3545;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .wrong-answer-item .your-answer {
+            color: #721c24;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .wrong-answer-item .correct-answer {
+            color: #155724;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .wrong-answer-item .explanation {
+            color: #0c5aa0;
+            background-color: #e7f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border-left: 4px solid #2196F3;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .congratulations {
+            font-size: 20px;
+            margin-bottom: 15px;
+            animation: bounce 0.6s ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="goBack()">← Back to Roadmap</button>
+
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1 id="quiz-title">Topic Quiz</h1>
+            <p id="quiz-subtitle">Test your knowledge</p>
+        </div>
+
+        <div class="quiz-content">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+
+            <div id="questions-container">
+                <!-- Questions will be inserted here -->
+            </div>
+
+            <div class="results-container" id="results-container">
+                <div class="score-circle" id="score-circle">0%</div>
+                <h2 id="result-title">Great Job!</h2>
+                <p id="result-message">You've completed the quiz</p>
+                <button class="finish-button" onclick="goBack()">← Back to Roadmap</button>
+            </div>
+
+            <div class="quiz-footer" id="quiz-footer">
+                <span class="progress" id="progress-text">Question 1 of 5</span>
+                <div class="button-group">
+                    <button class="btn-prev" id="btn-prev" onclick="previousQuestion()" style="display: none;">← Previous</button>
+                    <button class="btn-next" id="btn-next" onclick="nextQuestion()">Next →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const topicName = urlParams.get('topic');
+        const moduleId = urlParams.get('moduleId');
+
+        // Quiz questions bank (expandable)
+        const quizQuestions = {
+            default: [
+                {
+                    question: "What is the primary goal of this learning module?",
+                    options: [
+                        "To understand fundamental concepts",
+                        "To memorize facts",
+                        "To pass an exam quickly",
+                        "To avoid studying"
+                    ],
+                    correct: 0,
+                    explanation: "The primary goal of any learning module is to build a deep understanding of fundamental concepts. This foundation enables you to apply knowledge, solve problems, and build upon the concepts in advanced topics."
+                },
+                {
+                    question: "Which of the following is a key benefit of mastering this topic?",
+                    options: [
+                        "Improved problem-solving skills",
+                        "Better career opportunities",
+                        "Enhanced understanding of related topics",
+                        "All of the above"
+                    ],
+                    correct: 3,
+                    explanation: "Mastering a topic provides multiple benefits: it sharpens your problem-solving abilities, opens doors to career advancement, and helps you understand related topics more easily since many concepts interconnect."
+                },
+                {
+                    question: "How should you approach learning this material?",
+                    options: [
+                        "Read once and memorize",
+                        "Practice regularly with examples",
+                        "Watch videos passively",
+                        "Skip theory and jump to applications"
+                    ],
+                    correct: 1,
+                    explanation: "Regular practice with examples is the most effective learning approach. Active engagement through doing, combining theory with practice, and repetition over time leads to lasting understanding and retention."
+                },
+                {
+                    question: "What is the next step after understanding this module?",
+                    options: [
+                        "Move to the next advanced topic",
+                        "Review and practice more",
+                        "Take a break",
+                        "Teach others what you learned"
+                    ],
+                    correct: 1,
+                    explanation: "After initial understanding, review and additional practice solidify your knowledge. This reinforcement prevents forgetting and builds confidence before moving to advanced topics that build on this foundation."
+                },
+                {
+                    question: "How can you reinforce your learning?",
+                    options: [
+                        "Do practice problems",
+                        "Build projects",
+                        "Discuss with peers",
+                        "All of the above"
+                    ],
+                    correct: 3,
+                    explanation: "All of these methods are highly effective! Practice problems test your understanding, projects apply concepts in real contexts, and discussing with peers exposes you to different perspectives and reinforces your own understanding."
+                }
+            ],
+            comprehensive: [
+                {
+                    question: "How do the different modules in your learning path connect?",
+                    options: [
+                        "They are independent and unrelated",
+                        "Each builds on concepts from previous modules",
+                        "Later modules only use their own content",
+                        "There is no logical progression"
+                    ],
+                    correct: 1,
+                    explanation: "Modules in a well-designed curriculum are interconnected—each new module builds upon the foundations laid by previous ones. Understanding these connections deepens your overall mastery."
+                },
+                {
+                    question: "What is the best strategy for mastering your entire course?",
+                    options: [
+                        "Focus on one module at a time without review",
+                        "Learn all topics simultaneously",
+                        "Master each module, then review connections between them",
+                        "Start from the end and work backwards"
+                    ],
+                    correct: 2,
+                    explanation: "The optimal approach is sequential learning with integration—master each module thoroughly, then explicitly review how they connect and relate to each other. This builds both deep and coherent understanding."
+                },
+                {
+                    question: "When you encounter a challenging concept in later modules, what should you do?",
+                    options: [
+                        "Skip it and move forward",
+                        "Review foundational concepts from earlier modules",
+                        "Study harder without reference material",
+                        "Give up on that module"
+                    ],
+                    correct: 1,
+                    explanation: "Difficult concepts in advanced modules often depend on solid understanding of foundational material. Reviewing earlier modules clarifies the prerequisites and provides context for the challenging concept."
+                },
+                {
+                    question: "How can you apply your complete knowledge across all modules?",
+                    options: [
+                        "Each module is used separately in isolation",
+                        "Integrate concepts from multiple modules to solve complex problems",
+                        "Forget earlier modules once you've passed them",
+                        "Only apply the latest module you learned"
+                    ],
+                    correct: 1,
+                    explanation: "True mastery means integrating concepts from multiple modules to solve realistic, complex problems. This interdisciplinary approach reflects how knowledge is used in real-world applications."
+                },
+                {
+                    question: "What demonstrates mastery of your entire learning path?",
+                    options: [
+                        "Passing individual quizzes",
+                        "Memorizing facts from each module",
+                        "Understanding connections and applying integrated knowledge to real problems",
+                        "Taking the modules in alphabetical order"
+                    ],
+                    correct: 2,
+                    explanation: "True mastery is demonstrated by understanding how concepts connect across modules and being able to apply integrated knowledge to solve novel, real-world problems—not just passing tests or memorizing facts."
+                },
+                {
+                    question: "Which learning approach leads to long-term retention across all modules?",
+                    options: [
+                        "Cramming before each quiz",
+                        "Active practice, spaced repetition, and connecting concepts across modules",
+                        "Reading passively once and forgetting",
+                        "Learning only what will appear on the exam"
+                    ],
+                    correct: 1,
+                    explanation: "Research in cognitive psychology shows that spaced repetition (reviewing material over time), active practice, and connecting related concepts are the most effective for long-term retention and understanding."
+                },
+                {
+                    question: "How should you structure your study time across the full curriculum?",
+                    options: [
+                        "Study one module intensively, then completely switch to the next",
+                        "Balance new learning with regular review of previous concepts",
+                        "Only study just before assessments",
+                        "Study in random order without a plan"
+                    ],
+                    correct: 1,
+                    explanation: "Spacing your study across time with regular review of previous material (interleaving) is more effective than intensive single-topic studying. This approach strengthens memory and builds connections between concepts."
+                },
+                {
+                    question: "What role does teaching or explaining concepts play in mastering your course?",
+                    options: [
+                        "It wastes time that could be spent studying",
+                        "It helps identify gaps in your understanding and reinforces learning",
+                        "It's only useful if you want to become a teacher",
+                        "It has no impact on your learning"
+                    ],
+                    correct: 1,
+                    explanation: "Explaining concepts to others (or even to yourself) is a powerful learning tool. It forces you to organize your thoughts clearly, reveals gaps in understanding, and solidifies knowledge through active engagement."
+                }
+            ]
+        };
+
+        let currentQuestion = 0;
+        let userAnswers = [];
+        let confirmedAnswers = []; // Track which answers have been confirmed
+        // Select comprehensive quiz for root node (moduleId = 1), default for others
+        const questions = moduleId === "1" ? quizQuestions.comprehensive : quizQuestions.default;
+
+        // Initialize quiz
+        function initQuiz() {
+            if (moduleId === "1") {
+                document.getElementById('quiz-title').textContent = topicName || 'Comprehensive Course Quiz';
+                document.getElementById('quiz-subtitle').textContent = 'Test your mastery of the entire course';
+            } else {
+                document.getElementById('quiz-title').textContent = topicName || 'Module Quiz';
+                document.getElementById('quiz-subtitle').textContent = 'Test your knowledge on this topic';
+            }
+            
+            // Initialize answer arrays
+            userAnswers = new Array(questions.length).fill(-1);
+            confirmedAnswers = new Array(questions.length).fill(false);
+            
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+            
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = `question ${index === currentQuestion ? 'active' : ''}`;
+                
+                const userAnswer = userAnswers[index];
+                const isSelected = userAnswer !== -1;
+                const isConfirmed = confirmedAnswers[index] === true;
+                const isCorrect = isSelected && userAnswer === q.correct;
+                
+                let optionsHTML = '<div class="options">';
+                q.options.forEach((option, optIndex) => {
+                    const selected = userAnswer === optIndex;
+                    let optionClass = 'option';
+                    
+                    if (selected) {
+                        optionClass += ' selected';
+                    }
+                    
+                    optionsHTML += `
+                        <div class="option ${optionClass}" onclick="selectOption(${index}, ${optIndex})" style="${isConfirmed ? 'cursor: default; opacity: 0.7;' : ''}">
+                            <label style="cursor: ${isConfirmed ? 'default' : 'pointer'};">
+                                <input type="radio" name="question-${index}" value="${optIndex}" ${selected ? 'checked' : ''} ${isConfirmed ? 'disabled' : ''}>
+                                ${option}
+                            </label>
+                        </div>
+                    `;
+                });
+                optionsHTML += '</div>';
+                
+                // Show confirm button only if answer is selected but not confirmed
+                let confirmButtonHTML = '';
+                if (isSelected && !isConfirmed) {
+                    confirmButtonHTML = `<button class="confirm-btn show" onclick="confirmAnswer(${index})">✓ Confirm Answer</button>`;
+                }
+                
+                let feedbackHTML = '';
+                if (isConfirmed) {
+                    if (isCorrect) {
+                        feedbackHTML = `<div class="feedback-message feedback-correct">✓ Correct! Congratulations!</div>`;
+                    } else {
+                        feedbackHTML = `
+                            <div class="feedback-message feedback-incorrect">✗ Incorrect</div>
+                            <div class="explanation-box show">
+                                <strong>Correct Answer:</strong> ${q.options[q.correct]}<br><br>
+                                <strong>Explanation:</strong> ${q.explanation}
+                            </div>
+                        `;
+                    }
+                }
+                
+                questionDiv.innerHTML = `
+                    <div class="question-number">Question ${index + 1} of ${questions.length}</div>
+                    <div class="question-text">${q.question}</div>
+                    ${optionsHTML}
+                    ${confirmButtonHTML}
+                    ${feedbackHTML}
+                `;
+                
+                container.appendChild(questionDiv);
+            });
+            
+            updateProgress();
+            updateButtons();
+        }
+
+        function selectOption(questionIndex, optionIndex) {
+            // Only allow selecting if not yet confirmed
+            if (confirmedAnswers[questionIndex] !== true) {
+                userAnswers[questionIndex] = optionIndex;
+                renderQuestion();
+            }
+        }
+
+        function confirmAnswer(questionIndex) {
+            // Mark this answer as confirmed
+            confirmedAnswers[questionIndex] = true;
+            renderQuestion();
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                renderQuestion();
+                window.scrollTo(0, 0);
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestion();
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('progress-text').textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+        }
+
+        function updateButtons() {
+            const prevBtn = document.getElementById('btn-prev');
+            const nextBtn = document.getElementById('btn-next');
+            
+            if (currentQuestion === 0) {
+                prevBtn.style.display = 'none';
+            } else {
+                prevBtn.style.display = 'block';
+            }
+            
+            // Disable next button if current question is not confirmed
+            if (confirmedAnswers[currentQuestion] !== true) {
+                nextBtn.disabled = true;
+                nextBtn.style.opacity = '0.5';
+                nextBtn.style.cursor = 'not-allowed';
+            } else {
+                nextBtn.disabled = false;
+                nextBtn.style.opacity = '1';
+                nextBtn.style.cursor = 'pointer';
+            }
+            
+            if (currentQuestion === questions.length - 1) {
+                nextBtn.textContent = 'Finish →';
+            } else {
+                nextBtn.textContent = 'Next →';
+            }
+        }
+
+        function calculateScore() {
+            let correct = 0;
+            questions.forEach((q, index) => {
+                if (userAnswers[index] === q.correct) {
+                    correct++;
+                }
+            });
+            return Math.round((correct / questions.length) * 100);
+        }
+
+        function finishQuiz() {
+            const score = calculateScore();
+            
+            // Save quiz result to localStorage
+            const resultsKey = `quiz-${moduleId}`;
+            localStorage.setItem(resultsKey, JSON.stringify({
+                topic: topicName,
+                score: score,
+                completedAt: new Date().toISOString()
+            }));
+            
+            // Show results
+            document.getElementById('questions-container').style.display = 'none';
+            document.getElementById('quiz-footer').style.display = 'none';
+            
+            const resultsDiv = document.getElementById('results-container');
+            resultsDiv.classList.add('show');
+            
+            document.getElementById('score-circle').textContent = score + '%';
+            
+            // Determine feedback based on quiz type
+            const isComprehensive = moduleId === "1";
+            
+            // Build wrong answers summary
+            let wrongAnswersHTML = '';
+            const wrongAnswers = [];
+            questions.forEach((q, index) => {
+                if (userAnswers[index] !== q.correct && userAnswers[index] !== -1) {
+                    wrongAnswers.push({
+                        questionNum: index + 1,
+                        question: q.question,
+                        userAnswer: q.options[userAnswers[index]],
+                        correctAnswer: q.options[q.correct],
+                        explanation: q.explanation
+                    });
+                }
+            });
+            
+            if (wrongAnswers.length > 0) {
+                wrongAnswersHTML = '<div class="wrong-answers-section"><h3>📋 Review Your Incorrect Answers</h3>';
+                wrongAnswers.forEach((wrong, idx) => {
+                    wrongAnswersHTML += `
+                        <div class="wrong-answer-item">
+                            <h4>Question ${wrong.questionNum}: ${wrong.question}</h4>
+                            <div class="your-answer">Your answer: ${wrong.userAnswer}</div>
+                            <div class="correct-answer">✓ Correct answer: ${wrong.correctAnswer}</div>
+                            <div class="explanation"><strong>Why:</strong> ${wrong.explanation}</div>
+                        </div>
+                    `;
+                });
+                wrongAnswersHTML += '</div>';
+            }
+            
+            // Add wrong answers section to results
+            const resultsContent = document.getElementById('results-container');
+            const wrongAnswersDiv = document.createElement('div');
+            wrongAnswersDiv.innerHTML = wrongAnswersHTML;
+            resultsContent.appendChild(wrongAnswersDiv.firstElementChild);
+            
+            if (score >= 80) {
+                document.getElementById('result-title').textContent = 'Excellent! 🎉';
+                if (isComprehensive) {
+                    document.getElementById('result-message').textContent = `You scored ${score}%. You have mastered the entire course and understand how all modules connect!`;
+                } else {
+                    document.getElementById('result-message').textContent = `You scored ${score}%. Great understanding of this topic!`;
+                }
+            } else if (score >= 60) {
+                document.getElementById('result-title').textContent = 'Good Work! 👍';
+                if (isComprehensive) {
+                    document.getElementById('result-message').textContent = `You scored ${score}%. You have a solid understanding of the course. Keep integrating concepts to excel!`;
+                } else {
+                    document.getElementById('result-message').textContent = `You scored ${score}%. Keep practicing to improve!`;
+                }
+            } else {
+                document.getElementById('result-title').textContent = 'Keep Learning! 📚';
+                if (isComprehensive) {
+                    document.getElementById('result-message').textContent = `You scored ${score}%. Review each module and their connections. You'll do better next time!`;
+                } else {
+                    document.getElementById('result-message').textContent = `You scored ${score}%. Review the material and try again!`;
+                }
+            }
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', initQuiz);
+    </script>
+</body>
+</html>
