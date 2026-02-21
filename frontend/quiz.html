@@ -856,6 +856,41 @@
             return Math.round((correct / questions.length) * 100);
         }
 
+        function addQuizXP(score) {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return; // No user logged in
+            
+            const userData = JSON.parse(user);
+            const userXPKey = `user-xp-${userData.email}`;
+            const userLevelKey = `user-level-${userData.email}`;
+            
+            // Calculate XP earned
+            let xp = 100; // Base XP
+            if (score >= 50) {
+                // Bonus XP: 20 XP per 10% above 50%
+                const bonusPercent = Math.floor((score - 50) / 10);
+                xp += bonusPercent * 20;
+            }
+            xp = Math.min(xp, 200); // Max 200 XP per quiz
+            
+            // Add XP to user
+            let currentXP = parseInt(localStorage.getItem(userXPKey)) || 0;
+            let currentLevel = parseInt(localStorage.getItem(userLevelKey)) || 1;
+            
+            currentXP += xp;
+            
+            // Level thresholds
+            const levelThresholds = [0, 200, 500, 900, 1400, 2000, 2700, 3500, 4400, 5400];
+            
+            // Check for level ups
+            while (currentLevel < levelThresholds.length && currentXP >= levelThresholds[currentLevel]) {
+                currentLevel++;
+            }
+            
+            localStorage.setItem(userXPKey, currentXP);
+            localStorage.setItem(userLevelKey, currentLevel);
+        }
+
         function finishQuiz() {
             const score = calculateScore();
             
@@ -866,6 +901,9 @@
                 score: score,
                 completedAt: new Date().toISOString()
             }));
+            
+            // Process XP reward
+            addQuizXP(score);
             
             // Show results
             document.getElementById('questions-container').style.display = 'none';

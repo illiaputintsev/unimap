@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile Settings - Student Roadmap</title>
+    <link rel="stylesheet" href="frame-styles.css">
     <style>
         * {
             margin: 0;
@@ -173,6 +174,117 @@
             display: inline-block;
             font-size: 60px;
         }
+        
+        /* Profile Picture Frames */
+        .frame-section {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+        .frame-title {
+            text-align: center;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .frames-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .frame-option {
+            position: relative;
+            cursor: pointer;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid #ddd;
+            transition: all 0.3s;
+            background: white;
+        }
+        .frame-option:hover:not(.locked) {
+            border-color: #1abc9c;
+            transform: scale(1.05);
+        }
+        .frame-preview {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+        }
+        .frame-icon {
+            font-size: 50px;
+        }
+        
+        /* Frame Styles */
+        .frame-basic {
+            border: 4px solid #a9a9a9;
+            box-shadow: 0 0 0 3px white, 0 0 0 7px #a9a9a9;
+        }
+        .frame-intermediary {
+            background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+            box-shadow: 0 0 0 3px white, 0 0 15px rgba(255, 140, 0, 0.5);
+        }
+        .frame-master {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            box-shadow: 0 0 0 3px white, 0 0 20px rgba(255, 215, 0, 0.7);
+        }
+        
+        .frame-label {
+            position: absolute;
+            bottom: 8px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #333;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 3px;
+            border-radius: 3px;
+        }
+        .frame-option input[type="radio"] {
+            display: none;
+        }
+        .frame-option input[type="radio"]:checked + .frame-preview {
+            border: 3px solid #1abc9c;
+            box-shadow: 0 0 0 2px white, 0 0 8px #1abc9c;
+        }
+        .frame-option.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .frame-option.locked .frame-preview {
+            filter: grayscale(100%);
+        }
+        .lock-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        .frame-info {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -190,6 +302,50 @@
                 <div class="profile-picture" id="profile-picture">👤</div>
                 <input type="file" id="picture-upload" class="picture-upload" accept="image/*" onchange="handlePictureUpload(event)">
                 <button type="button" class="upload-button" onclick="document.getElementById('picture-upload').click()">Change Picture</button>
+                
+                <!-- Frame Selection -->
+                <div class="frame-section">
+                    <div class="frame-title">🎨 Picture Frames (Unlock with Levels)</div>
+                    <div class="frames-grid">
+                        <label class="frame-option" id="frame-none-label">
+                            <input type="radio" name="frame" value="none" checked>
+                            <div class="frame-preview">
+                                <div class="frame-icon">✓</div>
+                            </div>
+                            <span class="frame-label">None</span>
+                        </label>
+                        
+                        <label class="frame-option" id="frame-basic-label">
+                            <input type="radio" name="frame" value="basic">
+                            <div class="frame-preview frame-basic">
+                                <div class="frame-icon">⬚</div>
+                            </div>
+                            <span class="frame-label">Basic</span>
+                        </label>
+                        
+                        <label class="frame-option" id="frame-intermediary-label">
+                            <input type="radio" name="frame" value="intermediary">
+                            <div class="frame-preview frame-intermediary">
+                                <div class="frame-icon">⭐</div>
+                            </div>
+                            <span class="frame-label">Intermediary</span>
+                            <div class="lock-badge" id="lock-intermediary">🔒</div>
+                        </label>
+                        
+                        <label class="frame-option" id="frame-master-label">
+                            <input type="radio" name="frame" value="master">
+                            <div class="frame-preview frame-master">
+                                <div class="frame-icon">👑</div>
+                            </div>
+                            <span class="frame-label">Master</span>
+                            <div class="lock-badge" id="lock-master">🔒</div>
+                        </label>
+                    </div>
+                    <div class="frame-info">
+                        <strong>Frame Unlock Requirements:</strong><br>
+                        Basic: Level 1+ | Intermediary: Level 5+ | Master: Level 10+
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -255,6 +411,10 @@
             if (profileData.profilePicture) {
                 document.getElementById('profile-picture').innerHTML = `<img src="${profileData.profilePicture}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">`;
             }
+            
+            // Apply the selected frame
+            const selectedFrame = localStorage.getItem('selectedProfileFrame') || 'none';
+            applyFrameToPreview(selectedFrame);
         }
 
         // Handle form submission
@@ -268,7 +428,8 @@
                 university: document.getElementById('university').value,
                 course: document.getElementById('course').value,
                 bio: document.getElementById('bio').value,
-                profilePicture: localStorage.getItem('profilePictureData') || profileData.profilePicture
+                profilePicture: localStorage.getItem('profilePictureData') || profileData.profilePicture,
+                selectedFrame: localStorage.getItem('selectedProfileFrame') || 'none'
             };
             
             // Save to localStorage
@@ -278,6 +439,9 @@
             const user = JSON.parse(localStorage.getItem('currentUser')) || {};
             user.name = profileData.nickname;
             localStorage.setItem('currentUser', JSON.stringify(user));
+            
+            // Save selected frame
+            saveSelectedFrame();
             
             // Show success message
             const successMsg = document.getElementById('success-message');
@@ -302,12 +466,92 @@
             }
         }
 
+        // Initialize
+        window.addEventListener('load', function() {
+            loadProfile();
+            unlockFrames();
+            loadSelectedFrame();
+        });
+
+        // Check user level and unlock frames
+        function unlockFrames() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (!user) return;
+            
+            const userLevelKey = `user-level-${user.email}`;
+            const currentLevel = parseInt(localStorage.getItem(userLevelKey)) || 1;
+            
+            // Basic frame always available
+            document.getElementById('frame-basic-label').classList.remove('locked');
+            
+            // Intermediary frame at Level 5+
+            const intermediaryLabel = document.getElementById('frame-intermediary-label');
+            const lockIntermediary = document.getElementById('lock-intermediary');
+            if (currentLevel >= 5) {
+                intermediaryLabel.classList.remove('locked');
+                lockIntermediary.style.display = 'none';
+            } else {
+                intermediaryLabel.classList.add('locked');
+                lockIntermediary.style.display = 'flex';
+            }
+            
+            // Master frame at Level 10+
+            const masterLabel = document.getElementById('frame-master-label');
+            const lockMaster = document.getElementById('lock-master');
+            if (currentLevel >= 10) {
+                masterLabel.classList.remove('locked');
+                lockMaster.style.display = 'none';
+            } else {
+                masterLabel.classList.add('locked');
+                lockMaster.style.display = 'flex';
+            }
+        }
+        
+        // Save selected frame
+        function saveSelectedFrame() {
+            const selectedFrame = document.querySelector('input[name="frame"]:checked')?.value;
+            if (selectedFrame) {
+                localStorage.setItem('selectedProfileFrame', selectedFrame);
+            }
+        }
+        
+        // Handle frame selection
+        document.querySelectorAll('input[name="frame"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (!document.getElementById('frame-' + this.value + '-label').classList.contains('locked')) {
+                    saveSelectedFrame();
+                    // Update profile picture preview with frame
+                    applyFrameToPreview(this.value);
+                }
+            });
+        });
+        
+        // Apply frame to profile picture preview
+        function applyFrameToPreview(frame) {
+            const profilePic = document.getElementById('profile-picture');
+            profilePic.classList.remove('profile-pic-none', 'profile-pic-basic', 'profile-pic-intermediary', 'profile-pic-master');
+            
+            if (frame !== 'none') {
+                profilePic.classList.add('profile-pic-' + frame);
+            } else {
+                profilePic.style.border = '4px solid #1abc9c';
+                profilePic.style.boxShadow = 'none';
+            }
+        }
+        
+        // Load selected frame on page load
+        function loadSelectedFrame() {
+            const selectedFrame = localStorage.getItem('selectedProfileFrame') || 'none';
+            const radio = document.querySelector(`input[name="frame"][value="${selectedFrame}"]`);
+            if (radio) {
+                radio.checked = true;
+            }
+        }
+        
+        // Go back to previous page
         function goBack() {
             window.history.back();
         }
-
-        // Initialize
-        window.addEventListener('load', loadProfile);
     </script>
 </body>
 </html>

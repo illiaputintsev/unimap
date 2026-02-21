@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Roadmap</title>
+    <link rel="stylesheet" href="frame-styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-network@9.0.0/dist/vis-network.min.css" />
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -106,6 +108,36 @@
                 width: calc(100vw - 20px);
                 max-width: none;
                 max-height: 70vh;
+            }
+            
+            #progress-container {
+                top: 250px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+                padding: 0;
+            }
+            
+            #progress-text {
+                font-size: 11px;
+            }
+            
+            #level-container {
+                top: 305px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+                padding: 0;
+            }
+            
+            #level-badge {
+                width: 40px;
+                height: 40px;
+                font-size: 24px;
+            }
+            
+            #xp-text {
+                font-size: 10px;
             }
         }
         #logo {
@@ -254,6 +286,180 @@
             position: relative;
             z-index: 1;
         }
+        /* Progress Bar - Collapsible Icon */
+        #progress-container {
+            position: fixed;
+            top: 250px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: white;
+            padding: 0;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(26, 188, 156, 0.2);
+            z-index: 999;
+            border: 2px solid #c8f7f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        #progress-container:hover {
+            width: 250px;
+            border-radius: 10px;
+            height: auto;
+            padding: 15px;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+        #progress-container:hover .progress-icon {
+            display: none;
+        }
+        #progress-container:hover .progress-content {
+            display: block;
+        }
+        .progress-icon {
+            display: block;
+        }
+        .progress-content {
+            display: none;
+            width: 100%;
+        }
+        .progress-content .progress-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        #progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1abc9c 0%, #16a085 100%);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 10px;
+        }
+        #progress-text {
+            font-size: 12px;
+            color: #1abc9c;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 8px;
+        }
+        
+        /* Level/XP Display - Collapsible Icon */
+        #level-container {
+            position: fixed;
+            top: 305px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #fff8f0 0%, #fff0e8 100%);
+            padding: 0;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(26, 188, 156, 0.2);
+            z-index: 999;
+            border: 2px solid #ffd9b3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        #level-container:hover {
+            width: 250px;
+            border-radius: 10px;
+            height: auto;
+            padding: 15px;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+        #level-container:hover .level-icon {
+            display: none;
+        }
+        #level-container:hover .level-content {
+            display: block;
+        }
+        .level-icon {
+            display: block;
+        }
+        .level-content {
+            display: none;
+            width: 100%;
+        }
+        #level-display {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: #d97845;
+        }
+        #level-badge {
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+        }
+        #level-info {
+            flex: 1;
+        }
+        #level-number {
+            font-size: 16px;
+            color: #d97845;
+        }
+        #xp-bar {
+            width: 100%;
+            height: 6px;
+            background: #f0e0d0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        #xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffa500 0%, #ff8c00 100%);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 10px;
+        }
+        #xp-text {
+            font-size: 11px;
+            color: #d97845;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 4px;
+        }
+        
+        /* Node Hover Animation */
+        .vis-network canvas {
+            transition: all 0.2s ease;
+        }
+        .node-hover-glow {
+            filter: drop-shadow(0 0 15px rgba(26, 188, 156, 0.6));
+            transform: scale(1.1);
+        }
+        
         /* Canvas node fade-in animation */
         #roadmap {
             animation: containerFadeIn 0.5s ease-in;
@@ -264,6 +470,27 @@
             }
             to {
                 opacity: 1;
+            }
+        }
+        @keyframes levelUpPop {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
             }
         }
     </style>
@@ -289,7 +516,9 @@
             <button onclick="addModuleToRoadmap()">Add Module</button>
         </div>
         
-        <div class="menu-section">⚙️ Navigation</div>        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">🗺️ My Roadmaps</a>        <a href="progress.html">📊 Your Progress</a>
+        <div class="menu-section">⚙️ Navigation</div>        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">🗺️ My Roadmaps</a>
+        <a href="#" onclick="openAchievements(); return false;">🏆 Achievements</a>
+        <a href="progress.html">📊 Your Progress</a>
         <a href="index.html">🏠 Home</a>
         <a href="login.html">🔑 Login</a>
         <a href="signup.html">📝 Sign Up</a>
@@ -301,6 +530,35 @@
         <img id="profile-pic-avatar" alt="Profile">
         <span id="username">Guest</span>
         <a href="profile.html" style="margin-left: 15px; padding: 8px 15px; background-color: #1abc9c; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.backgroundColor='#16a085'" onmouseout="this.style.backgroundColor='#1abc9c'">⚙️ Profile</a>
+    </div>
+
+    <!-- Progress Container -->
+    <div id="progress-container">
+        <div class="progress-icon">📈</div>
+        <div class="progress-content">
+            <div class="progress-title">📈 Progress</div>
+            <div id="progress-bar">
+                <div id="progress-fill"></div>
+            </div>
+            <div id="progress-text">0/7 Modules</div>
+        </div>
+    </div>
+    
+    <!-- Level/XP Container -->
+    <div id="level-container">
+        <div class="level-icon">⭐</div>
+        <div class="level-content">
+            <div id="level-display">
+                <div id="level-badge">⭐</div>
+                <div id="level-info">
+                    <div id="level-number">Level 1</div>
+                    <div id="xp-bar">
+                        <div id="xp-fill"></div>
+                    </div>
+                    <div id="xp-text">0 / 200 XP</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <h1>Student Roadmap</h1>
@@ -317,7 +575,7 @@
         <p id="quiz-score" style="margin-top: 10px; font-size: 14px; color: #666; display: none;"></p>
     </div>
 
-    <script src="https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.0.0/dist/vis-network.min.js"></script>
     <script>
         // Get input from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -356,6 +614,9 @@
                 if (profilePictureData) {
                     profilePic.src = profilePictureData;
                     profilePic.classList.add('show');
+                    
+                    // Apply selected frame
+                    applyProfileFrame(profilePic);
                 } else {
                     profilePic.classList.remove('show');
                 }
@@ -363,9 +624,28 @@
                 // Show My Roadmaps button for logged-in users
                 const myRoadsBtn = document.getElementById('my-roads-btn');
                 if (myRoadsBtn) myRoadsBtn.style.display = 'block';
+                
+                // Initialize achievements and level system for this user
+                initAchievements();
+                initUserLevel();
             } else {
                 document.getElementById('username').textContent = 'Guest';
                 profilePic.classList.remove('show');
+            }
+        }
+        
+        // Apply selected frame to profile picture
+        function applyProfileFrame(profilePic) {
+            const selectedFrame = localStorage.getItem('selectedProfileFrame') || 'none';
+            
+            // Remove all frame classes
+            profilePic.classList.remove('profile-pic-none', 'profile-pic-basic', 'profile-pic-intermediary', 'profile-pic-master');
+            
+            // Add the selected frame class
+            if (selectedFrame !== 'none') {
+                profilePic.classList.add('profile-pic-' + selectedFrame);
+            } else {
+                profilePic.classList.add('profile-pic-none');
             }
         }
         
@@ -462,6 +742,25 @@
         // Initialize login status
         checkLoginStatus();
         
+        // Dynamic spacing for progress and level icons
+        const progressContainer = document.getElementById('progress-container');
+        const levelContainer = document.getElementById('level-container');
+        
+        // Initial positions
+        const progressInitialTop = 250;
+        const levelInitialTop = 305;
+        
+        progressContainer.addEventListener('mouseenter', function() {
+            // Move level container down when progress expands
+            levelContainer.style.transition = 'top 0.3s ease';
+            levelContainer.style.top = (levelInitialTop + 50) + 'px'; // Move down by 50px when progress expands
+        });
+        
+        progressContainer.addEventListener('mouseleave', function() {
+            // Move level container back
+            levelContainer.style.top = levelInitialTop + 'px';
+        });
+        
         // Draggable logo
         const logo = document.getElementById('logo');
         let isDragging = false;
@@ -486,18 +785,145 @@
             { from: 6, to: 7 }
         ];
 
+        // Fallback visualization if Vis.js doesn't load
+        function createFallbackVisualization(container, nodesData, edgesData) {
+            console.log('Creating fallback visualization');
+            container.innerHTML = '';
+            
+            // Create a flow layout with the nodes
+            const flowContainer = document.createElement('div');
+            flowContainer.style.display = 'flex';
+            flowContainer.style.flexDirection = 'column';
+            flowContainer.style.alignItems = 'center';
+            flowContainer.style.gap = '20px';
+            flowContainer.style.padding = '40px 20px';
+            flowContainer.style.width = '100%';
+            flowContainer.style.boxSizing = 'border-box';
+            
+            nodesData.forEach((node, index) => {
+                const nodeBox = document.createElement('div');
+                nodeBox.style.display = 'flex';
+                nodeBox.style.flexDirection = 'column';
+                nodeBox.style.alignItems = 'center';
+                nodeBox.style.marginBottom = '0px';
+                nodeBox.style.width = '100%';
+                
+                const box = document.createElement('div');
+                box.className = 'fallback-node-box';
+                box.textContent = node.label;
+                box.style.backgroundColor = '#1abc9c';
+                box.style.color = 'white';
+                box.style.padding = '20px 30px';
+                box.style.borderRadius = '8px';
+                box.style.fontWeight = 'bold';
+                box.style.cursor = 'pointer';
+                box.style.border = '2px solid #0d7a6c';
+                box.style.minWidth = '200px';
+                box.style.textAlign = 'center';
+                box.style.transition = 'all 0.3s ease';
+                box.style.userSelect = 'none';
+                box.style.width = '200px';
+                
+                box.addEventListener('mouseenter', () => {
+                    box.style.transform = 'translateY(-5px)';
+                    box.style.boxShadow = '0 10px 20px rgba(26, 188, 156, 0.3)';
+                });
+                
+                box.addEventListener('mouseleave', () => {
+                    box.style.transform = 'translateY(0)';
+                    box.style.boxShadow = 'none';
+                });
+                
+                // Store node ID for quiz functionality
+                box.dataset.nodeId = node.id;
+                box.addEventListener('click', function() {
+                    // Simulate node click to open modal
+                    window.currentNodeId = node.id;
+                    document.getElementById('modal-title').textContent = node.label;
+                    document.getElementById('modal-content').textContent = `Learn about ${node.label}`;
+                    document.getElementById('node-modal').style.display = 'block';
+                });
+                
+                nodeBox.appendChild(box);
+                
+                // Add arrow between nodes
+                if (index < nodesData.length - 1) {
+                    const arrow = document.createElement('div');
+                    arrow.textContent = '↓';
+                    arrow.style.fontSize = '24px';
+                    arrow.style.color = '#1abc9c';
+                    arrow.style.margin = '10px 0';
+                    nodeBox.appendChild(arrow);
+                }
+                
+                flowContainer.appendChild(nodeBox);
+            });
+            
+            container.appendChild(flowContainer);
+        }
+
         // Function to create the network
         function createNetwork(nodesData, edgesData) {
+            try {
+            console.log('createNetwork called with', nodesData.length, 'nodes and', edgesData.length, 'edges');
+            
             const container = document.getElementById('roadmap');
+            if (!container) {
+                console.error('roadmap container not found!');
+                return;
+            }
+            
+            console.log('Container found:', container);
+            console.log('Container dimensions:', container.offsetWidth, 'x', container.offsetHeight);
+            
+            // Ensure container has proper styling
+            container.style.display = 'block';
+            container.style.position = 'relative';
+            container.style.width = '95%';
+            container.style.maxWidth = '1400px';
+            container.style.height = '800px';
+            container.style.margin = '20px auto';
+            container.style.backgroundColor = 'white';
+            container.style.borderRadius = '15px';
+            container.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
+            container.style.zIndex = '1';
+            
+            // Add size to nodes for better visibility
+            const enrichedNodes = nodesData.map(node => ({
+                ...node,
+                widthConstraint: { maximum: 200 },
+                heightConstraint: { valign: 'middle' },
+                physics: false
+            }));
+            
+            console.log('Creating DataSets...');
+            console.log('vis available:', typeof vis);
+            console.log('vis.DataSet available:', typeof vis.DataSet);
+            
             const data = { 
-                nodes: new vis.DataSet(nodesData), 
+                nodes: new vis.DataSet(enrichedNodes), 
                 edges: new vis.DataSet(edgesData) 
             };
+            
+            console.log('DataSets created successfully');
 
             // Store globally for later access
             window.nodes = data.nodes;
             window.edges = data.edges;
             window.nodesData = nodesData;
+            
+            console.log('Data created with', data.nodes.length, 'nodes');
+            console.log('Nodes:', data.nodes.get());
+            console.log('Edges:', data.edges.get());
+            
+            // Check if Vis.Network is available
+            if (typeof vis === 'undefined' || typeof vis.Network === 'undefined') {
+                console.error('Vis.js library not loaded properly. vis.Network is not available.');
+                console.error('window.vis:', window.vis);
+                // Create a fallback visualization
+                createFallbackVisualization(container, nodesData, edgesData);
+                return;
+            }
 
             const options = {
                 autoResize: true,
@@ -505,71 +931,41 @@
                     hierarchical: {
                         direction: 'UD',
                         sortMethod: 'directed',
-                        nodeSpacing: 150,
-                        levelSeparation: 100 // Controls vertical gap between nodes
+                        nodeSpacing: 200,
+                        levelSeparation: 150
                     }
                 },
                 physics: false,
                 interaction: {
-                    dragNodes: false,
+                    dragNodes: true,
                     dragView: false,
-                    zoomView: false // Disable zoom to allow page scroll with mouse wheel
+                    zoomView: false,
+                    navigationButtons: false
                 },
                 nodes: {
                     color: {
                         background: '#1abc9c',
-                        border: '#1abc9c',
-                        highlight: {
-                            background: '#16a085',
-                            border: '#a01611'
-                        },
-                        hover: {
-                            background: '#e85d5e',
-                            border: '#1abc9c'
-                        }
+                        border: '#0d7a6c'
                     },
                     shape: 'box',
-                    margin: 12,
+                    margin: 15,
                     font: { 
                         size: 16, 
                         color: 'white',
-                        face: 'Segoe UI',
-                        bold: {
-                            color: 'white'
-                        }
+                        face: 'Arial'
                     },
-                    borderWidth: 3,
-                    borderWidthSelected: 4,
-                    shadow: {
-                        enabled: true,
-                        color: 'rgba(220, 53, 69, 0.3)',
-                        size: 10,
-                        x: 3,
-                        y: 3
-                    },
-                    shapeProperties: {
-                        borderRadius: 8
-                    }
+                    borderWidth: 2
                 },
                 edges: {
-                    arrows: { to: { enabled: false } },
+                    arrows: { 
+                        to: { enabled: true } 
+                    },
                     color: {
-                        color: '#6c757d',
-                        highlight: '#16a085',
-                        hover: '#e85d5e'
+                        color: '#666666'
                     },
-                    width: 3,
+                    width: 2,
                     smooth: {
-                        type: 'cubicBezier',
-                        forceDirection: 'vertical',
-                        roundness: 0.4
-                    },
-                    shadow: {
-                        enabled: true,
-                        color: 'rgba(0,0,0,0.1)',
-                        size: 5,
-                        x: 2,
-                        y: 2
+                        type: 'continuous'
                     }
                 }
             };
@@ -578,6 +974,32 @@
             
             // Store network globally for later access
             window.network = network;
+            
+            console.log('Network created successfully');
+            console.log('Network object:', network);
+            
+            // Check canvas creation
+            const canvas = container.querySelector('canvas');
+            console.log('Canvas element after network creation:', canvas);
+            if (canvas) {
+                console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+                console.log('Canvas style:', canvas.style.cssText);
+            } else {
+                console.error('Canvas element not found in container!');
+            }
+        } catch (networkError) {
+            console.error('Error creating network:', networkError);
+            console.error('Stack:', networkError.stack);
+            // Fallback to simple visualization
+            createFallbackVisualization(container, nodesData, edgesData);
+            return;
+        }
+        
+        try {
+            // Wait for network to initialize
+            network.on('stabilizationIterationsDone', function() {
+                console.log('Network initialized');
+            });
 
             // Prevent canvas from capturing scroll wheel - allow page scroll
             container.addEventListener('wheel', (e) => {
@@ -587,49 +1009,77 @@
 
             // Calculate and set container height based on number of nodes
             const nodeCount = nodesData.length;
-            const levelSeparation = 100;
+            const levelSeparation = 150;
             const estimatedHeight = Math.max(800, (nodeCount * levelSeparation) + 400);
             container.style.height = estimatedHeight + 'px';
 
-            // Show all nodes and edges immediately (no animation lag)
-            // This ensures fast loading without the domino effect delay
-
-            // Show all nodes and position properly
-            network.once('stabilized', function() {
-                // Fit all nodes in view
-                network.fit({ animation: true, animationOptions: { duration: 800, easingFunction: 'easeInOutQuad' } });
-                // Scroll page to top
-                window.scrollTo(0, 0);
-            });
-
-            // POPUP LOGIC: Re-adding the click event
-            network.on('click', function(params) {
-                if (params.nodes.length > 0) {
-                    const nodeId = params.nodes[0];
-                    const node = window.nodesData.find(n => n.id === nodeId);
-                    if (node) {
-                        // Store current node ID for quiz button
-                        window.currentNodeId = nodeId;
-                        
-                        document.getElementById('modal-title').textContent = node.label;
-                        document.getElementById('modal-content').textContent = `Step ${node.id}: Detailed resources for learning ${node.label} will appear here`;
-                        
-                        // Check if quiz has been completed for this module
-                        const quizResultsKey = `quiz-${nodeId}`;
-                        const quizResults = JSON.parse(localStorage.getItem(quizResultsKey));
-                        
-                        if (quizResults) {
-                            // Show quiz score
-                            document.getElementById('quiz-score').textContent = `Your Quiz Score: ${quizResults.score}%`;
-                            document.getElementById('quiz-score').style.display = 'block';
-                        } else {
-                            document.getElementById('quiz-score').style.display = 'none';
-                        }
-                        
-                        document.getElementById('node-modal').style.display = 'block';
+            // Position nodes properly
+            setTimeout(() => {
+                if (window.network) {
+                    try {
+                        // Fit the network to the viewport
+                        window.network.fit({ 
+                            animation: false
+                        });
+                        console.log('Network fitted successfully');
+                    } catch (e) {
+                        console.error('Fit error:', e);
                     }
                 }
-            });
+                
+                // Update progress bar, level display, and add hover effects
+                updateProgressBar();
+                updateLevelDisplay();
+                addNodeHoverEffects();
+                checkAchievements();
+            }, 200);
+
+            // POPUP LOGIC: Re-adding the click event
+            try {
+                network.on('click', function(params) {
+                    if (params.nodes.length > 0) {
+                        const nodeId = params.nodes[0];
+                        const node = window.nodesData.find(n => n.id === nodeId);
+                        if (node) {
+                            // Store current node ID for quiz button
+                            window.currentNodeId = nodeId;
+                            
+                            document.getElementById('modal-title').textContent = node.label;
+                            document.getElementById('modal-content').textContent = `Step ${node.id}: Detailed resources for learning ${node.label} will appear here`;
+                            
+                            // Check if quiz has been completed for this module
+                            const quizResultsKey = `quiz-${nodeId}`;
+                            const quizResults = JSON.parse(localStorage.getItem(quizResultsKey));
+                            
+                            if (quizResults) {
+                                // Show quiz score
+                                document.getElementById('quiz-score').textContent = `Your Quiz Score: ${quizResults.score}%`;
+                                document.getElementById('quiz-score').style.display = 'block';
+                            } else {
+                                document.getElementById('quiz-score').style.display = 'none';
+                            }
+                            
+                            document.getElementById('node-modal').style.display = 'block';
+                        }
+                    }
+                });
+            } catch (eventError) {
+                console.error('Error setting up network events:', eventError);
+            }
+
+        } catch (generalError) {
+            console.error('Error in createNetwork function:', generalError);
+            console.error('Stack:', generalError.stack);
+            // Try to show fallback visualization
+            try {
+                const container = document.getElementById('roadmap');
+                if (container) {
+                    createFallbackVisualization(container, nodesData, edgesData);
+                }
+            } catch (fallbackError) {
+                console.error('Error creating fallback visualization:', fallbackError);
+            }
+        }
         }
 
         function closeModal() {
@@ -659,6 +1109,12 @@
 
         // Add new module to the roadmap
         function addModuleToRoadmap() {
+            // Check if network and nodes exist
+            if (!window.network || !window.nodes || !window.edges) {
+                alert('Please wait for the roadmap to load');
+                return;
+            }
+            
             const input = document.getElementById('new-module-input');
             const moduleName = input.value.trim();
             
@@ -667,8 +1123,9 @@
                 return;
             }
             
-            // Get the highest existing node ID
-            const nodeIds = nodes.get().map(n => n.id);
+            // Get all current nodes
+            const currentNodes = window.nodes.get();
+            const nodeIds = currentNodes.map(n => n.id);
             const maxId = nodeIds.length > 0 ? Math.max(...nodeIds) : 0;
             const newId = maxId + 1;
             
@@ -677,12 +1134,16 @@
                 id: newId,
                 label: moduleName
             };
-            nodes.add([newNode]);
+            window.nodes.add([newNode]);
+            
+            // Also update window.nodesData for quiz functionality
+            if (!window.nodesData) window.nodesData = [];
+            window.nodesData.push(newNode);
             
             // Connect the new module to the last module in the sequence
             if (nodeIds.length > 0) {
                 const lastNodeId = nodeIds[nodeIds.length - 1];
-                edges.add([{
+                window.edges.add([{
                     from: lastNodeId,
                     to: newId
                 }]);
@@ -692,15 +1153,333 @@
             input.value = '';
             
             // Trigger network animation to fit the new node
-            network.fit({
-                animation: {
-                    duration: 400,
-                    easingFunction: 'easeInOutQuad'
-                }
-            });
+            if (window.network.fit) {
+                window.network.fit({
+                    animation: {
+                        duration: 400,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+            }
             
             // Close menu
             document.getElementById('menu-dropdown').style.display = 'none';
+            
+            // Update progress bar
+            updateProgressBar();
+            
+            // Check for achievements
+            checkAchievements();
+        }
+
+        // Update progress bar based on completed modules
+        function updateProgressBar() {
+            if (!window.nodesData || window.nodesData.length === 0) return;
+            
+            let completedModules = 0;
+            window.nodesData.forEach(node => {
+                const quizResultsKey = `quiz-${node.id}`;
+                if (localStorage.getItem(quizResultsKey)) {
+                    completedModules++;
+                }
+            });
+            
+            const totalModules = window.nodesData.length;
+            const progressPercent = (completedModules / totalModules) * 100;
+            
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            
+            if (progressFill) {
+                progressFill.style.width = progressPercent + '%';
+            }
+            if (progressText) {
+                progressText.textContent = `${completedModules}/${totalModules} Modules`;
+            }
+        }
+
+        // Achievement System
+        const achievements = [
+            { id: 'first-quiz', name: 'First Step', description: 'Complete your first quiz', icon: '✓' },
+            { id: 'three-quizzes', name: 'Quick Learner', description: 'Complete 3 quizzes', icon: '⚡' },
+            { id: 'half-done', name: 'Halfway There', description: 'Complete 50% of modules', icon: '🌟' },
+            { id: 'all-modules', name: 'Roadmap Master', description: 'Complete all modules', icon: '👑' },
+            { id: 'perfect-score', name: 'Perfect', description: 'Score 100% on a quiz', icon: '💯' },
+            { id: 'high-achiever', name: 'High Achiever', description: 'Score 95%+ on 3 quizzes', icon: '🏆' },
+            { id: 'level-5', name: 'Rising Star', description: 'Reach Level 5', icon: '⭐' },
+            { id: 'level-10', name: 'Legendary', description: 'Reach Level 10', icon: '👑' }
+        ];
+
+        function initAchievements() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return;
+            
+            const userData = JSON.parse(user);
+            const achievementsKey = `achievements-${userData.email}`;
+            
+            if (!localStorage.getItem(achievementsKey)) {
+                localStorage.setItem(achievementsKey, JSON.stringify([]));
+            }
+        }
+
+        function checkAchievements() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return;
+            
+            const userData = JSON.parse(user);
+            const achievementsKey = `achievements-${userData.email}`;
+            let userAchievements = JSON.parse(localStorage.getItem(achievementsKey)) || [];
+            
+            let completedCount = 0;
+            let perfectScoreFound = false;
+            let highScoreCount = 0;
+            
+            if (window.nodesData) {
+                window.nodesData.forEach(node => {
+                    const quizResultsKey = `quiz-${node.id}`;
+                    const results = JSON.parse(localStorage.getItem(quizResultsKey));
+                    
+                    if (results) {
+                        completedCount++;
+                        if (results.score === 100) perfectScoreFound = true;
+                        if (results.score >= 95) highScoreCount++;
+                    }
+                });
+            }
+            
+            // Check for new achievements
+            if (completedCount >= 1 && !userAchievements.includes('first-quiz')) {
+                userAchievements.push('first-quiz');
+            }
+            if (completedCount >= 3 && !userAchievements.includes('three-quizzes')) {
+                userAchievements.push('three-quizzes');
+            }
+            if (window.nodesData && completedCount >= (window.nodesData.length / 2) && !userAchievements.includes('half-done')) {
+                userAchievements.push('half-done');
+            }
+            if (window.nodesData && completedCount === window.nodesData.length && !userAchievements.includes('all-modules')) {
+                userAchievements.push('all-modules');
+            }
+            if (perfectScoreFound && !userAchievements.includes('perfect-score')) {
+                userAchievements.push('perfect-score');
+            }
+            if (highScoreCount >= 3 && !userAchievements.includes('high-achiever')) {
+                userAchievements.push('high-achiever');
+            }
+            
+            localStorage.setItem(achievementsKey, JSON.stringify(userAchievements));
+        }
+
+        function openAchievements() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) {
+                alert('Please login to view achievements');
+                return;
+            }
+            
+            const userData = JSON.parse(user);
+            const achievementsKey = `achievements-${userData.email}`;
+            const userAchievements = JSON.parse(localStorage.getItem(achievementsKey)) || [];
+            
+            // Build dynamic achievements list including level achievements
+            let allAchievements = [...achievements];
+            for (let i = 1; i <= 10; i++) {
+                if (i <= 4) continue; // Skip 1-4 as they're covered by other achievements
+                const levelName = i === 5 ? 'Rising Star' : i === 10 ? 'Legendary' : `Level ${i}`;
+                const levelIcon = i === 5 ? '⭐' : i === 10 ? '👑' : '⭐';
+                allAchievements.push({ 
+                    id: `level-${i}`, 
+                    name: levelName, 
+                    description: `Reach Level ${i}`, 
+                    icon: levelIcon 
+                });
+            }
+            
+            let html = '<h2>🏆 Achievements</h2>';
+            html += '<p style="font-size: 12px; color: #666; margin: 10px 0;">You have earned ' + userAchievements.length + ' achievements</p>';
+            html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">';
+            
+            allAchievements.forEach(achievement => {
+                const earned = userAchievements.includes(achievement.id);
+                html += `
+                    <div style="padding: 12px; border-radius: 8px; background: ${earned ? '#f0f9f8' : '#f5f5f5'}; border: 2px solid ${earned ? '#1abc9c' : '#ddd'}; text-align: center; opacity: ${earned ? '1' : '0.6'};">
+                        <div style="font-size: 24px; margin-bottom: 5px;">${achievement.icon}</div>
+                        <strong style="font-size: 12px; display: block; color: #1abc9c;">${achievement.name}</strong>
+                        <small style="color: #666; display: block; margin-top: 5px;">${achievement.description}</small>
+                        ${earned ? '<small style="color: #1abc9c; display: block; margin-top: 5px;">✓ Earned</small>' : '<small style="color: #999;">Locked</small>'}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            // Show in modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                modal.innerHTML = html + '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
+                modal.style.display = 'block';
+            }
+        }
+
+        // XP and Leveling System
+        const levelThresholds = [
+            0,    // Level 1
+            200,  // Level 2
+            500,  // Level 3
+            900,  // Level 4
+            1400, // Level 5
+            2000, // Level 6
+            2700, // Level 7
+            3500, // Level 8
+            4400, // Level 9
+            5400  // Level 10
+        ];
+
+        function initUserLevel() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return;
+            
+            const userData = JSON.parse(user);
+            const userLevelKey = `user-level-${userData.email}`;
+            const userXPKey = `user-xp-${userData.email}`;
+            
+            if (!localStorage.getItem(userLevelKey)) {
+                localStorage.setItem(userLevelKey, '1');
+                localStorage.setItem(userXPKey, '0');
+            }
+            
+            updateLevelDisplay();
+        }
+
+        function addXP(amount) {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return;
+            
+            const userData = JSON.parse(user);
+            const userXPKey = `user-xp-${userData.email}`;
+            const userLevelKey = `user-level-${userData.email}`;
+            
+            let currentXP = parseInt(localStorage.getItem(userXPKey)) || 0;
+            let currentLevel = parseInt(localStorage.getItem(userLevelKey)) || 1;
+            
+            currentXP += amount;
+            
+            // Check for level ups
+            while (currentLevel < levelThresholds.length && currentXP >= levelThresholds[currentLevel]) {
+                currentLevel++;
+                showLevelUpNotification(currentLevel);
+                addLevelAchievement(currentLevel);
+            }
+            
+            localStorage.setItem(userXPKey, currentXP);
+            localStorage.setItem(userLevelKey, currentLevel);
+            
+            updateLevelDisplay();
+            checkAchievements();
+        }
+
+        function calculateQuizXP(score) {
+            let xp = 100; // Base XP
+            
+            if (score >= 50) {
+                // Bonus XP: 20 XP per 10% above 50%
+                const bonusPercent = Math.floor((score - 50) / 10);
+                xp += bonusPercent * 20;
+            }
+            
+            return Math.min(xp, 200); // Max 200 XP per quiz
+        }
+
+        function updateLevelDisplay() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return;
+            
+            const userData = JSON.parse(user);
+            const userLevelKey = `user-level-${userData.email}`;
+            const userXPKey = `user-xp-${userData.email}`;
+            
+            const currentLevel = parseInt(localStorage.getItem(userLevelKey)) || 1;
+            const currentXP = parseInt(localStorage.getItem(userXPKey)) || 0;
+            
+            const levelNumber = document.getElementById('level-number');
+            const xpBar = document.getElementById('xp-fill');
+            const xpText = document.getElementById('xp-text');
+            
+            if (currentLevel >= levelThresholds.length) {
+                // Max level reached
+                if (levelNumber) levelNumber.textContent = `Level ${currentLevel} (MAX)`;
+                if (xpBar) xpBar.style.width = '100%';
+                if (xpText) xpText.textContent = `${currentXP} XP (Max Level)`;
+                return;
+            }
+            
+            const currentLevelXP = levelThresholds[currentLevel - 1];
+            const nextLevelXP = levelThresholds[currentLevel];
+            const xpInCurrentLevel = currentXP - currentLevelXP;
+            const xpNeededForLevel = nextLevelXP - currentLevelXP;
+            const progressPercent = (xpInCurrentLevel / xpNeededForLevel) * 100;
+            
+            if (levelNumber) levelNumber.textContent = `Level ${currentLevel}`;
+            if (xpBar) xpBar.style.width = Math.min(progressPercent, 100) + '%';
+            if (xpText) xpText.textContent = `${xpInCurrentLevel} / ${xpNeededForLevel} XP`;
+        }
+
+        function showLevelUpNotification(level) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+                color: white;
+                padding: 30px 50px;
+                border-radius: 15px;
+                font-size: 32px;
+                font-weight: bold;
+                z-index: 3000;
+                text-align: center;
+                box-shadow: 0 10px 40px rgba(255, 140, 0, 0.4);
+                animation: levelUpPop 0.6s ease-out;
+            `;
+            
+            notification.innerHTML = `<div>⭐ LEVEL UP! ⭐</div><div style="font-size: 48px; margin-top: 10px;">Level ${level}</div>`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.4s ease-out';
+                setTimeout(() => notification.remove(), 400);
+            }, 2000);
+        }
+
+        function addLevelAchievement(level) {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return;
+            
+            const userData = JSON.parse(user);
+            const achievementsKey = `achievements-${userData.email}`;
+            let userAchievements = JSON.parse(localStorage.getItem(achievementsKey)) || [];
+            
+            const levelAchievementId = `level-${level}`;
+            if (!userAchievements.includes(levelAchievementId)) {
+                userAchievements.push(levelAchievementId);
+                localStorage.setItem(achievementsKey, JSON.stringify(userAchievements));
+            }
+        }
+
+        // Add hovereeffects to nodes
+        function addNodeHoverEffects() {
+            if (!window.network) return;
+            
+            window.network.on('hoverNode', function(event) {
+                const nodeId = event.node;
+                // Vis.js provides built-in hover effects via the color.hover property
+                // Additional glow effect can be achieved through the hover action
+            });
+            
+            window.network.on('blurNode', function(event) {
+                // Reset when mouse leaves node
+            });
         }
 
         // Close menu when clicking outside
@@ -712,42 +1491,73 @@
             }
         });
 
-        // Try to restore saved state first
-        const savedState = restoreRoadmapState();
-        
-        if (savedState && savedState.nodes && savedState.nodes.length > 0) {
-            // Restore from saved state
-            createNetwork(savedState.nodes, savedState.edges);
+        // Initialize roadmap when page is fully loaded
+        // Initialize roadmap immediately
+        function initializeRoadmap() {
+            try {
+                console.log('Initializing roadmap at', new Date().toLocaleTimeString());
+                console.log('Input:', input);
+                console.log('Container exists:', !!document.getElementById('roadmap'));
+                
+                // Try to restore saved state first
+                const savedState = restoreRoadmapState();
+                
+                if (savedState && savedState.nodes && savedState.nodes.length > 0) {
+                    console.log('Creating network from saved state with', savedState.nodes.length, 'nodes');
+                    createNetwork(savedState.nodes, savedState.edges);
+                } else if (input && input.trim()) {
+                    // Create from URL input if no saved state exists
+                    const moduleNames = input.split(',').map(name => name.trim()).filter(name => name);
             
-            // Restore viewport position after network is created
-            setTimeout(() => {
-                if (window.network && savedState.viewportState) {
-                    window.network.moveTo({
-                        scale: savedState.viewportState.scale,
-                        position: savedState.viewportState.position
-                    });
+                    if (moduleNames.length > 0) {
+                        console.log('Creating network from input with', moduleNames.length, 'modules');
+                        const nodesData = moduleNames.map((name, index) => ({ 
+                            id: index + 1, 
+                            label: name
+                        }));
+
+                        const edgesData = [];
+                        for (let i = 0; i < nodesData.length - 1; i++) {
+                            edgesData.push({ 
+                                from: nodesData[i].id, 
+                                to: nodesData[i+1].id
+                            });
+                        }
+
+                        createNetwork(nodesData, edgesData);
+                    } else {
+                        console.log('No modules in input, using sample data');
+                        createNetwork(sampleNodes, sampleEdges);
+                    }
+                } else {
+                    console.log('No input and no saved state, using sample data');
+                    createNetwork(sampleNodes, sampleEdges);
                 }
-            }, 200);
-        } else if (input) {
-            // Create from input if no saved state exists
-            const moduleNames = input.split(',').map(name => name.trim()).filter(name => name);
-    
-            // Create Nodes
-            const nodesData = moduleNames.map((name, index) => ({ 
-                id: index + 1, 
-                label: name
-            }));
-
-            // Create edges
-            const edgesData = [];
-            for (let i = 0; i < nodesData.length - 1; i++) {
-                edgesData.push({ 
-                    from: nodesData[i].id, 
-                    to: nodesData[i+1].id
-                });
+            } catch (error) {
+                console.error('Error initializing roadmap:', error);
+                console.error('Stack:', error.stack);
+                try {
+                    console.log('Attempting fallback creation...');
+                    createNetwork(sampleNodes, sampleEdges);
+                } catch (e2) {
+                    console.error('Failed to create network:', e2);
+                    // Last resort - create the container manually
+                    const container = document.getElementById('roadmap');
+                    if (container) {
+                        console.log('Creating fallback visualization directly...');
+                        createFallbackVisualization(container, sampleNodes, sampleEdges);
+                    }
+                }
             }
-
-            createNetwork(nodesData, edgesData);
+        }
+        
+        // Initialize on DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(initializeRoadmap, 50);
+            });
+        } else {
+            setTimeout(initializeRoadmap, 50);
         }
     
     // Save roadmap state before leaving page
