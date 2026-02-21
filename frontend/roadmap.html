@@ -201,9 +201,58 @@
             position: relative;
             z-index: 1;
         }
+        /* Paper plane animation */
+        .paper-plane {
+            position: fixed;
+            top: -100px;
+            right: -100px;
+            font-size: 50px;
+            z-index: 10;
+            opacity: 0;
+            transform: rotate(-45deg);
+            animation: flyAcross 8s ease-in-out;
+            pointer-events: none;
+        }
+        @keyframes flyAcross {
+            0% {
+                top: -100px;
+                right: -100px;
+                opacity: 0;
+                transform: rotate(-45deg) scale(0.5);
+            }
+            10% {
+                opacity: 1;
+                transform: rotate(-45deg) scale(1);
+            }
+            90% {
+                opacity: 1;
+                transform: rotate(-45deg) scale(1);
+            }
+            100% {
+                top: calc(100% + 100px);
+                right: calc(100% + 100px);
+                opacity: 0;
+                transform: rotate(-45deg) scale(0.5);
+            }
+        }
+        /* Canvas node fade-in animation */
+        #roadmap {
+            animation: containerFadeIn 0.5s ease-in;
+        }
+        @keyframes containerFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Paper plane that flies across occasionally -->
+    <div class="paper-plane" id="paper-plane">✈️</div>
+    
     <!-- Menu Button -->
     <button id="menu-btn" onclick="toggleMenu()">
         <span></span>
@@ -405,10 +454,33 @@
             const estimatedHeight = Math.max(800, (nodeCount * levelSeparation) + 400);
             container.style.height = estimatedHeight + 'px';
 
+            // Domino effect: Show nodes one by one
+            // Initially hide all nodes
+            nodesData.forEach((node, index) => {
+                setTimeout(() => {
+                    data.nodes.update({
+                        id: node.id,
+                        opacity: 1,
+                        scaling: {
+                            min: 10,
+                            max: 30
+                        }
+                    });
+                }, index * 300); // 300ms delay between each node
+            });
+
+            // Show all edges after all nodes are visible
+            setTimeout(() => {
+                data.edges.update(edgesData.map(edge => ({
+                    ...edge,
+                    opacity: 1
+                })));
+            }, nodesData.length * 300);
+
             // Show all nodes and position properly
             network.once('stabilized', function() {
                 // Fit all nodes in view
-                network.fit({ animation: false });
+                network.fit({ animation: true, animationOptions: { duration: 800, easingFunction: 'easeInOutQuad' } });
                 // Scroll page to top
                 window.scrollTo(0, 0);
             });
@@ -448,23 +520,41 @@
         if (input) {
             const moduleNames = input.split(',').map(name => name.trim()).filter(name => name);
     
-            // Create Nodes
+            // Create Nodes (initially hidden for domino effect)
             const nodesData = moduleNames.map((name, index) => ({ 
                 id: index + 1, 
-                label: name 
+                label: name,
+                opacity: 0  // Start invisible
             }));
 
-            // Create a Chain (1 -> 2 -> 3 -> 4...)
+            // Create edges (initially hidden)
             const edgesData = [];
             for (let i = 0; i < nodesData.length - 1; i++) {
                 edgesData.push({ 
                     from: nodesData[i].id, 
-                    to: nodesData[i+1].id 
+                    to: nodesData[i+1].id,
+                    opacity: 0  // Start invisible
                 });
             }
 
         createNetwork(nodesData, edgesData);
     }
+    
+    // Paper plane animation - flies across every 35-50 seconds
+    function triggerPaperPlane() {
+        const plane = document.getElementById('paper-plane');
+        plane.style.animation = 'none';
+        // Force reflow to restart animation
+        void plane.offsetWidth;
+        plane.style.animation = 'flyAcross 8s ease-in-out';
+        
+        // Schedule next plane (random interval between 35-50 seconds)
+        const nextInterval = 35000 + Math.random() * 15000;
+        setTimeout(triggerPaperPlane, nextInterval);
+    }
+    
+    // Start paper plane animation after page loads
+    setTimeout(triggerPaperPlane, 10000); // First plane after 10 seconds
     </script>
 </body>
 </html>
