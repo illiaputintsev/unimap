@@ -57,18 +57,19 @@
             margin-bottom: 30px;
         }
         .profile-picture {
-            width: 120px;
-            height: 120px;
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
             background-color: #f0f0f0;
             border: 4px solid #1abc9c;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 60px;
+            font-size: 80px;
             margin: 0 auto 15px;
             overflow: hidden;
             object-fit: cover;
+            transition: all 0.3s ease;
         }
         .picture-upload {
             display: none;
@@ -517,6 +518,19 @@
         
         // Handle frame selection
         document.querySelectorAll('input[name="frame"]').forEach(radio => {
+            // Hover preview
+            const label = radio.parentElement;
+            label.addEventListener('mouseenter', function() {
+                // Preview frame on hover
+                applyFrameToPreview(radio.value);
+            });
+            label.addEventListener('mouseleave', function() {
+                // Revert to selected frame on hover out
+                const selectedFrame = document.querySelector('input[name="frame"]:checked')?.value || 'none';
+                applyFrameToPreview(selectedFrame);
+            });
+            
+            // Click to select
             radio.addEventListener('change', function() {
                 if (!document.getElementById('frame-' + this.value + '-label').classList.contains('locked')) {
                     saveSelectedFrame();
