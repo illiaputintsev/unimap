@@ -38,6 +38,36 @@
             opacity: 0.9;
             font-size: 14px;
         }
+        .menu-button {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border: 2px solid #dc3545;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: background-color 0.3s;
+        }
+        .menu-button:hover {
+            background-color: #f0f0f0;
+        }
+        .menu-button span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: #dc3545;
+            margin: 3px 0;
+            border-radius: 2px;
+        }
         .back-button {
             position: fixed;
             top: 15px;
@@ -335,10 +365,52 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #dc3545;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .confetti::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: inherit;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotateZ(360deg);
+                opacity: 0;
+            }
+        }
+        @keyframes confetti-bounce {
+            0% {
+                transform: translateY(0) rotateZ(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotateZ(720deg);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
-    <button class="back-button" onclick="goBack()">← Back to Roadmap</button>
+    <div id="confetti-container"></div>
+    <button class="back-button" id="top-back-button" onclick="goBack()">← Back</button>
+    <button class="menu-button" id="menu-button" onclick="toggleQuizMenu()" style="display: none;">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    
+    <div id="quiz-menu-dropdown" style="display: none; position: fixed; top: 65px; left: 15px; background-color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 99; min-width: 150px;">
+        <a href="index.html" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f5f5f5'" onmouseout="this.style.backgroundColor='white'">Home</a>
+        <a href="#" onclick="goBack()" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f5f5f5'" onmouseout="this.style.backgroundColor='white'">Back to Roadmap</a>
+    </div>
 
     <div class="quiz-container">
         <div class="quiz-header">
@@ -712,10 +784,19 @@
             document.getElementById('questions-container').style.display = 'none';
             document.getElementById('quiz-footer').style.display = 'none';
             
+            // Switch from back button to menu button
+            document.getElementById('top-back-button').style.display = 'none';
+            document.getElementById('menu-button').style.display = 'flex';
+            
             const resultsDiv = document.getElementById('results-container');
             resultsDiv.classList.add('show');
             
             document.getElementById('score-circle').textContent = score + '%';
+            
+            // Trigger confetti if score is 65% or more
+            if (score >= 65) {
+                createConfetti();
+            }
             
             // Determine feedback based on quiz type
             const isComprehensive = moduleId === "1";
@@ -779,6 +860,44 @@
                 }
             }
         }
+
+        function createConfetti() {
+            const container = document.getElementById('confetti-container');
+            const colors = ['#dc3545', '#28a745', '#ffc107', '#17a2b8', '#6f42c1', '#e83e8c', '#fd7e14'];
+            const confettiCount = 50;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = (Math.random() * 1.5 + 2.5) + 's';
+                confetti.style.animationDelay = Math.random() * 0.2 + 's';
+                confetti.style.animation = `confetti-bounce ${confetti.style.animationDuration} ease-in forwards`;
+                confetti.style.animationDelay = confetti.style.animationDelay;
+                
+                container.appendChild(confetti);
+            }
+            
+            // Remove confetti elements after animation completes
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        function toggleQuizMenu() {
+            const menu = document.getElementById('quiz-menu-dropdown');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close menu when clicking outside
+        window.addEventListener('click', function(e) {
+            const menu = document.getElementById('quiz-menu-dropdown');
+            const menuBtn = document.getElementById('menu-button');
+            if (!menuBtn.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
 
         function goBack() {
             window.history.back();
