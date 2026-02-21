@@ -239,39 +239,52 @@
         .walking-student {
             position: fixed;
             bottom: 30px;
-            left: -100px;
             font-size: 60px;
             z-index: 1;
-            animation: walkAcross 20s linear infinite;
             filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
         }
-        @keyframes walkAcross {
-            0% {
-                left: -100px;
-                transform: scaleX(1);
-            }
-            48% {
-                left: calc(100% - 60px);
-                transform: scaleX(1);
-            }
-            50% {
-                left: calc(100% - 60px);
-                transform: scaleX(-1);
-            }
-            98% {
-                left: -100px;
-                transform: scaleX(-1);
-            }
-            100% {
-                left: -100px;
-                transform: scaleX(1);
-            }
+        .student1 {
+            left: -100px;
+            animation: walkRight 15s linear infinite;
         }
-        /* Bobbing animation for walking effect */
-        .walking-student::before {
-            content: '🎓🚶‍♂️';
+        .student1::before {
+            content: '🎓🚶🏽‍♂️'; /* Medium skin tone male */
             display: block;
             animation: bob 0.5s ease-in-out infinite;
+        }
+        .student2 {
+            right: -100px;
+            animation: walkLeft 18s linear infinite 5s; /* Delayed start */
+        }
+        .student2::before {
+            content: '🎓🚶🏾‍♀️'; /* Medium-dark skin tone female */
+            display: block;
+            animation: bob 0.5s ease-in-out infinite;
+        }
+        .student3 {
+            left: -100px;
+            animation: walkRight 20s linear infinite 10s; /* Delayed start */
+        }
+        .student3::before {
+            content: '🎓🚶🏻'; /* Light skin tone */
+            display: block;
+            animation: bob 0.5s ease-in-out infinite;
+        }
+        @keyframes walkRight {
+            0% {
+                left: -100px;
+            }
+            100% {
+                left: calc(100% + 100px);
+            }
+        }
+        @keyframes walkLeft {
+            0% {
+                right: -100px;
+            }
+            100% {
+                right: calc(100% + 100px);
+            }
         }
         @keyframes bob {
             0%, 100% {
@@ -304,7 +317,9 @@
     <div class="scenery">
         🏫 🌳 🏛️ 🌲 🏢 🌳
     </div>
-    <div class="walking-student"></div>
+    <div class="walking-student student1"></div>
+    <div class="walking-student student2"></div>
+    <div class="walking-student student3"></div>
     
     <!-- Menu Button -->
     <button id="menu-btn" onclick="toggleMenu()">
