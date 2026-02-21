@@ -1,0 +1,27 @@
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# Node / frontend
+node_modules/
+dist/
+build/
+.next/
+.vite/
+
+# Python / backend
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+*.sqlite3
+
+# Logs
+*.log
