@@ -35,7 +35,7 @@
         }
         h1 {
             text-align: center;
-            color: #d63031;
+            color: #1abc9c;
             margin: 20px 0 10px;
             font-size: 36px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
@@ -69,7 +69,7 @@
             transform: translateY(-50%);
             background-color: white;
             padding: 30px;
-            border: 3px solid #d63031;
+            border: 3px solid #1abc9c;
             border-radius: 15px;
             box-shadow: 0 15px 50px rgba(220, 53, 69, 0.3);
             z-index: 2000;
@@ -80,8 +80,8 @@
         }
         .modal h2 {
             margin-top: 0;
-            color: #d63031;
-            border-bottom: 2px solid #d63031;
+            color: #1abc9c;
+            border-bottom: 2px solid #1abc9c;
             padding-bottom: 10px;
         }
         .modal-close {
@@ -90,12 +90,12 @@
             right: 20px;
             cursor: pointer;
             font-size: 28px;
-            color: #d63031;
+            color: #1abc9c;
             font-weight: bold;
             transition: color 0.3s;
         }
         .modal-close:hover {
-            color: #b81d13;
+            color: #16a085;
         }
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -123,7 +123,7 @@
             left: 15px;
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, #d63031 0%, #b81d13 100%);
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
             border: none;
             border-radius: 10px;
             cursor: pointer;
@@ -137,7 +137,7 @@
             transition: all 0.3s;
         }
         #menu-btn:hover {
-            background: linear-gradient(135deg, #b81d13 0%, #a01810 100%);
+            background: linear-gradient(135deg, #16a085 0%, #a01810 100%);
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
         }
@@ -174,7 +174,7 @@
         }
         #menu-dropdown a:hover {
             background-color: #fff5f5;
-            color: #d63031;
+            color: #1abc9c;
         }
         .menu-section {
             background-color: #f9f9f9;
@@ -205,7 +205,7 @@
         #module-input-container button {
             width: 100%;
             padding: 8px;
-            background-color: #d63031;
+            background-color: #1abc9c;
             color: white;
             border: none;
             border-radius: 4px;
@@ -214,7 +214,7 @@
             font-weight: 600;
         }
         #module-input-container button:hover {
-            background-color: #b81d13;
+            background-color: #16a085;
         }
         /* User info */
         #user-info {
@@ -226,7 +226,7 @@
             border-radius: 20px;
             box-shadow: 0 3px 10px rgba(220, 53, 69, 0.2);
             font-size: 13px;
-            color: #d63031;
+            color: #1abc9c;
             z-index: 999;
             border: 2px solid #ffc7ce;
             font-weight: 600;
@@ -322,7 +322,7 @@
     <!-- User Info -->
     <div id="user-info">
         <span id="username">Guest</span>
-        <a href="profile.html" style="margin-left: 15px; padding: 8px 15px; background-color: #d63031; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.backgroundColor='#b81d13'" onmouseout="this.style.backgroundColor='#d63031'">⚙️ Profile</a>
+        <a href="profile.html" style="margin-left: 15px; padding: 8px 15px; background-color: #1abc9c; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.backgroundColor='#16a085'" onmouseout="this.style.backgroundColor='#1abc9c'">⚙️ Profile</a>
     </div>
 
     <h1>Student Roadmap</h1>
@@ -335,7 +335,7 @@
         <span class="modal-close" onclick="closeModal()">&times;</span>
         <h2 id="modal-title"></h2>
         <p id="modal-content"></p>
-        <button id="quiz-button" style="margin-top: 15px; padding: 10px 20px; background-color: #d63031; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="openQuiz()">📝 Take Quiz</button>
+        <button id="quiz-button" style="margin-top: 15px; padding: 10px 20px; background-color: #1abc9c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="openQuiz()">📝 Take Quiz</button>
         <p id="quiz-score" style="margin-top: 10px; font-size: 14px; color: #666; display: none;"></p>
     </div>
 
@@ -441,7 +441,7 @@
                 html += '<div style="display: flex; flex-direction: column; gap: 10px;">';
                 userRoadmaps.forEach((roadmap, index) => {
                     html += `
-                        <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #d63031;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapSnapshot(${index})">
+                        <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #1abc9c;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapSnapshot(${index})">
                             <strong>${roadmap.name || 'Unnamed Roadmap'}</strong><br>
                             <small style="color: #999;">${roadmap.createdAt || 'No date'}</small>
                         </div>
@@ -453,7 +453,7 @@
             // Show in modal
             const modal = document.querySelector('.modal');
             if (modal) {
-                modal.innerHTML = html + '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #d63031; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
+                modal.innerHTML = html + '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
                 modal.style.display = 'block';
             }
         }
@@ -526,15 +526,15 @@
                 },
                 nodes: {
                     color: {
-                        background: '#d63031',
-                        border: '#d63031',
+                        background: '#1abc9c',
+                        border: '#1abc9c',
                         highlight: {
-                            background: '#b81d13',
+                            background: '#16a085',
                             border: '#a01611'
                         },
                         hover: {
                             background: '#e85d5e',
-                            border: '#d63031'
+                            border: '#1abc9c'
                         }
                     },
                     shape: 'box',
@@ -564,7 +564,7 @@
                     arrows: { to: { enabled: false } },
                     color: {
                         color: '#6c757d',
-                        highlight: '#b81d13',
+                        highlight: '#16a085',
                         hover: '#e85d5e'
                     },
                     width: 3,
