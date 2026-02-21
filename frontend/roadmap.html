@@ -1501,14 +1501,9 @@
                 console.log('Input:', input);
                 console.log('Container exists:', !!document.getElementById('roadmap'));
                 
-                // Try to restore saved state first
-                const savedState = restoreRoadmapState();
-                
-                if (savedState && savedState.nodes && savedState.nodes.length > 0) {
-                    console.log('Creating network from saved state with', savedState.nodes.length, 'nodes');
-                    createNetwork(savedState.nodes, savedState.edges);
-                } else if (input && input.trim()) {
-                    // Create from URL input if no saved state exists
+                // Prioritize URL input over saved state
+                if (input && input.trim()) {
+                    // Create from URL input (new roadmap generation)
                     const moduleNames = input.split(',').map(name => name.trim()).filter(name => name);
             
                     if (moduleNames.length > 0) {
@@ -1532,8 +1527,15 @@
                         createNetwork(sampleNodes, sampleEdges);
                     }
                 } else {
-                    console.log('No input and no saved state, using sample data');
-                    createNetwork(sampleNodes, sampleEdges);
+                    // No URL input - try to restore saved state
+                    const savedState = restoreRoadmapState();
+                    if (savedState && savedState.nodes && savedState.nodes.length > 0) {
+                        console.log('Creating network from saved state with', savedState.nodes.length, 'nodes');
+                        createNetwork(savedState.nodes, savedState.edges);
+                    } else {
+                        console.log('No input and no saved state, using sample data');
+                        createNetwork(sampleNodes, sampleEdges);
+                    }
                 }
             } catch (error) {
                 console.error('Error initializing roadmap:', error);
