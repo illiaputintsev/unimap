@@ -454,27 +454,30 @@
             const estimatedHeight = Math.max(800, (nodeCount * levelSeparation) + 400);
             container.style.height = estimatedHeight + 'px';
 
-            // Domino effect: Show nodes one by one
-            // Initially hide all nodes
+            // Domino effect: Show nodes one by one using hidden property
+            // Start with all nodes hidden
+            const allNodeIds = nodesData.map(n => n.id);
+            allNodeIds.forEach(id => {
+                data.nodes.update({ id: id, hidden: true });
+            });
+            
+            // Also hide all edges initially
+            edgesData.forEach(edge => {
+                data.edges.update({ ...edge, hidden: true });
+            });
+
+            // Reveal nodes one by one
             nodesData.forEach((node, index) => {
                 setTimeout(() => {
-                    data.nodes.update({
-                        id: node.id,
-                        opacity: 1,
-                        scaling: {
-                            min: 10,
-                            max: 30
-                        }
-                    });
+                    data.nodes.update({ id: node.id, hidden: false });
                 }, index * 300); // 300ms delay between each node
             });
 
             // Show all edges after all nodes are visible
             setTimeout(() => {
-                data.edges.update(edgesData.map(edge => ({
-                    ...edge,
-                    opacity: 1
-                })));
+                edgesData.forEach(edge => {
+                    data.edges.update({ ...edge, hidden: false });
+                });
             }, nodesData.length * 300);
 
             // Show all nodes and position properly
@@ -520,20 +523,18 @@
         if (input) {
             const moduleNames = input.split(',').map(name => name.trim()).filter(name => name);
     
-            // Create Nodes (initially hidden for domino effect)
+            // Create Nodes
             const nodesData = moduleNames.map((name, index) => ({ 
                 id: index + 1, 
-                label: name,
-                opacity: 0  // Start invisible
+                label: name
             }));
 
-            // Create edges (initially hidden)
+            // Create edges
             const edgesData = [];
             for (let i = 0; i < nodesData.length - 1; i++) {
                 edgesData.push({ 
                     from: nodesData[i].id, 
-                    to: nodesData[i+1].id,
-                    opacity: 0  // Start invisible
+                    to: nodesData[i+1].id
                 });
             }
 
