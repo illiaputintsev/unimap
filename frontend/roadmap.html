@@ -759,17 +759,84 @@
             createNetwork(nodesData, edgesData);
         }
     
-    // Paper plane animation - flies across every 35-50 seconds
+    // Paper plane animation - flies across with random trajectory every 35-50 seconds
     function triggerPaperPlane() {
         const plane = document.getElementById('paper-plane');
-        plane.style.animation = 'none';
-        // Force reflow to restart animation
-        void plane.offsetWidth;
-        plane.style.animation = 'flyAcross 8s ease-in-out';
+        
+        // Random start position and trajectory
+        const trajectoryType = Math.floor(Math.random() * 4);
+        const startX = Math.random() * 100;
+        const startY = Math.random() * 60;
+        const midOffsetX = Math.random() * 200 - 100;
+        const midOffsetY = Math.random() * 200 - 100;
+        const duration = 6 + Math.random() * 4; // 6-10 seconds
+        
+        // Remove existing animation styles
+        plane.style.cssText = '';
+        
+        // Create dynamic keyframes based on trajectory
+        const keyframes = createDynamicKeyframes(startX, startY, midOffsetX, midOffsetY, duration);
+        
+        // Add/update style tag with new keyframes
+        let styleTag = document.getElementById('plane-animation-style');
+        if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = 'plane-animation-style';
+            document.head.appendChild(styleTag);
+        }
+        styleTag.textContent = keyframes;
+        
+        // Apply animation
+        plane.style.animation = `dynamicFly ${duration}s ease-in-out 1`;
         
         // Schedule next plane (random interval between 35-50 seconds)
         const nextInterval = 35000 + Math.random() * 15000;
         setTimeout(triggerPaperPlane, nextInterval);
+    }
+    
+    // Create dynamic keyframes with rotation based on direction
+    function createDynamicKeyframes(startX, startY, midOffsetX, midOffsetY, duration) {
+        const endX = 100 + 50;
+        const endY = 100 + 50;
+        
+        // Calculate angles for smooth rotation following the path
+        const angle1 = Math.atan2(startY + midOffsetY - startY, startX + midOffsetX - startX) * (180 / Math.PI) - 45;
+        const angle2 = Math.atan2(endY - (startY + midOffsetY), endX - (startX + midOffsetX)) * (180 / Math.PI) - 45;
+        
+        return `
+            @keyframes dynamicFly {
+                0% {
+                    top: ${startY}px;
+                    right: ${startX}%;
+                    opacity: 0;
+                    transform: rotate(${angle1}deg) scale(0.5);
+                }
+                5% {
+                    top: ${startY}px;
+                    right: ${startX}%;
+                    opacity: 1;
+                    transform: rotate(${angle1}deg) scale(1);
+                }
+                50% {
+                    top: ${startY + midOffsetY}px;
+                    right: ${startX - midOffsetX / 2}%;
+                    opacity: 1;
+                    transform: rotate(${(angle1 + angle2) / 2}deg) scale(1);
+                }
+                95% {
+                    top: ${endY}px;
+                    right: ${endX}%;
+                    opacity: 1;
+                    transform: rotate(${angle2}deg) scale(1);
+                }
+                100% {
+                    top: calc(100% + 100px);
+                    right: calc(100% + 100px);
+                    opacity: 0;
+                    transform: rotate(${angle2}deg) scale(0.5);
+                }
+            }
+        `;
     }
     
     // Start paper plane animation after page loads
