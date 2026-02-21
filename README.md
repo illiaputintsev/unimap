@@ -1,1 +1,1 @@
-# studentroadmap for the 2026 hack london hackathon
+# studentroadmap for HackLondon2026
