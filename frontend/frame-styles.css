@@ -2,25 +2,25 @@
 
 /* No Frame */
 .profile-pic-none {
-    border: 2px solid #1abc9c;
-    box-shadow: none;
+    border: 3px solid #1abc9c;
+    box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
 }
 
 /* Basic Frame - Gray */
 .profile-pic-basic {
-    border: 4px solid #a9a9a9;
-    box-shadow: 0 0 0 2px white, 0 0 0 6px #a9a9a9;
+    border: 5px solid #a9a9a9;
+    box-shadow: 0 0 0 2px white, 0 0 0 7px #a9a9a9;
 }
 
 /* Intermediary Frame - Orange Gold */
 .profile-pic-intermediary {
-    border: 4px solid #ffa500;
-    box-shadow: 0 0 0 2px white, 0 0 15px rgba(255, 140, 0, 0.6);
+    border: 5px solid #ff8c00;
+    box-shadow: 0 0 0 2px white, 0 0 0 7px #ff8c00, 0 0 20px rgba(255, 140, 0, 0.5);
 }
 
 /* Master Frame - Gold */
 .profile-pic-master {
-    border: 4px solid #ffd700;
-    box-shadow: 0 0 0 2px white, 0 0 20px rgba(255, 215, 0, 0.8);
+    border: 5px solid #ffd700;
+    box-shadow: 0 0 0 2px white, 0 0 0 7px #ffd700, 0 0 25px rgba(255, 215, 0, 0.6);
 }
 
