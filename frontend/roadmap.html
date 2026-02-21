@@ -65,18 +65,18 @@
             display: none;
             position: fixed;
             top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            right: 20px;
+            transform: translateY(-50%);
             background-color: white;
             padding: 30px;
             border: 3px solid #dc3545;
             border-radius: 15px;
             box-shadow: 0 15px 50px rgba(220, 53, 69, 0.3);
             z-index: 2000;
-            max-width: 500px;
-            max-height: 80vh;
+            max-width: 400px;
+            max-height: 85vh;
             overflow: auto;
-            width: 90%;
+            width: 350px;
         }
         .modal h2 {
             margin-top: 0;
@@ -100,10 +100,10 @@
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .modal {
-                top: 10%;
-                left: 5%;
-                transform: none;
-                width: 90vw;
+                top: 50%;
+                right: 10px;
+                transform: translateY(-50%);
+                width: calc(100vw - 20px);
                 max-width: none;
                 max-height: 70vh;
             }
