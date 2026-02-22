@@ -800,6 +800,168 @@
         let isDragging = false;
         let offsetX, offsetY;
 
+        /**
+         * Topological sort of nodes based on edges (prerequisites come first).
+         * Uses Kahn's algorithm with fallback to order property.
+         * @param {Array} nodes - Array of node objects
+         * @param {Array} edges - Array of edge objects with from/to properties
+         * @returns {Array} Sorted array of nodes
+         */
+        function topologicalSort(nodes, edges) {
+            const nodeMap = new Map(nodes.map(n => [n.id, n]));
+            const inDegree = new Map();
+            const adjList = new Map();
+            
+            // Initialize
+            nodes.forEach(node => {
+                inDegree.set(node.id, 0);
+                adjList.set(node.id, []);
+            });
+            
+            // Build adjacency list and in-degree count
+            edges.forEach(edge => {
+                if (adjList.has(edge.from) && inDegree.has(edge.to)) {
+                    adjList.get(edge.from).push(edge.to);
+                    inDegree.set(edge.to, inDegree.get(edge.to) + 1);
+                }
+            });
+            
+            // Start with nodes that have no prerequisites (in-degree 0)
+            const queue = [];
+            nodes.forEach(node => {
+                if (inDegree.get(node.id) === 0) {
+                    queue.push(node);
+                }
+            });
+            
+            // Sort nodes with in-degree 0 by their order property
+            queue.sort((a, b) => (a.order || 0) - (b.order || 0));
+            
+            const result = [];
+            
+            while (queue.length > 0) {
+                const current = queue.shift();
+                result.push(current);
+                
+                // Get neighbors and sort by order
+                const neighbors = adjList.get(current.id) || [];
+                neighbors.forEach(neighborId => {
+                    inDegree.set(neighborId, inDegree.get(neighborId) - 1);
+                    if (inDegree.get(neighborId) === 0) {
+                        const neighborNode = nodeMap.get(neighborId);
+                        if (neighborNode) {
+                            // Insert in order-sorted position
+                            let inserted = false;
+                            for (let i = 0; i < queue.length; i++) {
+                                if ((neighborNode.order || 0) < (queue[i].order || 0)) {
+                                    queue.splice(i, 0, neighborNode);
+                                    inserted = true;
+                                    break;
+                                }
+                            }
+                            if (!inserted) queue.push(neighborNode);
+                        }
+                    }
+                });
+            }
+            
+            // Handle any remaining nodes (cycles or disconnected)
+            nodes.forEach(node => {
+                if (!result.find(n => n.id === node.id)) {
+                    result.push(node);
+                }
+            });
+            
+            return result;
+        }
+
+        /**
+         * Infer module years from prerequisite edges using topological ordering.
+         * Modules with no prerequisites start at Year 1.
+         * A module's year = max(year of all prerequisites) + 1, capped at 3.
+         * @param {Array} modules - Array of module objects with id property
+         * @param {Array} edges - Array of edge objects with source/from and target/to properties
+         * @returns {Map} Map of moduleId -> inferred year (1, 2, or 3)
+         */
+        function inferYearsFromEdges(modules, edges) {
+            const yearMap = new Map();
+            const moduleIds = new Set(modules.map(m => String(m.id)));
+            
+            // Build adjacency list (incoming edges for each node)
+            const incomingEdges = new Map();
+            const outgoingEdges = new Map();
+            moduleIds.forEach(id => {
+                incomingEdges.set(id, []);
+                outgoingEdges.set(id, []);
+            });
+            
+            edges.forEach(edge => {
+                const from = String(edge.source || edge.from);
+                const to = String(edge.target || edge.to);
+                if (moduleIds.has(from) && moduleIds.has(to)) {
+                    incomingEdges.get(to).push(from);
+                    outgoingEdges.get(from).push(to);
+                }
+            });
+            
+            // Initialize all modules to year 0 (unassigned)
+            moduleIds.forEach(id => yearMap.set(id, 0));
+            
+            // Use BFS/topological approach: process nodes level by level
+            // Nodes with no incoming edges start at Year 1
+            const queue = [];
+            moduleIds.forEach(id => {
+                if (incomingEdges.get(id).length === 0) {
+                    yearMap.set(id, 1);
+                    queue.push(id);
+                }
+            });
+            
+            // Process queue: for each node, update its dependents
+            while (queue.length > 0) {
+                const currentId = queue.shift();
+                const currentYear = yearMap.get(currentId);
+                
+                outgoingEdges.get(currentId).forEach(dependentId => {
+                    // Dependent's year should be at least current + 1
+                    const newYear = Math.min(currentYear + 1, 3);
+                    if (newYear > yearMap.get(dependentId)) {
+                        yearMap.set(dependentId, newYear);
+                    }
+                    
+                    // Check if all prerequisites of dependent have been assigned
+                    const allPrereqsAssigned = incomingEdges.get(dependentId).every(prereq => yearMap.get(prereq) > 0);
+                    if (allPrereqsAssigned && !queue.includes(dependentId)) {
+                        // Recalculate year based on all prerequisites
+                        const maxPrereqYear = Math.max(...incomingEdges.get(dependentId).map(prereq => yearMap.get(prereq)));
+                        yearMap.set(dependentId, Math.min(maxPrereqYear + 1, 3));
+                        queue.push(dependentId);
+                    }
+                });
+            }
+            
+            // Handle any remaining unassigned nodes (cycles or disconnected)
+            moduleIds.forEach(id => {
+                if (yearMap.get(id) === 0) {
+                    // If has incoming edges, calculate from prerequisites; otherwise Year 1
+                    const prereqs = incomingEdges.get(id);
+                    if (prereqs.length > 0) {
+                        const assignedPrereqs = prereqs.filter(p => yearMap.get(p) > 0);
+                        if (assignedPrereqs.length > 0) {
+                            const maxYear = Math.max(...assignedPrereqs.map(p => yearMap.get(p)));
+                            yearMap.set(id, Math.min(maxYear + 1, 3));
+                        } else {
+                            yearMap.set(id, 1);
+                        }
+                    } else {
+                        yearMap.set(id, 1);
+                    }
+                }
+            });
+            
+            return yearMap;
+        }
+
         // Sample data for the roadmap (demonstrates year-based layout)
         const sampleNodes = [
             // Year 1 modules
@@ -840,10 +1002,22 @@
             const nodesData = [];
             const edgesData = [];
             
+            // First extract edges data for year inference
+            const rawEdges = [];
+            if (Array.isArray(roadmap.edges)) {
+                roadmap.edges.forEach(edge => {
+                    rawEdges.push({ source: String(edge.source), target: String(edge.target) });
+                });
+            }
+            
+            // Infer years from prerequisite relationships (edges)
+            const inferredYears = inferYearsFromEdges(modules, rawEdges);
+            
             // Determine year for each module based on:
             // 1. module.year property (if exists)
             // 2. module.level property (if exists)  
-            // 3. Inferred from order (divide modules into 3 years)
+            // 3. Inferred from prerequisite edges
+            // 4. Fallback: divide modules into 3 years by order
             const totalModules = modules.length;
             const modulesPerYear = Math.ceil(totalModules / 3);
             
@@ -851,14 +1025,17 @@
                 const moduleId = String(module.id);
                 modulesById.set(moduleId, { ...module, id: moduleId });
                 
-                // Determine year: use explicit year/level, or infer from order
+                // Determine year: use explicit year/level, infer from edges, or fallback to order
                 let year = 1;
                 if (module.year !== undefined) {
                     year = module.year;
                 } else if (module.level !== undefined) {
                     year = module.level;
+                } else if (inferredYears.has(moduleId) && inferredYears.get(moduleId) > 0) {
+                    // Use year inferred from prerequisite edges
+                    year = inferredYears.get(moduleId);
                 } else {
-                    // Infer year from order (distribute across 3 years)
+                    // Fallback: Infer year from order (distribute across 3 years)
                     year = Math.floor(index / modulesPerYear) + 1;
                     year = Math.min(year, 3); // Cap at year 3
                 }
@@ -1057,156 +1234,47 @@
             );
 
             // ══════════════════════════════════════════════════════════════════
-            // YEAR-BASED LAYOUT: Modules grouped by year in horizontal rows
-            // Row 1 = Year 1, Row 2 = Year 2, Row 3 = Year 3
-            // Modules connected based on relationship matrix (edges)
+            // FORCE-DIRECTED LAYOUT: Physics-based graph layout
+            // Nodes repel each other, edges pull linked nodes together
+            // Naturally clusters related topics and shows all connections
             // ══════════════════════════════════════════════════════════════════
             
-            const YEAR_V_SPACING = 250;   // vertical gap between year rows
-            const MODULE_H_SPACING = 280; // horizontal gap between modules in same year
-            const posMap = new Map();
-            nodesByLevel = new Map();
+            nodesByLevel = new Map(); // not used for force layout but kept for compat
             
-            // Group nodes by year
-            const nodesByYear = new Map();
-            normalizedNodes.forEach(node => {
-                const year = node.year || 1;
-                if (!nodesByYear.has(year)) {
-                    nodesByYear.set(year, []);
-                }
-                nodesByYear.get(year).push(node);
-            });
+            // Use ALL edges from the API — these are the real prerequisite relationships
+            const finalEdges = adjacencyEdges;
             
-            // Sort years and sort nodes within each year by order
-            const sortedYears = Array.from(nodesByYear.keys()).sort((a, b) => a - b);
-            sortedYears.forEach(year => {
-                const yearNodes = nodesByYear.get(year);
-                yearNodes.sort((a, b) => (a.order || 0) - (b.order || 0));
-            });
-            
-            // Calculate max width needed for year labels offset
-            let maxRowWidth = 0;
-            sortedYears.forEach(year => {
-                const numNodes = nodesByYear.get(year).length;
-                const rowWidth = (numNodes - 1) * MODULE_H_SPACING;
-                maxRowWidth = Math.max(maxRowWidth, rowWidth);
-            });
-            const YEAR_LABEL_OFFSET = -(maxRowWidth / 2) - 180; // Position labels to the left
-            
-            // Position nodes: each year is a horizontal row
-            sortedYears.forEach((year, yearIndex) => {
-                const yearNodes = nodesByYear.get(year);
-                const numNodes = yearNodes.length;
-                
-                // Center the row horizontally
-                const totalWidth = (numNodes - 1) * MODULE_H_SPACING;
-                const startX = -totalWidth / 2;
-                const y = yearIndex * YEAR_V_SPACING;
-                
-                yearNodes.forEach((node, nodeIndex) => {
-                    const x = startX + nodeIndex * MODULE_H_SPACING;
-                    posMap.set(node.id, { x, y });
-                });
-                
-                // Track nodes by level for height calculation
-                nodesByLevel.set(yearIndex, yearNodes.map(n => n.id));
-            });
-            
-            // Add year label nodes (non-interactive visual labels)
-            const yearLabelNodes = sortedYears.map((year, yearIndex) => ({
-                id: `year-label-${year}`,
-                label: `Year ${year}`,
-                isYearLabel: true,
-                year: year,
-                x: YEAR_LABEL_OFFSET,
-                y: yearIndex * YEAR_V_SPACING
-            }));
-            
-            // Handle any nodes without year (fallback)
-            let fallbackY = sortedYears.length * YEAR_V_SPACING;
-            normalizedNodes.forEach(n => {
-                if (!posMap.has(n.id)) {
-                    posMap.set(n.id, { x: 0, y: fallbackY });
-                    fallbackY += 100;
-                }
-            });
-            
-            // Year colors for visual distinction
-            const yearColors = {
-                1: { background: '#3498db', border: '#2980b9' }, // Blue - Year 1
-                2: { background: '#1abc9c', border: '#16a085' }, // Teal - Year 2
-                3: { background: '#9b59b6', border: '#8e44ad' }  // Purple - Year 3
-            };
+            console.log('Force-directed layout with', normalizedNodes.length, 'nodes and', finalEdges.length, 'edges');
 
-            // Create enriched nodes with positions and styling
+            // Create enriched nodes with styling (no fixed positions — physics will arrange them)
             const enrichedNodes = normalizedNodes.map((node) => {
-                const pos = posMap.get(node.id) || { x: 0, y: 0 };
-                const year = node.year || 1;
-                const colors = yearColors[year] || yearColors[1];
-                
                 return {
                     ...node,
                     label: (node.label && String(node.label).trim()) ? node.label : `Module ${node.id}`,
-                    widthConstraint: { minimum: 180, maximum: 260 },
-                    heightConstraint: { minimum: 50, valign: 'middle' },
-                    x: pos.x,
-                    y: pos.y,
-                    fixed: { x: true, y: true },
-                    color: colors,
+                    widthConstraint: { minimum: 160, maximum: 240 },
+                    heightConstraint: { minimum: 45, valign: 'middle' },
+                    color: { background: '#1abc9c', border: '#16a085', highlight: { background: '#16a085', border: '#0d6b5c' }, hover: { background: '#16a085', border: '#0d6b5c' } },
                     font: { size: 14, color: 'white', face: 'Arial', bold: true },
                     borderWidth: 3,
                     shape: 'box',
-                    margin: 12
+                    margin: 12,
+                    shadow: { enabled: true, color: 'rgba(0,0,0,0.15)', size: 8, x: 2, y: 2 }
                 };
             });
             
-            // Add year label nodes to the visualization
-            yearLabelNodes.forEach(labelNode => {
-                const year = labelNode.year;
-                const yearLabelColors = {
-                    1: { background: '#e3f2fd', border: '#2196f3' },
-                    2: { background: '#e0f7fa', border: '#00bcd4' },
-                    3: { background: '#f3e5f5', border: '#9c27b0' }
-                };
-                const colors = yearLabelColors[year] || yearLabelColors[1];
-                
-                enrichedNodes.push({
-                    ...labelNode,
-                    widthConstraint: { minimum: 80, maximum: 100 },
-                    heightConstraint: { minimum: 40, valign: 'middle' },
-                    fixed: { x: true, y: true },
-                    color: colors,
-                    font: { size: 14, color: '#333', face: 'Arial', bold: true },
-                    borderWidth: 2,
-                    borderDashes: [5, 5],
-                    shape: 'box',
-                    margin: 8
-                });
-            });
-            
-            // Style edges - all relationship edges get the same styling
-            // Edges crossing years vs within same year can be styled differently
-            const enrichedEdges = adjacencyEdges.map(edge => {
-                // Determine if edge crosses years
-                const fromNode = normalizedNodes.find(n => n.id === edge.from);
-                const toNode = normalizedNodes.find(n => n.id === edge.to);
-                const fromYear = fromNode ? (fromNode.year || 1) : 1;
-                const toYear = toNode ? (toNode.year || 1) : 1;
-                const crossesYears = fromYear !== toYear;
-                
+            // Style edges — use solid lines for all prerequisite relationships
+            const enrichedEdges = finalEdges.map(edge => {
                 return {
                     ...edge,
-                    color: { color: '#6f6f6f', highlight: '#1abc9c', hover: '#1abc9c' },
-                    width: crossesYears ? 2 : 1.5,
-                    arrows: { to: { enabled: true, scaleFactor: 0.5, type: 'arrow' } },
-                    smooth: crossesYears
-                        ? { enabled: true, type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.3 }
-                        : { enabled: true, type: 'curvedCW', roundness: 0.15 },
-                    dashes: !crossesYears ? [4, 4] : false // Dashed for same-year connections
+                    color: { color: '#95a5a6', highlight: '#1abc9c', hover: '#1abc9c' },
+                    width: 2.5,
+                    arrows: { to: { enabled: true, scaleFactor: 0.7, type: 'arrow' } },
+                    smooth: { enabled: true, type: 'dynamic' },
+                    hoverWidth: 1
                 };
             });
             
-            console.log('Creating DataSets...');
+            console.log('Creating DataSets with', enrichedNodes.length, 'nodes and', enrichedEdges.length, 'edges...');
             console.log('vis available:', typeof vis);
             console.log('vis.DataSet available:', typeof vis.DataSet);
             
@@ -1238,29 +1306,42 @@
             const options = {
                 autoResize: true,
                 layout: {
-                    improvedLayout: false,
-                    randomSeed: 7
+                    improvedLayout: true,
+                    randomSeed: 42
                 },
                 physics: {
-                    enabled: false,
+                    enabled: true,
+                    solver: 'forceAtlas2Based',
+                    forceAtlas2Based: {
+                        gravitationalConstant: -120,
+                        centralGravity: 0.008,
+                        springLength: 250,
+                        springConstant: 0.04,
+                        damping: 0.4,
+                        avoidOverlap: 0.8
+                    },
                     stabilization: {
-                        enabled: false
-                    }
+                        enabled: true,
+                        iterations: 300,
+                        updateInterval: 25
+                    },
+                    maxVelocity: 50,
+                    minVelocity: 0.75
                 },
                 interaction: {
-                    dragNodes: false,
+                    dragNodes: true,
                     dragView: true,
                     zoomView: true,
+                    hover: true,
+                    tooltipDelay: 200,
                     navigationButtons: false
                 },
                 nodes: {
-                    // Default styling - individual nodes can override
                     shape: 'box',
                     borderWidth: 2
                 },
                 edges: {
-                    // Default edge styling - individual edges override
-                    smooth: { enabled: true }
+                    smooth: { enabled: true, type: 'dynamic' }
                 }
             };
 
@@ -1292,10 +1373,21 @@
         }
         
         try {
-            // Wait for network to initialize
+            // Wait for network to stabilize, then freeze physics for performance
             network.on('stabilizationIterationsDone', function() {
-                network.setOptions({ physics: false });
-                console.log('Network initialized');
+                network.setOptions({ physics: { enabled: false } });
+                console.log('Network stabilized and physics disabled');
+                
+                // Fit to viewport after stabilization
+                try {
+                    network.fit({ 
+                        animation: { duration: 500, easingFunction: 'easeInOutQuad' },
+                        padding: { top: 60, right: 60, bottom: 60, left: 60 }
+                    });
+                    resizeRoadmapContainerToGraph(container, network, nodesData);
+                } catch (e) {
+                    console.error('Fit after stabilization error:', e);
+                }
             });
 
             // Prevent canvas from capturing scroll wheel - allow page scroll
@@ -1304,10 +1396,9 @@
                 return true;
             }, { passive: true });
 
-            // Calculate and set container height based on levels
+            // Set a comfortable container height
             const nodeCount = nodesData.length;
-            const numLevels = nodesByLevel ? nodesByLevel.size : Math.ceil(nodeCount / 4);
-            const estimatedHeight = Math.max(700, numLevels * V_SPACING + 400);
+            const estimatedHeight = Math.max(700, Math.min(1200, nodeCount * 80 + 400));
             container.style.minHeight = estimatedHeight + 'px';
             container.style.height = estimatedHeight + 'px';
 
@@ -1972,17 +2063,30 @@
                                 };
                             });
 
-                        // Calculate year distribution
+                        // Extract edges for year inference
+                        const rawEdgesForInference = (graphData.edges || []).map(e => ({
+                            source: String(e.source),
+                            target: String(e.target)
+                        }));
+                        
+                        // Infer years from prerequisite relationships
+                        const inferredYears = inferYearsFromEdges(modulesForDisplay, rawEdgesForInference);
+                        
+                        // Calculate year distribution (fallback)
                         const totalModules = modulesForDisplay.length;
                         const modulesPerYear = Math.ceil(totalModules / 3);
                         
                         const nodesData = modulesForDisplay.map((moduleNode, index) => {
-                            // Determine year from module data or infer from order
+                            // Determine year from module data, edges, or infer from order
                             let year = 1;
+                            const moduleId = String(moduleNode.id);
                             if (moduleNode.year !== undefined) {
                                 year = moduleNode.year;
                             } else if (moduleNode.level !== undefined) {
                                 year = moduleNode.level;
+                            } else if (inferredYears.has(moduleId) && inferredYears.get(moduleId) > 0) {
+                                // Use year inferred from prerequisite edges
+                                year = inferredYears.get(moduleId);
                             } else {
                                 year = Math.floor(index / modulesPerYear) + 1;
                                 year = Math.min(year, 3);
