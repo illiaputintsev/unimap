@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Roadmap</title>
+    <title>Student Maps</title>
     <link rel="stylesheet" href="frame-styles.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-network@9.0.0/dist/vis-network.min.css" />
     <style>
@@ -358,14 +358,14 @@
             <button onclick="addModuleToRoadmap()">Add Module</button>
         </div>
         
-        <a href="profile.html">⚙️ Profile</a>
-        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">🗺️ My Roadmaps</a>
-        <a href="#" onclick="openAchievements(); return false;">🏆 Achievements</a>
-        <a href="progress.html">📊 Your Progress</a>
-        <a href="index.html">🏠 Home</a>
-        <a href="login.html">🔑 Login</a>
-        <a href="signup.html">📝 Sign Up</a>
-        <a href="#" onclick="logout(); return false;">🚪 Logout</a>
+        <a href="profile.html">Profile</a>
+        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">My Roadmaps</a>
+        <a href="#" onclick="openAchievements(); return false;">Achievements</a>
+        <a href="progress.html">Your Progress</a>
+        <a href="index.html">Home</a>
+        <a href="login.html">Login</a>
+        <a href="signup.html">Sign Up</a>
+        <a href="#" onclick="logout(); return false;">Logout</a>
     </div>
 
     <!-- User Info -->
@@ -377,7 +377,7 @@
 
 
 
-    <h1>Student Roadmap</h1>
+    <h1>Student Maps</h1>
     <div id="header-progress-bar" style="display:flex; align-items:center; justify-content:center; gap:10px; margin:8px auto; max-width:260px;">
         <div style="position:relative; width:180px; height:28px; border:2.5px solid #83AF9B; border-radius:7px; background:#e8f0ed; overflow:hidden;">
             <div id="header-progress-fill" style="height:100%; width:0%; background:linear-gradient(90deg,#83AF9B 0%,#6d9b89 100%); border-radius:4px; transition:width 0.5s ease;"></div>
@@ -396,7 +396,7 @@
         <span class="modal-close" onclick="closeModal()">&times;</span>
         <h2 id="modal-title"></h2>
         <p id="modal-content"></p>
-        <button id="quiz-button" style="margin-top: 15px; padding: 10px 20px; background-color: #83AF9B; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="openQuiz()">📝 Take Quiz</button>
+        <button id="quiz-button" style="margin-top: 15px; padding: 10px 20px; background-color: #83AF9B; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="openQuiz()">Take Quiz</button>
         <p id="quiz-score" style="margin-top: 10px; font-size: 14px; color: #666; display: none;"></p>
     </div>
 
@@ -554,13 +554,13 @@
             const modal = document.querySelector('.modal');
             if (!modal) return;
 
-            modal.innerHTML = '<h2>🗺️ My Roadmaps</h2><p style="color: #666; text-align: center; padding: 10px;">Loading...</p>';
+            modal.innerHTML = '<h2>My Roadmaps</h2><p style="color: #666; text-align: center; padding: 10px;">Loading...</p>';
             modal.style.display = 'block';
             myRoadmapsEditMode = false;
 
             const response = await ApiService.listRoadmaps();
             if (!response.ok) {
-                modal.innerHTML = '<h2>🗺️ My Roadmaps</h2><p style="color: #c33; text-align: center; padding: 20px;">Failed to load roadmaps.</p>' +
+                modal.innerHTML = '<h2>My Roadmaps</h2><p style="color: #c33; text-align: center; padding: 20px;">Failed to load roadmaps.</p>' +
                     '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #83AF9B; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
                 return;
             }
@@ -576,7 +576,7 @@
             const editBtnLabel = myRoadmapsEditMode ? 'Done' : 'Edit';
             const editBtnBg = myRoadmapsEditMode ? '#6d9b89' : '#83AF9B';
             let html = `<div style="display:flex; align-items:center; justify-content:space-between;">
-                <h2 style="margin:0; border-bottom:none; padding-bottom:0;">🗺️ My Roadmaps</h2>
+                <h2 style="margin:0; border-bottom:none; padding-bottom:0;">My Roadmaps</h2>
                 <button onclick="toggleMyRoadmapsEdit()" style="padding:6px 16px; background:${editBtnBg}; color:white; border:none; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer;">${editBtnLabel}</button>
             </div>`;
 
@@ -594,8 +594,8 @@
                                 <input id="rename-${roadmap.id}" type="text" value="${title.replace(/"/g, '&quot;')}" style="width:100%; padding:6px 8px; border:2px solid #83AF9B; border-radius:6px; font-size:14px; font-weight:600; box-sizing:border-box; margin-bottom:8px;">
                                 <small style="color: #999;">${dateText}</small>
                                 <div style="display:flex; gap:8px; margin-top:8px;">
-                                    <button onclick="renameRoadmap(${roadmap.id})" style="flex:1; padding:7px; background:#83AF9B; color:white; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">✓ Save Name</button>
-                                    <button onclick="deleteRoadmap(${roadmap.id}, '${title.replace(/'/g, "\\'")}')" style="flex:1; padding:7px; background:#FE4365; color:white; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">🗑 Delete</button>
+                                    <button onclick="renameRoadmap(${roadmap.id})" style="flex:1; padding:7px; background:#83AF9B; color:white; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">Save Name</button>
+                                    <button onclick="deleteRoadmap(${roadmap.id}, '${title.replace(/'/g, "\\'")}')" style="flex:1; padding:7px; background:#FE4365; color:white; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">Delete</button>
                                 </div>
                             </div>
                         `;
@@ -606,7 +606,7 @@
                                     <strong>${title}</strong><br>
                                     <small style="color: #999;">${dateText}</small>
                                 </div>
-                                <button onclick="event.stopPropagation(); shareRoadmap(${roadmap.id}, '${title.replace(/'/g, "\\'")}')" style="margin-top:8px; padding:5px 12px; background:none; border:2px solid #83AF9B; color:#83AF9B; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer; transition: all 0.2s;" onmouseover="this.style.background='#83AF9B'; this.style.color='white'" onmouseout="this.style.background='none'; this.style.color='#83AF9B'">🔗 Share</button>
+                                <button onclick="event.stopPropagation(); shareRoadmap(${roadmap.id}, '${title.replace(/'/g, "\\'")}')" style="margin-top:8px; padding:5px 12px; background:none; border:2px solid #83AF9B; color:#83AF9B; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer; transition: all 0.2s;" onmouseover="this.style.background='#83AF9B'; this.style.color='white'" onmouseout="this.style.background='none'; this.style.color='#83AF9B'">Share</button>
                             </div>
                         `;
                     }
@@ -736,8 +736,9 @@
                             network.selectNodes([node.id]);
                             resultsBox.style.display = 'none';
                             searchInput.value = '';
-                            // Zoom back out to full view after a moment
+                            // Zoom back out and deselect so next click works normally
                             setTimeout(() => {
+                                network.unselectAll();
                                 network.fit({ animation: { duration: 600, easingFunction: 'easeInOutQuad' } });
                             }, 2000);
                         };
@@ -855,7 +856,7 @@
                 });
             }
 
-            const titleText = roadmap.title || (roadmap.course && roadmap.course.title) || 'Student Roadmap';
+            const titleText = roadmap.title || (roadmap.course && roadmap.course.title) || 'Student Maps';
             document.getElementById('input-display').textContent = `Tailored Roadmap for: ${titleText}`;
             if (roadmap.course && roadmap.course.university) {
                 // University info available
@@ -2073,8 +2074,8 @@
                                 const relatedModulesHtml = formatRelatedModulesHtml(moduleData.related_modules);
                                 
                                 const clusterInfo = node.clusterIndex
-                                    ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">🧩 Cluster ${node.clusterIndex}</div>`
-                                    : (node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">📅 Year ${node.year}</div>` : '');
+                                    ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">Cluster ${node.clusterIndex}</div>`
+                                    : (node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">Year ${node.year}</div>` : '');
                                 
                                 document.getElementById('modal-content').innerHTML = `
                                     ${clusterInfo}
@@ -2085,8 +2086,8 @@
                                 `;
                             } else {
                                 const clusterInfo = node.clusterIndex
-                                    ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">🧩 Cluster ${node.clusterIndex}</div>`
-                                    : (node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">📅 Year ${node.year}</div>` : '');
+                                    ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">Cluster ${node.clusterIndex}</div>`
+                                    : (node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">Year ${node.year}</div>` : '');
                                 document.getElementById('modal-title').textContent = node.label;
                                 document.getElementById('modal-content').innerHTML = `
                                     ${clusterInfo}
@@ -2371,7 +2372,7 @@
                 });
             }
             
-            let html = '<h2>🏆 Achievements</h2>';
+            let html = '<h2>Achievements</h2>';
             html += '<p style="font-size: 12px; color: #666; margin: 10px 0;">You have earned ' + userAchievements.length + ' achievements</p>';
             html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">';
             
