@@ -268,12 +268,12 @@
             gap: 12px;
         }
         #profile-pic-avatar {
-            width: 35px;
-            height: 35px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            border: 2px solid #1abc9c;
             object-fit: cover;
             display: none;
+            margin-left: auto;
         }
         #profile-pic-avatar.show {
             display: block;
@@ -517,7 +517,8 @@
             <button onclick="addModuleToRoadmap()">Add Module</button>
         </div>
         
-        <div class="menu-section">⚙️ Navigation</div>        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">🗺️ My Roadmaps</a>
+        <a href="profile.html">⚙️ Profile Settings</a>
+        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">🗺️ My Roadmaps</a>
         <a href="#" onclick="openAchievements(); return false;">🏆 Achievements</a>
         <a href="progress.html">📊 Your Progress</a>
         <a href="index.html">🏠 Home</a>
@@ -528,9 +529,8 @@
 
     <!-- User Info -->
     <div id="user-info">
-        <img id="profile-pic-avatar" alt="Profile">
         <span id="username">Guest</span>
-        <a href="profile.html" style="margin-left: 15px; padding: 8px 15px; background-color: #1abc9c; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.backgroundColor='#16a085'" onmouseout="this.style.backgroundColor='#1abc9c'">⚙️ Profile</a>
+        <img id="profile-pic-avatar" alt="Profile">
     </div>
 
     <!-- Progress Container -->
@@ -1002,10 +1002,11 @@
             const nodesData = [];
             const edgesData = [];
             
-            // First extract edges data for year inference
+            // First extract edges data for year inference (exclude 'contains' module→topic edges)
             const rawEdges = [];
             if (Array.isArray(roadmap.edges)) {
                 roadmap.edges.forEach(edge => {
+                    if (edge.edge_type === 'contains') return;
                     rawEdges.push({ source: String(edge.source), target: String(edge.target) });
                 });
             }
@@ -1054,16 +1055,53 @@
                 }
             });
             
-            // Use ONLY explicit edges from the roadmap matrix (relationships between modules)
+            // Use ONLY dependency edges between modules (exclude 'contains' edges which are module→topic)
             if (Array.isArray(roadmap.edges)) {
                 const nodeIds = new Set(nodesData.map(n => String(n.id)));
+                
+                // Build a set of all topic IDs so we can exclude edges involving topics
+                const topicIdSet = new Set();
+                modules.forEach(module => {
+                    (module.topics || []).forEach(topic => {
+                        if (topic.id) topicIdSet.add(String(topic.id));
+                    });
+                });
+                
+                // Debug: log all edges with their edge_type
+                const edgesByType = {};
                 roadmap.edges.forEach(edge => {
+                    const t = edge.edge_type || 'unknown';
+                    if (!edgesByType[t]) edgesByType[t] = [];
+                    edgesByType[t].push({ source: edge.source, target: edge.target });
+                });
+                console.log('=== buildNetworkFromRoadmap EDGE DEBUG ===');
+                console.log('Total raw edges:', roadmap.edges.length);
+                console.log('Edge types:', Object.keys(edgesByType).map(t => t + ': ' + edgesByType[t].length).join(', '));
+                console.log('Edges by type:', JSON.stringify(edgesByType, null, 2));
+                console.log('Topic IDs:', [...topicIdSet]);
+                
+                roadmap.edges.forEach(edge => {
+                    // Skip 'contains' edges — those are module→topic parent-child relationships
+                    if (edge.edge_type === 'contains') return;
                     const from = String(edge.source);
                     const to = String(edge.target);
+                    // Skip edges where source or target is a topic node
+                    if (topicIdSet.has(from) || topicIdSet.has(to)) return;
                     if (nodeIds.has(from) && nodeIds.has(to)) {
                         edgesData.push({ from, to });
                     }
                 });
+                
+                // Debug: Professional Practice edges
+                const ppNode = nodesData.find(n => n.label && n.label.toLowerCase().includes('professional practice'));
+                if (ppNode) {
+                    const ppId = String(ppNode.id);
+                    const ppEdgesAll = roadmap.edges.filter(e => String(e.source) === ppId || String(e.target) === ppId);
+                    console.log('Professional Practice (id=' + ppId + ') ALL raw edges:', JSON.stringify(ppEdgesAll));
+                    const ppEdgesFiltered = edgesData.filter(e => String(e.from) === ppId || String(e.to) === ppId);
+                    console.log('Professional Practice FILTERED edges:', JSON.stringify(ppEdgesFiltered));
+                }
+                console.log('Final edgesData count:', edgesData.length);
             }
 
             const titleText = roadmap.title || (roadmap.course && roadmap.course.title) || 'Student Roadmap';
@@ -2063,11 +2101,13 @@
                                 };
                             });
 
-                        // Extract edges for year inference
-                        const rawEdgesForInference = (graphData.edges || []).map(e => ({
-                            source: String(e.source),
-                            target: String(e.target)
-                        }));
+                        // Extract edges for year inference (exclude 'contains' edges)
+                        const rawEdgesForInference = (graphData.edges || [])
+                            .filter(e => e.edge_type !== 'contains')
+                            .map(e => ({
+                                source: String(e.source),
+                                target: String(e.target)
+                            }));
                         
                         // Infer years from prerequisite relationships
                         const inferredYears = inferYearsFromEdges(modulesForDisplay, rawEdgesForInference);
@@ -2111,12 +2151,28 @@
                         });
 
                         const moduleIdSet = new Set(nodesData.map(n => String(n.id)));
+                        // Also build a set of topic IDs to explicitly exclude edges involving topics
+                        const topicIdSet = new Set(topicNodes.map(n => String(n.id)));
+                        
+                        const isValidDependencyEdge = (edge) => {
+                            // Skip 'contains' edges — those are module→topic parent-child relationships
+                            if (edge.edge_type === 'contains') return false;
+                            // Skip edges where source or target is a topic node
+                            if (topicIdSet.has(String(edge.source)) || topicIdSet.has(String(edge.target))) return false;
+                            // Only include edges with a meaningful weight/score if available
+                            if (edge.weight !== undefined && edge.weight < 0.5) return false;
+                            if (edge.score !== undefined && edge.score < 0.5) return false;
+                            return true;
+                        };
+                        
                         let edgesData = (graphData.edges || [])
+                            .filter(isValidDependencyEdge)
                             .map(edge => ({ from: String(edge.source), to: String(edge.target) }))
                             .filter(edge => moduleIdSet.has(edge.from) && moduleIdSet.has(edge.to));
 
                         if (edgesData.length === 0 && fullRoadmap && Array.isArray(fullRoadmap.edges)) {
                             edgesData = fullRoadmap.edges
+                                .filter(isValidDependencyEdge)
                                 .map(edge => ({ from: String(edge.source), to: String(edge.target) }))
                                 .filter(edge => moduleIdSet.has(edge.from) && moduleIdSet.has(edge.to));
                         }
@@ -2125,6 +2181,29 @@
                         const progressValue = graphData.overall_progress_percent || (fullRoadmap && fullRoadmap.overall_progress_percent) || 0;
                         document.getElementById('input-display').textContent = `Tailored Roadmap for: ${roadmapTitle}`;
                         document.getElementById('university-display').textContent = `📚 Progress: ${progressValue}%`;
+                        console.log('=== EDGE DEBUG ===');
+                        console.log('graphData.edges raw (' + (graphData.edges || []).length + ' total):', JSON.stringify(graphData.edges));
+                        // Show edge_type breakdown
+                        const edgesByType = {};
+                        (graphData.edges || []).forEach(e => {
+                            const t = e.edge_type || 'unknown';
+                            if (!edgesByType[t]) edgesByType[t] = [];
+                            edgesByType[t].push({ source: e.source, target: e.target });
+                        });
+                        console.log('Edge types breakdown:', Object.keys(edgesByType).map(t => t + ': ' + edgesByType[t].length).join(', '));
+                        console.log('Edges by type detail:', JSON.stringify(edgesByType, null, 2));
+                        // Find edges involving "Professional Practice"
+                        const ppNode = nodesData.find(n => n.label && n.label.toLowerCase().includes('professional practice'));
+                        if (ppNode) {
+                            const ppId = String(ppNode.id);
+                            const ppEdgesAll = (graphData.edges || []).filter(e => String(e.source) === ppId || String(e.target) === ppId);
+                            console.log('=== Professional Practice (id=' + ppId + ') ALL raw edges ===', JSON.stringify(ppEdgesAll));
+                            const ppEdgesFiltered = edgesData.filter(e => String(e.from) === ppId || String(e.to) === ppId);
+                            console.log('=== Professional Practice FILTERED edges (shown in graph) ===', JSON.stringify(ppEdgesFiltered));
+                        }
+                        console.log('fullRoadmap edges raw:', fullRoadmap && fullRoadmap.edges ? fullRoadmap.edges.length + ' edges' : 'none');
+                        console.log('Final edgesData passed to createNetwork (' + edgesData.length + '):', JSON.stringify(edgesData));
+                        console.log('nodesData ids:', nodesData.map(n => n.id + ' (' + n.label + ')'));
                         createNetwork(nodesData, edgesData);
                         return;
                     }
@@ -2159,15 +2238,8 @@
                             };
                         });
 
-                        // Create edges only between sequential modules (basic chain)
-                        // Real edges will come from the relationship matrix when loaded from API
+                        // No edges for manual input — only API-provided edges are used
                         const edgesData = [];
-                        for (let i = 0; i < nodesData.length - 1; i++) {
-                            edgesData.push({ 
-                                from: nodesData[i].id, 
-                                to: nodesData[i+1].id
-                            });
-                        }
 
                         createNetwork(nodesData, edgesData);
                     } else {
