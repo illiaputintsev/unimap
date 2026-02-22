@@ -113,13 +113,55 @@
             
 
         }
-        #logo {
-            width: 200px;      
-            height: auto;     
-            transition: 0.3s; 
+        /* Search bar */
+        #node-search-container {
+            position: fixed;
+            top: 12px;
+            right: 15px;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        #logo:hover {
-            width: 300px;
+        #node-search {
+            width: 220px;
+            padding: 9px 14px 9px 36px;
+            border: 2px solid #83AF9B;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+            background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2383AF9B' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E") no-repeat 12px center;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        #node-search:focus {
+            border-color: #6d9b89;
+            box-shadow: 0 0 8px rgba(131, 175, 155, 0.35);
+        }
+        #search-results {
+            position: absolute;
+            top: 42px;
+            right: 0;
+            width: 260px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            display: none;
+        }
+        .search-result-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.15s;
+        }
+        .search-result-item:hover {
+            background: #e8f0ed;
+        }
+        .search-result-item:last-child {
+            border-bottom: none;
         }
         /* Menu button */
         #menu-btn {
@@ -343,7 +385,11 @@
         </div>
     </div>
     <p id="input-display"></p>
-    <img id="logo" src="assets\Gemini_Generated_Image_9eplpw9eplpw9epl__1_-removebg-preview.png" alt="Logo" style="position: fixed; top: 5px; right: 5px; cursor: default; z-index: 10;">
+    <!-- Search Bar -->
+    <div id="node-search-container">
+        <input type="text" id="node-search" placeholder="Search modules..." autocomplete="off">
+        <div id="search-results"></div>
+    </div>
     <div id="roadmap"></div>
 
     <div id="node-modal" class="modal">
@@ -555,9 +601,12 @@
                         `;
                     } else {
                         html += `
-                            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #83AF9B;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapById(${roadmap.id})">
-                                <strong>${title}</strong><br>
-                                <small style="color: #999;">${dateText}</small>
+                            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; border-left: 4px solid #83AF9B;">
+                                <div style="cursor: pointer;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'" onclick="loadRoadmapById(${roadmap.id})">
+                                    <strong>${title}</strong><br>
+                                    <small style="color: #999;">${dateText}</small>
+                                </div>
+                                <button onclick="event.stopPropagation(); shareRoadmap(${roadmap.id}, '${title.replace(/'/g, "\\'")}')" style="margin-top:8px; padding:5px 12px; background:none; border:2px solid #83AF9B; color:#83AF9B; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer; transition: all 0.2s;" onmouseover="this.style.background='#83AF9B'; this.style.color='white'" onmouseout="this.style.background='none'; this.style.color='#83AF9B'">🔗 Share</button>
                             </div>
                         `;
                     }
@@ -614,16 +663,94 @@
             if (!roadmapId) return;
             window.location.href = `roadmap.html?roadmap_id=${roadmapId}`;
         }
+
+        function shareRoadmap(roadmapId, title) {
+            const shareUrl = `${window.location.origin}${window.location.pathname}?roadmap_id=${roadmapId}`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    showShareToast(`Link copied for "${title}"!`);
+                }).catch(() => {
+                    fallbackCopyShare(shareUrl, title);
+                });
+            } else {
+                fallbackCopyShare(shareUrl, title);
+            }
+        }
+
+        function fallbackCopyShare(url, title) {
+            const ta = document.createElement('textarea');
+            ta.value = url;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showShareToast(`Link copied for "${title}"!`);
+            } catch {
+                prompt('Copy this link to share:', url);
+            }
+            document.body.removeChild(ta);
+        }
+
+        function showShareToast(message) {
+            let toast = document.getElementById('share-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'share-toast';
+                toast.style.cssText = 'position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#83AF9B; color:white; padding:12px 24px; border-radius:10px; font-size:14px; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,0.2); z-index:9999; transition:opacity 0.4s; pointer-events:none;';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            toast.style.opacity = '1';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => { toast.style.display = 'none'; }, 400); }, 2500);
+        }
         
         // Initialize login status
         checkLoginStatus();
         
 
         
-        // Draggable logo
-        const logo = document.getElementById('logo');
-        let isDragging = false;
-        let offsetX, offsetY;
+        // Node search functionality
+        (function initNodeSearch() {
+            const searchInput = document.getElementById('node-search');
+            const resultsBox = document.getElementById('search-results');
+            if (!searchInput || !resultsBox) return;
+
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim().toLowerCase();
+                resultsBox.innerHTML = '';
+                if (!query || !network) { resultsBox.style.display = 'none'; return; }
+                const allNodes = network.body.data.nodes.get();
+                const matches = allNodes.filter(n => n.label && n.label.toLowerCase().includes(query)).slice(0, 10);
+                if (matches.length === 0) {
+                    resultsBox.innerHTML = '<div style="padding:12px; color:#999; font-size:13px; text-align:center;">No modules found</div>';
+                } else {
+                    matches.forEach(node => {
+                        const item = document.createElement('div');
+                        item.className = 'search-result-item';
+                        item.textContent = node.label;
+                        item.onclick = () => {
+                            network.focus(node.id, { scale: 1.2, animation: { duration: 500, easingFunction: 'easeInOutQuad' } });
+                            network.selectNodes([node.id]);
+                            resultsBox.style.display = 'none';
+                            searchInput.value = '';
+                        };
+                        resultsBox.appendChild(item);
+                    });
+                }
+                resultsBox.style.display = 'block';
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#node-search-container')) resultsBox.style.display = 'none';
+            });
+
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') { searchInput.value = ''; resultsBox.style.display = 'none'; }
+            });
+        })();
 
         // Sample data for the roadmap (demonstrates year-based layout)
         const sampleNodes = [
