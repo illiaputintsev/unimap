@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Settings - Student Roadmap</title>
+    <link rel="stylesheet" href="frame-styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .back-button {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            padding: 10px 20px;
+            background-color: white;
+            border: 2px solid #1abc9c;
+            color: #1abc9c;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        .back-button:hover {
+            background-color: #1abc9c;
+            color: white;
+        }
+        .profile-container {
+            max-width: 600px;
+            margin: 80px auto 40px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .profile-header h1 {
+            color: #1abc9c;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .profile-picture-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .profile-picture {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+            border: 4px solid #1abc9c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+        .picture-upload {
+            display: none;
+        }
+        .upload-button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        .upload-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(214, 48, 49, 0.4);
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input[type="text"],
+        input[type="email"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Segoe UI', sans-serif;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #1abc9c;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .save-button {
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            color: white;
+        }
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(214, 48, 49, 0.4);
+        }
+        .cancel-button {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .cancel-button:hover {
+            background-color: #e0e0e0;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+            font-weight: 600;
+        }
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.3s ease-in;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .avatar-emoji {
+            display: inline-block;
+            font-size: 60px;
+        }
+        
+        /* Profile Picture Frames */
+        .frame-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #f0fffe 0%, #e8f5f4 100%);
+            border-radius: 15px;
+            border: 2px solid #1abc9c;
+        }
+        .frame-title {
+            text-align: center;
+            color: #1abc9c;
+            font-weight: 700;
+            margin-bottom: 25px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .frames-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .frame-option {
+            position: relative;
+            cursor: pointer;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 3px solid #ddd;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+        .frame-option:hover:not(.locked) {
+            border-color: #1abc9c;
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(26, 188, 156, 0.25);
+        }
+        .frame-preview {
+            width: 140px;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            border-radius: 12px;
+        }
+        .frame-icon {
+            font-size: 60px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Frame Styles */
+        .frame-basic {
+            border: 5px solid #a9a9a9;
+            box-shadow: inset 0 0 0 2px white, 0 0 0 7px #a9a9a9;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+        }
+        .frame-intermediary {
+            background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+            box-shadow: inset 0 0 0 2px white, 0 0 0 7px #ff8c00, 0 0 20px rgba(255, 140, 0, 0.4);
+            border: none;
+        }
+        .frame-master {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            box-shadow: inset 0 0 0 2px white, 0 0 0 7px #ffd700, 0 0 25px rgba(255, 215, 0, 0.5);
+            border: none;
+        }
+        
+        .frame-label {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #333;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .frame-option input[type="radio"] {
+            display: none;
+        }
+        .frame-option input[type="radio"]:checked + .frame-preview {
+            border: 3px solid #1abc9c;
+            box-shadow: 0 0 0 2px white, 0 0 12px #1abc9c;
+        }
+        .frame-option.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .frame-option.locked .frame-preview {
+            filter: grayscale(100%) brightness(0.9);
+        }
+        .lock-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+        }
+        .frame-info {
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+            margin-top: 15px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #1abc9c;
+        }
+        .frame-info strong {
+            color: #1abc9c;
+            display: block;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="goBack()">← Back</button>
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1>⚙️ Profile Settings</h1>
+        </div>
+
+        <div class="success-message" id="success-message">✓ Profile updated successfully!</div>
+
+        <form id="profile-form">
+            <div class="profile-picture-section">
+                <div class="profile-picture" id="profile-picture">👤</div>
+                <input type="file" id="picture-upload" class="picture-upload" accept="image/*" onchange="handlePictureUpload(event)">
+                <button type="button" class="upload-button" onclick="document.getElementById('picture-upload').click()">Change Picture</button>
+                
+                <!-- Frame Selection -->
+                <div class="frame-section">
+                    <div class="frame-title">🎨 Picture Frames (Unlock with Levels)</div>
+                    <div class="frames-grid">
+                        <label class="frame-option" id="frame-none-label">
+                            <input type="radio" name="frame" value="none" checked>
+                            <div class="frame-preview">
+                                <div class="frame-icon">✓</div>
+                            </div>
+                            <span class="frame-label">None</span>
+                        </label>
+                        
+                        <label class="frame-option" id="frame-basic-label">
+                            <input type="radio" name="frame" value="basic">
+                            <div class="frame-preview frame-basic">
+                                <div class="frame-icon">⬚</div>
+                            </div>
+                            <span class="frame-label">Basic</span>
+                        </label>
+                        
+                        <label class="frame-option" id="frame-intermediary-label">
+                            <input type="radio" name="frame" value="intermediary">
+                            <div class="frame-preview frame-intermediary">
+                                <div class="frame-icon">⭐</div>
+                            </div>
+                            <span class="frame-label">Intermediary</span>
+                            <div class="lock-badge" id="lock-intermediary">🔒</div>
+                        </label>
+                        
+                        <label class="frame-option" id="frame-master-label">
+                            <input type="radio" name="frame" value="master">
+                            <div class="frame-preview frame-master">
+                                <div class="frame-icon">👑</div>
+                            </div>
+                            <span class="frame-label">Master</span>
+                            <div class="lock-badge" id="lock-master">🔒</div>
+                        </label>
+                    </div>
+                    <div class="frame-info">
+                        <strong>✨ Frame Unlock Requirements:</strong>
+                        🔓 Basic: Level 1+ | 🟠 Intermediary: Level 5+ | 👑 Master: Level 10+
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="nickname">Nickname</label>
+                <input type="text" id="nickname" name="nickname" placeholder="Enter your nickname" required>
+            </div>
+
+            <div class="form-group">
+                <label for="fullname">Full Name</label>
+                <input type="text" id="fullname" name="fullname" placeholder="Enter your full name">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email">
+            </div>
+
+            <div class="form-group">
+                <label for="university">University</label>
+                <input type="text" id="university" name="university" placeholder="Your university">
+            </div>
+
+            <div class="form-group">
+                <label for="course">Course/Program</label>
+                <input type="text" id="course" name="course" placeholder="Your course of study">
+            </div>
+
+            <div class="form-group">
+                <label for="bio">Bio</label>
+                <textarea id="bio" name="bio" placeholder="Tell us about yourself..."></textarea>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="cancel-button" onclick="goBack()">Cancel</button>
+                <button type="submit" class="save-button">Save Changes</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Load profile data on page load
+        function loadProfile() {
+            const profileData = JSON.parse(localStorage.getItem('userProfile')) || {};
+            
+            if (profileData.nickname) {
+                document.getElementById('nickname').value = profileData.nickname;
+            }
+            if (profileData.fullname) {
+                document.getElementById('fullname').value = profileData.fullname;
+            }
+            if (profileData.email) {
+                document.getElementById('email').value = profileData.email;
+            }
+            if (profileData.university) {
+                document.getElementById('university').value = profileData.university;
+            }
+            if (profileData.course) {
+                document.getElementById('course').value = profileData.course;
+            }
+            if (profileData.bio) {
+                document.getElementById('bio').value = profileData.bio;
+            }
+            if (profileData.profilePicture) {
+                document.getElementById('profile-picture').innerHTML = `<img src="${profileData.profilePicture}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">`;
+            }
+            
+            // Apply the selected frame
+            const selectedFrame = localStorage.getItem('selectedProfileFrame') || 'none';
+            applyFrameToPreview(selectedFrame);
+        }
+
+        // Handle form submission
+        document.getElementById('profile-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const profileData = {
+                nickname: document.getElementById('nickname').value,
+                fullname: document.getElementById('fullname').value,
+                email: document.getElementById('email').value,
+                university: document.getElementById('university').value,
+                course: document.getElementById('course').value,
+                bio: document.getElementById('bio').value,
+                profilePicture: localStorage.getItem('profilePictureData') || profileData.profilePicture,
+                selectedFrame: localStorage.getItem('selectedProfileFrame') || 'none'
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('userProfile', JSON.stringify(profileData));
+            
+            // Update user info in currentUser
+            const user = JSON.parse(localStorage.getItem('currentUser')) || {};
+            user.name = profileData.nickname;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            
+            // Save selected frame
+            saveSelectedFrame();
+            
+            // Show success message
+            const successMsg = document.getElementById('success-message');
+            successMsg.classList.add('show');
+            
+            setTimeout(() => {
+                successMsg.classList.remove('show');
+            }, 3000);
+        });
+
+        // Handle picture upload
+        function handlePictureUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageData = e.target.result;
+                    document.getElementById('profile-picture').innerHTML = `<img src="${imageData}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    localStorage.setItem('profilePictureData', imageData);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', function() {
+            loadProfile();
+            unlockFrames();
+            loadSelectedFrame();
+        });
+
+        // Check user level and unlock frames
+        function unlockFrames() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (!user) return;
+            
+            const userLevelKey = `user-level-${user.email}`;
+            const currentLevel = parseInt(localStorage.getItem(userLevelKey)) || 1;
+            
+            // Basic frame always available
+            document.getElementById('frame-basic-label').classList.remove('locked');
+            
+            // Intermediary frame at Level 5+
+            const intermediaryLabel = document.getElementById('frame-intermediary-label');
+            const lockIntermediary = document.getElementById('lock-intermediary');
+            if (currentLevel >= 5) {
+                intermediaryLabel.classList.remove('locked');
+                lockIntermediary.style.display = 'none';
+            } else {
+                intermediaryLabel.classList.add('locked');
+                lockIntermediary.style.display = 'flex';
+            }
+            
+            // Master frame at Level 10+
+            const masterLabel = document.getElementById('frame-master-label');
+            const lockMaster = document.getElementById('lock-master');
+            if (currentLevel >= 10) {
+                masterLabel.classList.remove('locked');
+                lockMaster.style.display = 'none';
+            } else {
+                masterLabel.classList.add('locked');
+                lockMaster.style.display = 'flex';
+            }
+        }
+        
+        // Save selected frame
+        function saveSelectedFrame() {
+            const selectedFrame = document.querySelector('input[name="frame"]:checked')?.value;
+            if (selectedFrame) {
+                localStorage.setItem('selectedProfileFrame', selectedFrame);
+            }
+        }
+        
+        // Handle frame selection
+        document.querySelectorAll('input[name="frame"]').forEach(radio => {
+            const label = radio.parentElement;
+            
+            // Skip locked frames for hover preview
+            if (label.classList.contains('locked')) {
+                return;
+            }
+            
+            // Hover preview
+            label.addEventListener('mouseenter', function() {
+                if (!label.classList.contains('locked')) {
+                    applyFrameToPreview(radio.value);
+                }
+            });
+            
+            label.addEventListener('mouseleave', function() {
+                // Revert to selected frame on hover out
+                const selectedFrame = document.querySelector('input[name="frame"]:checked')?.value || 'none';
+                applyFrameToPreview(selectedFrame);
+            });
+            
+            // Click to select
+            radio.addEventListener('change', function() {
+                const frameLabel = document.getElementById('frame-' + this.value + '-label');
+                if (!frameLabel.classList.contains('locked')) {
+                    saveSelectedFrame();
+                    applyFrameToPreview(this.value);
+                } else {
+                    // Revert if clicking locked frame
+                    const selectedFrame = document.querySelector('input[name="frame"]:checked')?.value || 'none';
+                    document.querySelector('input[name="frame"][value="' + selectedFrame + '"]').checked = true;
+                }
+            });
+        });
+        
+        // Apply frame to profile picture preview
+        function applyFrameToPreview(frame) {
+            const profilePic = document.getElementById('profile-picture');
+            // Remove all frame classes
+            profilePic.classList.remove('profile-pic-none', 'profile-pic-basic', 'profile-pic-intermediary', 'profile-pic-master');
+            
+            // Remove inline styles first
+            profilePic.style.border = '';
+            profilePic.style.boxShadow = '';
+            
+            // Apply the selected frame class
+            if (frame === 'none') {
+                profilePic.classList.add('profile-pic-none');
+            } else if (frame === 'basic') {
+                profilePic.classList.add('profile-pic-basic');
+            } else if (frame === 'intermediary') {
+                profilePic.classList.add('profile-pic-intermediary');
+            } else if (frame === 'master') {
+                profilePic.classList.add('profile-pic-master');
+            }
+        }
+        
+        // Load selected frame on page load
+        function loadSelectedFrame() {
+            const selectedFrame = localStorage.getItem('selectedProfileFrame') || 'none';
+            const radio = document.querySelector(`input[name="frame"][value="${selectedFrame}"]`);
+            if (radio) {
+                radio.checked = true;
+            }
+        }
+        
+        // Go back to previous page
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>

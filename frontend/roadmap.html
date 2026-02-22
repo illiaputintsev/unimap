@@ -1,0 +1,2126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Roadmap</title>
+    <link rel="stylesheet" href="frame-styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-network@9.0.0/dist/vis-network.min.css" />
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(255,255,255,.05) 10px,
+                    rgba(255,255,255,.05) 20px
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #1abc9c;
+            margin: 20px 0 10px;
+            font-size: 36px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+        p {
+            text-align: center;
+            margin: 5px 0;
+            position: relative;
+            z-index: 1;
+        }
+        #roadmap {
+            width: 95%;
+            max-width: 1400px;
+            margin: 20px auto;
+            min-height: 600px;
+            height: auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 1;
+            border: 3px solid #e0e0e0;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background-color: white;
+            padding: 30px;
+            border: 3px solid #1abc9c;
+            border-radius: 15px;
+            box-shadow: 0 15px 50px rgba(220, 53, 69, 0.3);
+            z-index: 2000;
+            max-width: 400px;
+            max-height: 85vh;
+            overflow: auto;
+            width: 350px;
+        }
+        .modal h2 {
+            margin-top: 0;
+            color: #1abc9c;
+            border-bottom: 2px solid #1abc9c;
+            padding-bottom: 10px;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 28px;
+            color: #1abc9c;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .modal-close:hover {
+            color: #16a085;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .modal {
+                top: 50%;
+                right: 10px;
+                transform: translateY(-50%);
+                width: calc(100vw - 20px);
+                max-width: none;
+                max-height: 70vh;
+            }
+            
+            #progress-container {
+                top: 250px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+                padding: 0;
+            }
+            
+            #progress-text {
+                font-size: 11px;
+            }
+            
+            #level-container {
+                top: 305px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+                padding: 0;
+            }
+            
+            #level-badge {
+                width: 40px;
+                height: 40px;
+                font-size: 24px;
+            }
+            
+            #xp-text {
+                font-size: 10px;
+            }
+        }
+        #logo {
+            width: 200px;      
+            height: auto;     
+            transition: 0.3s; 
+        }
+        #logo:hover {
+            width: 300px;
+        }
+        /* Menu button */
+        #menu-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+            transition: all 0.3s;
+        }
+        #menu-btn:hover {
+            background: linear-gradient(135deg, #16a085 0%, #a01810 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
+        }
+        #menu-btn span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            margin: 3px 0;
+            border-radius: 2px;
+        }
+        /* Menu dropdown */
+        #menu-dropdown {
+            display: none;
+            position: fixed;
+            top: 65px;
+            left: 15px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            min-width: 250px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #menu-dropdown a, #menu-dropdown .menu-section {
+            display: block;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        #menu-dropdown a:hover {
+            background-color: #fff5f5;
+            color: #1abc9c;
+        }
+        .menu-section {
+            background-color: #f9f9f9;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            cursor: default;
+        }
+        .menu-section:hover {
+            background-color: #f9f9f9;
+            color: #666;
+        }
+        #module-input-container {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        #module-input-container input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            box-sizing: border-box;
+            margin-bottom: 8px;
+        }
+        #module-input-container button {
+            width: 100%;
+            padding: 8px;
+            background-color: #1abc9c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        #module-input-container button:hover {
+            background-color: #16a085;
+        }
+        /* User info */
+        #user-info {
+            position: fixed;
+            top: 70px;
+            left: 15px;
+            background: linear-gradient(135deg, white 0%, #fff5f5 100%);
+            padding: 10px 18px;
+            border-radius: 20px;
+            box-shadow: 0 3px 10px rgba(26, 188, 156, 0.15);
+            font-size: 13px;
+            color: #1abc9c;
+            z-index: 999;
+            border: 2px solid #c8f7f0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        #profile-pic-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid #1abc9c;
+            object-fit: cover;
+            display: none;
+        }
+        #profile-pic-avatar.show {
+            display: block;
+        }
+        .course-info {
+            text-align: center;
+            font-size: 15px;
+            color: #555;
+            margin: 8px 0;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+        /* Progress Bar - Collapsible Icon */
+        #progress-container {
+            position: fixed;
+            top: 250px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: white;
+            padding: 0;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(26, 188, 156, 0.2);
+            z-index: 999;
+            border: 2px solid #c8f7f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        #progress-container:hover {
+            width: 250px;
+            border-radius: 10px;
+            height: auto;
+            padding: 15px;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+        #progress-container:hover .progress-icon {
+            display: none;
+        }
+        #progress-container:hover .progress-content {
+            display: block;
+        }
+        .progress-icon {
+            display: block;
+        }
+        .progress-content {
+            display: none;
+            width: 100%;
+        }
+        .progress-content .progress-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        #progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1abc9c 0%, #16a085 100%);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 10px;
+        }
+        #progress-text {
+            font-size: 12px;
+            color: #1abc9c;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 8px;
+        }
+        
+        /* Level/XP Display - Collapsible Icon */
+        #level-container {
+            position: fixed;
+            top: 305px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #fff8f0 0%, #fff0e8 100%);
+            padding: 0;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(26, 188, 156, 0.2);
+            z-index: 999;
+            border: 2px solid #ffd9b3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        #level-container:hover {
+            width: 250px;
+            border-radius: 10px;
+            height: auto;
+            padding: 15px;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+        #level-container:hover .level-icon {
+            display: none;
+        }
+        #level-container:hover .level-content {
+            display: block;
+        }
+        .level-icon {
+            display: block;
+        }
+        .level-content {
+            display: none;
+            width: 100%;
+        }
+        #level-display {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: #d97845;
+        }
+        #level-badge {
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+        }
+        #level-info {
+            flex: 1;
+        }
+        #level-number {
+            font-size: 16px;
+            color: #d97845;
+        }
+        #xp-bar {
+            width: 100%;
+            height: 6px;
+            background: #f0e0d0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        #xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffa500 0%, #ff8c00 100%);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 10px;
+        }
+        #xp-text {
+            font-size: 11px;
+            color: #d97845;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 4px;
+        }
+        
+        /* Node Hover Animation */
+        .vis-network canvas {
+            transition: all 0.2s ease;
+        }
+        .node-hover-glow {
+            filter: drop-shadow(0 0 15px rgba(26, 188, 156, 0.6));
+            transform: scale(1.1);
+        }
+        
+        /* Canvas node fade-in animation */
+        #roadmap {
+            animation: containerFadeIn 0.5s ease-in;
+        }
+        @keyframes containerFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes levelUpPop {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Button -->
+    <button id="menu-btn" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    
+    <!-- Menu Dropdown -->
+    <div id="menu-dropdown">
+        <div class="menu-section">📚 Manage Modules</div>
+        <div id="module-input-container">
+            <input 
+                type="text" 
+                id="new-module-input" 
+                placeholder="Add new module..." 
+                onkeypress="if(event.key==='Enter') addModuleToRoadmap()"
+            >
+            <button onclick="addModuleToRoadmap()">Add Module</button>
+        </div>
+        
+        <div class="menu-section">⚙️ Navigation</div>        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">🗺️ My Roadmaps</a>
+        <a href="#" onclick="openAchievements(); return false;">🏆 Achievements</a>
+        <a href="progress.html">📊 Your Progress</a>
+        <a href="index.html">🏠 Home</a>
+        <a href="login.html">🔑 Login</a>
+        <a href="signup.html">📝 Sign Up</a>
+        <a href="#" onclick="logout(); return false;">🚪 Logout</a>
+    </div>
+
+    <!-- User Info -->
+    <div id="user-info">
+        <img id="profile-pic-avatar" alt="Profile">
+        <span id="username">Guest</span>
+        <a href="profile.html" style="margin-left: 15px; padding: 8px 15px; background-color: #1abc9c; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.backgroundColor='#16a085'" onmouseout="this.style.backgroundColor='#1abc9c'">⚙️ Profile</a>
+    </div>
+
+    <!-- Progress Container -->
+    <div id="progress-container">
+        <div class="progress-icon">📈</div>
+        <div class="progress-content">
+            <div class="progress-title">📈 Progress</div>
+            <div id="progress-bar">
+                <div id="progress-fill"></div>
+            </div>
+            <div id="progress-text">0/0 Modules</div>
+        </div>
+    </div>
+    
+    <!-- Level/XP Container -->
+    <div id="level-container">
+        <div class="level-icon">⭐</div>
+        <div class="level-content">
+            <div id="level-display">
+                <div id="level-badge">⭐</div>
+                <div id="level-info">
+                    <div id="level-number">Level 1</div>
+                    <div id="xp-bar">
+                        <div id="xp-fill"></div>
+                    </div>
+                    <div id="xp-text">0 / 200 XP</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h1>Student Roadmap</h1>
+    <p class="course-info" id="university-display"></p>
+    <p id="input-display"></p>
+    <img id="logo" src="assets\Gemini_Generated_Image_9eplpw9eplpw9epl__1_-removebg-preview.png" alt="Logo" style="position: fixed; top: 5px; right: 5px; cursor: default; z-index: 10;">
+    <div id="roadmap"></div>
+
+    <div id="node-modal" class="modal">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <h2 id="modal-title"></h2>
+        <p id="modal-content"></p>
+        <button id="quiz-button" style="margin-top: 15px; padding: 10px 20px; background-color: #1abc9c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="openQuiz()">📝 Take Quiz</button>
+        <p id="quiz-score" style="margin-top: 10px; font-size: 14px; color: #666; display: none;"></p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.0.0/dist/vis-network.min.js"></script>
+    <script src="api-service.js"></script>
+    <script>
+        // XP and Leveling System - Define early to avoid ReferenceError
+        const levelThresholds = [
+            0,    // Level 1
+            200,  // Level 2
+            500,  // Level 3
+            900,  // Level 4
+            1400, // Level 5
+            2000, // Level 6
+            2700, // Level 7
+            3500, // Level 8
+            4400, // Level 9
+            5400  // Level 10
+        ];
+        
+        // Get input from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const input = urlParams.get('input');
+        const courseName = urlParams.get('course');
+        const universityName = urlParams.get('university');
+        const roadmapIdParam = urlParams.get('roadmap_id');
+        let currentRoadmap = null;
+        let moduleTopicMap = new Map();
+        let modulesById = new Map();
+        
+        // Display course and university info
+        const firstNode = input ? input.split(',')[0].trim() : null;
+        if (roadmapIdParam) {
+            document.getElementById('input-display').textContent = 'Loading roadmap...';
+        } else {
+            document.getElementById('input-display').textContent = firstNode ? `Tailored Roadmap for: ${courseName || firstNode}` : 'Sample roadmap (no input provided)';
+        }
+        
+        if (universityName) {
+            const universityDisplayMap = {
+                'ucl': 'University College London',
+                'imperial': 'Imperial College London',
+                'oxford': 'University of Oxford',
+                'cambridge': 'University of Cambridge',
+                'edinburgh': 'University of Edinburgh',
+                'manchester': 'University of Manchester',
+                'kcl': "King's College London"
+            };
+            document.getElementById('university-display').textContent = `📚 ${universityDisplayMap[universityName] || universityName}`;
+        }
+        
+        // Check login status
+        function checkLoginStatus() {
+            const user = localStorage.getItem('currentUser');
+            const profilePic = document.getElementById('profile-pic-avatar');
+            
+            if (ApiService.isAuthenticated() && user) {
+                const userData = JSON.parse(user);
+                document.getElementById('username').textContent = userData.username || userData.email || 'User';
+                
+                // Load and display profile picture if available
+                const profilePictureData = localStorage.getItem('profilePictureData');
+                if (profilePictureData) {
+                    profilePic.src = profilePictureData;
+                    profilePic.classList.add('show');
+                    
+                    // Apply selected frame
+                    applyProfileFrame(profilePic);
+                } else {
+                    profilePic.classList.remove('show');
+                }
+                
+                // Show My Roadmaps button for logged-in users
+                const myRoadsBtn = document.getElementById('my-roads-btn');
+                if (myRoadsBtn) myRoadsBtn.style.display = 'block';
+                
+                // Initialize achievements and level system for this user
+                initAchievements();
+                initUserLevel();
+            } else {
+                document.getElementById('username').textContent = 'Guest';
+                profilePic.classList.remove('show');
+            }
+        }
+        
+        // Apply selected frame to profile picture
+        function applyProfileFrame(profilePic) {
+            const selectedFrame = localStorage.getItem('selectedProfileFrame') || 'none';
+            
+            // Remove all frame classes
+            profilePic.classList.remove('profile-pic-none', 'profile-pic-basic', 'profile-pic-intermediary', 'profile-pic-master');
+            
+            // Add the selected frame class
+            if (selectedFrame !== 'none') {
+                profilePic.classList.add('profile-pic-' + selectedFrame);
+            } else {
+                profilePic.classList.add('profile-pic-none');
+            }
+        }
+        
+        // Save roadmap state to localStorage
+        function saveRoadmapState() {
+            if (!window.network || !window.nodes) return;
+            
+            const state = {
+                nodes: window.nodes.get(),
+                edges: window.edges.get(),
+                viewportState: {
+                    scale: window.network.getScale(),
+                    position: window.network.getViewPosition()
+                },
+                inputModules: document.getElementById('input-display')?.textContent || ''
+            };
+            
+            localStorage.setItem('roadmapState', JSON.stringify(state));
+        }
+        
+        // Restore roadmap state from localStorage
+        function restoreRoadmapState() {
+            const savedState = localStorage.getItem('roadmapState');
+            if (savedState) {
+                try {
+                    const state = JSON.parse(savedState);
+                    // State will be restored after network initialization
+                    return state;
+                } catch (e) {
+                    console.error('Error restoring roadmap state:', e);
+                }
+            }
+            return null;
+        }
+        
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                ApiService.logout();
+                localStorage.removeItem('currentUser');
+                // Hide My Roadmaps button
+                const myRoadsBtn = document.getElementById('my-roads-btn');
+                if (myRoadsBtn) myRoadsBtn.style.display = 'none';
+                alert('Logged out successfully!');
+                checkLoginStatus();
+            }
+        }
+        
+        // Open My Roadmaps modal
+        async function openMyRoadmaps() {
+            if (!ApiService.isAuthenticated()) {
+                alert('Please login to view your roadmaps');
+                return;
+            }
+            
+            let html = '<h2>🗺️ My Roadmaps</h2>';
+            html += '<p style="color: #666; text-align: center; padding: 10px;">Loading...</p>';
+            
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                modal.innerHTML = html;
+                modal.style.display = 'block';
+            }
+
+            const response = await ApiService.listRoadmaps();
+            if (!response.ok) {
+                if (modal) {
+                    modal.innerHTML = '<h2>🗺️ My Roadmaps</h2><p style="color: #c33; text-align: center; padding: 20px;">Failed to load roadmaps.</p>' +
+                        '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
+                }
+                return;
+            }
+
+            const roadmaps = response.data || [];
+            if (roadmaps.length === 0) {
+                html = '<h2>🗺️ My Roadmaps</h2>';
+                html += '<p style="color: #666; text-align: center; padding: 20px;">No roadmaps yet. Generate one from the Home page.</p>';
+            } else {
+                html = '<h2>🗺️ My Roadmaps</h2>';
+                html += '<div style="display: flex; flex-direction: column; gap: 10px;">';
+                roadmaps.forEach(roadmap => {
+                    const dateText = roadmap.created_at ? new Date(roadmap.created_at).toLocaleDateString() : 'Unknown date';
+                    html += `
+                        <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #1abc9c;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapById(${roadmap.id})">
+                            <strong>${roadmap.title || 'Untitled Roadmap'}</strong><br>
+                            <small style="color: #999;">${dateText}</small>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            if (modal) {
+                modal.innerHTML = html + '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
+                modal.style.display = 'block';
+            }
+        }
+
+        function loadRoadmapById(roadmapId) {
+            if (!roadmapId) return;
+            window.location.href = `roadmap.html?roadmap_id=${roadmapId}`;
+        }
+        
+        // Initialize login status
+        checkLoginStatus();
+        
+        // Dynamic spacing for progress and level icons
+        const progressContainer = document.getElementById('progress-container');
+        const levelContainer = document.getElementById('level-container');
+        
+        // Initial positions
+        const progressInitialTop = 250;
+        const levelInitialTop = 305;
+        
+        progressContainer.addEventListener('mouseenter', function() {
+            // Move level container down when progress expands
+            levelContainer.style.transition = 'top 0.3s ease';
+            levelContainer.style.top = (levelInitialTop + 50) + 'px'; // Move down by 50px when progress expands
+        });
+        
+        progressContainer.addEventListener('mouseleave', function() {
+            // Move level container back
+            levelContainer.style.top = levelInitialTop + 'px';
+        });
+        
+        // Draggable logo
+        const logo = document.getElementById('logo');
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        // Sample data for the roadmap (demonstrates year-based layout)
+        const sampleNodes = [
+            // Year 1 modules
+            { id: '1', label: 'Maths and Statistics', year: 1, order: 0 },
+            { id: '2', label: 'Programming Practice', year: 1, order: 1 },
+            { id: '3', label: 'Logic and Knowledge', year: 1, order: 2 },
+            // Year 2 modules
+            { id: '4', label: 'Introduction to AI', year: 2, order: 3 },
+            { id: '5', label: 'Web and Internet Systems', year: 2, order: 4 },
+            { id: '6', label: 'Foundations of Comp Theory', year: 2, order: 5 },
+            // Year 3 modules
+            { id: '7', label: 'Machine Learning', year: 3, order: 6 },
+            { id: '8', label: 'Data Science', year: 3, order: 7 },
+            { id: '9', label: 'Final Year Project', year: 3, order: 8 }
+        ];
+        const sampleEdges = [
+            // Relationships between modules (from dependency matrix)
+            { from: '1', to: '4' },  // Maths -> AI
+            { from: '2', to: '4' },  // Programming -> AI
+            { from: '3', to: '4' },  // Logic -> AI
+            { from: '2', to: '5' },  // Programming -> Web
+            { from: '1', to: '6' },  // Maths -> Comp Theory
+            { from: '3', to: '6' },  // Logic -> Comp Theory
+            { from: '4', to: '7' },  // AI -> ML
+            { from: '6', to: '7' },  // Comp Theory -> ML
+            { from: '5', to: '8' },  // Web -> Data Science
+            { from: '7', to: '8' },  // ML -> Data Science
+            { from: '7', to: '9' },  // ML -> Project
+            { from: '8', to: '9' }   // Data Science -> Project
+        ];
+
+        function buildNetworkFromRoadmap(roadmap) {
+            currentRoadmap = roadmap;
+            modulesById = new Map();
+            moduleTopicMap = new Map();
+
+            const modules = (roadmap.modules || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+            const nodesData = [];
+            const edgesData = [];
+            
+            // Determine year for each module based on:
+            // 1. module.year property (if exists)
+            // 2. module.level property (if exists)  
+            // 3. Inferred from order (divide modules into 3 years)
+            const totalModules = modules.length;
+            const modulesPerYear = Math.ceil(totalModules / 3);
+            
+            modules.forEach((module, index) => {
+                const moduleId = String(module.id);
+                modulesById.set(moduleId, { ...module, id: moduleId });
+                
+                // Determine year: use explicit year/level, or infer from order
+                let year = 1;
+                if (module.year !== undefined) {
+                    year = module.year;
+                } else if (module.level !== undefined) {
+                    year = module.level;
+                } else {
+                    // Infer year from order (distribute across 3 years)
+                    year = Math.floor(index / modulesPerYear) + 1;
+                    year = Math.min(year, 3); // Cap at year 3
+                }
+                
+                // Add module node with year info
+                nodesData.push({ 
+                    id: moduleId, 
+                    label: module.title,
+                    year: year,
+                    order: module.order || index
+                });
+                
+                // Store topics for modal display
+                if (module.topics && module.topics.length > 0) {
+                    moduleTopicMap.set(moduleId, module.topics[0].id);
+                }
+            });
+            
+            // Use ONLY explicit edges from the roadmap matrix (relationships between modules)
+            if (Array.isArray(roadmap.edges)) {
+                const nodeIds = new Set(nodesData.map(n => String(n.id)));
+                roadmap.edges.forEach(edge => {
+                    const from = String(edge.source);
+                    const to = String(edge.target);
+                    if (nodeIds.has(from) && nodeIds.has(to)) {
+                        edgesData.push({ from, to });
+                    }
+                });
+            }
+
+            const titleText = roadmap.title || (roadmap.course && roadmap.course.title) || 'Student Roadmap';
+            document.getElementById('input-display').textContent = `Tailored Roadmap for: ${titleText}`;
+            if (roadmap.course && roadmap.course.university) {
+                document.getElementById('university-display').textContent = `📚 ${roadmap.course.university}`;
+            } else if (roadmap.manual_course_title) {
+                document.getElementById('university-display').textContent = `📚 ${roadmap.manual_course_title}`;
+            }
+
+            createNetwork(nodesData, edgesData);
+        }
+
+        // Fallback visualization if Vis.js doesn't load
+        function createFallbackVisualization(container, nodesData, edgesData) {
+            console.log('Creating fallback visualization');
+            container.innerHTML = '';
+            
+            // Create a flow layout with the nodes
+            const flowContainer = document.createElement('div');
+            flowContainer.style.display = 'flex';
+            flowContainer.style.flexDirection = 'column';
+            flowContainer.style.alignItems = 'center';
+            flowContainer.style.gap = '20px';
+            flowContainer.style.padding = '40px 20px';
+            flowContainer.style.width = '100%';
+            flowContainer.style.boxSizing = 'border-box';
+            
+            nodesData.forEach((node, index) => {
+                const nodeBox = document.createElement('div');
+                nodeBox.style.display = 'flex';
+                nodeBox.style.flexDirection = 'column';
+                nodeBox.style.alignItems = 'center';
+                nodeBox.style.marginBottom = '0px';
+                nodeBox.style.width = '100%';
+                
+                const box = document.createElement('div');
+                box.className = 'fallback-node-box';
+                box.textContent = node.label;
+                box.style.backgroundColor = '#1abc9c';
+                box.style.color = 'white';
+                box.style.padding = '20px 30px';
+                box.style.borderRadius = '8px';
+                box.style.fontWeight = 'bold';
+                box.style.cursor = 'pointer';
+                box.style.border = '2px solid #0d7a6c';
+                box.style.minWidth = '200px';
+                box.style.textAlign = 'center';
+                box.style.transition = 'all 0.3s ease';
+                box.style.userSelect = 'none';
+                box.style.width = '200px';
+                
+                box.addEventListener('mouseenter', () => {
+                    box.style.transform = 'translateY(-5px)';
+                    box.style.boxShadow = '0 10px 20px rgba(26, 188, 156, 0.3)';
+                });
+                
+                box.addEventListener('mouseleave', () => {
+                    box.style.transform = 'translateY(0)';
+                    box.style.boxShadow = 'none';
+                });
+                
+                // Store node ID for quiz functionality
+                box.dataset.nodeId = node.id;
+                box.addEventListener('click', function() {
+                    // Simulate node click to open modal
+                    window.currentNodeId = node.id;
+                    document.getElementById('modal-title').textContent = node.label;
+                    document.getElementById('modal-content').textContent = `Learn about ${node.label}`;
+                    document.getElementById('node-modal').style.display = 'block';
+                });
+                
+                nodeBox.appendChild(box);
+                
+                // Add arrow between nodes
+                if (index < nodesData.length - 1) {
+                    const connector = document.createElement('div');
+                    connector.style.width = '2px';
+                    connector.style.height = '30px';
+                    connector.style.background = '#6f6f6f';
+                    connector.style.margin = '10px 0';
+                    connector.style.borderRadius = '2px';
+                    nodeBox.appendChild(connector);
+                }
+                
+                flowContainer.appendChild(nodeBox);
+            });
+            
+            container.appendChild(flowContainer);
+        }
+
+        function resizeRoadmapContainerToGraph(container, network, nodesData) {
+            if (!container || !network || !nodesData || nodesData.length === 0) return;
+
+            try {
+                const nodeIds = nodesData.map(node => node.id);
+                const positions = network.getPositions(nodeIds);
+                const coords = Object.values(positions);
+                if (!coords.length) return;
+
+                const xs = coords.map(p => p.x);
+                const ys = coords.map(p => p.y);
+
+                const graphWidth = Math.max(...xs) - Math.min(...xs);
+                const graphHeight = Math.max(...ys) - Math.min(...ys);
+
+                const targetWidth = Math.min(Math.max(Math.ceil(graphWidth + 700), 1200), 1900);
+                const targetHeight = Math.min(Math.max(Math.ceil(graphHeight + 700), 700), 2800);
+
+                container.style.width = '95%';
+                container.style.maxWidth = `${targetWidth}px`;
+                container.style.minHeight = `${targetHeight}px`;
+                container.style.height = `${targetHeight}px`;
+
+                network.setSize('100%', `${targetHeight}px`);
+                network.redraw();
+            } catch (error) {
+                console.error('Error resizing roadmap container:', error);
+            }
+        }
+
+        // Function to create the network
+        function createNetwork(nodesData, edgesData) {
+            let container;
+            let network;
+            let nodesByLevel = new Map();
+            const V_SPACING = 180; // vertical gap for height calculation
+            try {
+            console.log('createNetwork called with', nodesData.length, 'nodes and', edgesData.length, 'edges');
+            
+            container = document.getElementById('roadmap');
+            if (!container) {
+                console.error('roadmap container not found!');
+                return;
+            }
+            
+            console.log('Container found:', container);
+            console.log('Container dimensions:', container.offsetWidth, 'x', container.offsetHeight);
+            
+            // Ensure container has proper styling
+            container.style.display = 'block';
+            container.style.position = 'relative';
+            container.style.width = '95%';
+            container.style.maxWidth = '1600px';
+            container.style.minHeight = '600px';
+            container.style.height = 'auto';
+            container.style.margin = '20px auto';
+            container.style.backgroundColor = 'white';
+            container.style.borderRadius = '15px';
+            container.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
+            container.style.zIndex = '1';
+            
+            // ── Normalise IDs to strings ──────────────────────────────────────
+            const normalizedNodes = nodesData.map((node) => ({
+                ...node,
+                id: String(node.id)
+            }));
+
+            const normalizedEdges = (edgesData || []).map((edge) => ({
+                ...edge,
+                from: String(edge.from),
+                to: String(edge.to)
+            }));
+
+            const nodeIdSet = new Set(normalizedNodes.map(n => n.id));
+            const adjacencyEdges = normalizedEdges.filter(
+                edge => nodeIdSet.has(edge.from) && nodeIdSet.has(edge.to)
+            );
+
+            // ══════════════════════════════════════════════════════════════════
+            // YEAR-BASED LAYOUT: Modules grouped by year in horizontal rows
+            // Row 1 = Year 1, Row 2 = Year 2, Row 3 = Year 3
+            // Modules connected based on relationship matrix (edges)
+            // ══════════════════════════════════════════════════════════════════
+            
+            const YEAR_V_SPACING = 250;   // vertical gap between year rows
+            const MODULE_H_SPACING = 280; // horizontal gap between modules in same year
+            const posMap = new Map();
+            nodesByLevel = new Map();
+            
+            // Group nodes by year
+            const nodesByYear = new Map();
+            normalizedNodes.forEach(node => {
+                const year = node.year || 1;
+                if (!nodesByYear.has(year)) {
+                    nodesByYear.set(year, []);
+                }
+                nodesByYear.get(year).push(node);
+            });
+            
+            // Sort years and sort nodes within each year by order
+            const sortedYears = Array.from(nodesByYear.keys()).sort((a, b) => a - b);
+            sortedYears.forEach(year => {
+                const yearNodes = nodesByYear.get(year);
+                yearNodes.sort((a, b) => (a.order || 0) - (b.order || 0));
+            });
+            
+            // Calculate max width needed for year labels offset
+            let maxRowWidth = 0;
+            sortedYears.forEach(year => {
+                const numNodes = nodesByYear.get(year).length;
+                const rowWidth = (numNodes - 1) * MODULE_H_SPACING;
+                maxRowWidth = Math.max(maxRowWidth, rowWidth);
+            });
+            const YEAR_LABEL_OFFSET = -(maxRowWidth / 2) - 180; // Position labels to the left
+            
+            // Position nodes: each year is a horizontal row
+            sortedYears.forEach((year, yearIndex) => {
+                const yearNodes = nodesByYear.get(year);
+                const numNodes = yearNodes.length;
+                
+                // Center the row horizontally
+                const totalWidth = (numNodes - 1) * MODULE_H_SPACING;
+                const startX = -totalWidth / 2;
+                const y = yearIndex * YEAR_V_SPACING;
+                
+                yearNodes.forEach((node, nodeIndex) => {
+                    const x = startX + nodeIndex * MODULE_H_SPACING;
+                    posMap.set(node.id, { x, y });
+                });
+                
+                // Track nodes by level for height calculation
+                nodesByLevel.set(yearIndex, yearNodes.map(n => n.id));
+            });
+            
+            // Add year label nodes (non-interactive visual labels)
+            const yearLabelNodes = sortedYears.map((year, yearIndex) => ({
+                id: `year-label-${year}`,
+                label: `Year ${year}`,
+                isYearLabel: true,
+                year: year,
+                x: YEAR_LABEL_OFFSET,
+                y: yearIndex * YEAR_V_SPACING
+            }));
+            
+            // Handle any nodes without year (fallback)
+            let fallbackY = sortedYears.length * YEAR_V_SPACING;
+            normalizedNodes.forEach(n => {
+                if (!posMap.has(n.id)) {
+                    posMap.set(n.id, { x: 0, y: fallbackY });
+                    fallbackY += 100;
+                }
+            });
+            
+            // Year colors for visual distinction
+            const yearColors = {
+                1: { background: '#3498db', border: '#2980b9' }, // Blue - Year 1
+                2: { background: '#1abc9c', border: '#16a085' }, // Teal - Year 2
+                3: { background: '#9b59b6', border: '#8e44ad' }  // Purple - Year 3
+            };
+
+            // Create enriched nodes with positions and styling
+            const enrichedNodes = normalizedNodes.map((node) => {
+                const pos = posMap.get(node.id) || { x: 0, y: 0 };
+                const year = node.year || 1;
+                const colors = yearColors[year] || yearColors[1];
+                
+                return {
+                    ...node,
+                    label: (node.label && String(node.label).trim()) ? node.label : `Module ${node.id}`,
+                    widthConstraint: { minimum: 180, maximum: 260 },
+                    heightConstraint: { minimum: 50, valign: 'middle' },
+                    x: pos.x,
+                    y: pos.y,
+                    fixed: { x: true, y: true },
+                    color: colors,
+                    font: { size: 14, color: 'white', face: 'Arial', bold: true },
+                    borderWidth: 3,
+                    shape: 'box',
+                    margin: 12
+                };
+            });
+            
+            // Add year label nodes to the visualization
+            yearLabelNodes.forEach(labelNode => {
+                const year = labelNode.year;
+                const yearLabelColors = {
+                    1: { background: '#e3f2fd', border: '#2196f3' },
+                    2: { background: '#e0f7fa', border: '#00bcd4' },
+                    3: { background: '#f3e5f5', border: '#9c27b0' }
+                };
+                const colors = yearLabelColors[year] || yearLabelColors[1];
+                
+                enrichedNodes.push({
+                    ...labelNode,
+                    widthConstraint: { minimum: 80, maximum: 100 },
+                    heightConstraint: { minimum: 40, valign: 'middle' },
+                    fixed: { x: true, y: true },
+                    color: colors,
+                    font: { size: 14, color: '#333', face: 'Arial', bold: true },
+                    borderWidth: 2,
+                    borderDashes: [5, 5],
+                    shape: 'box',
+                    margin: 8
+                });
+            });
+            
+            // Style edges - all relationship edges get the same styling
+            // Edges crossing years vs within same year can be styled differently
+            const enrichedEdges = adjacencyEdges.map(edge => {
+                // Determine if edge crosses years
+                const fromNode = normalizedNodes.find(n => n.id === edge.from);
+                const toNode = normalizedNodes.find(n => n.id === edge.to);
+                const fromYear = fromNode ? (fromNode.year || 1) : 1;
+                const toYear = toNode ? (toNode.year || 1) : 1;
+                const crossesYears = fromYear !== toYear;
+                
+                return {
+                    ...edge,
+                    color: { color: '#6f6f6f', highlight: '#1abc9c', hover: '#1abc9c' },
+                    width: crossesYears ? 2 : 1.5,
+                    arrows: { to: { enabled: true, scaleFactor: 0.5, type: 'arrow' } },
+                    smooth: crossesYears
+                        ? { enabled: true, type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.3 }
+                        : { enabled: true, type: 'curvedCW', roundness: 0.15 },
+                    dashes: !crossesYears ? [4, 4] : false // Dashed for same-year connections
+                };
+            });
+            
+            console.log('Creating DataSets...');
+            console.log('vis available:', typeof vis);
+            console.log('vis.DataSet available:', typeof vis.DataSet);
+            
+            const data = { 
+                nodes: new vis.DataSet(enrichedNodes), 
+                edges: new vis.DataSet(enrichedEdges)
+            };
+            
+            console.log('DataSets created successfully');
+
+            // Store globally for later access
+            window.nodes = data.nodes;
+            window.edges = data.edges;
+            window.nodesData = nodesData;
+            
+            console.log('Data created with', data.nodes.length, 'nodes');
+            console.log('Nodes:', data.nodes.get());
+            console.log('Edges:', data.edges.get());
+            
+            // Check if Vis.Network is available
+            if (typeof vis === 'undefined' || typeof vis.Network === 'undefined') {
+                console.error('Vis.js library not loaded properly. vis.Network is not available.');
+                console.error('window.vis:', window.vis);
+                // Create a fallback visualization
+                createFallbackVisualization(container, nodesData, edgesData);
+                return;
+            }
+
+            const options = {
+                autoResize: true,
+                layout: {
+                    improvedLayout: false,
+                    randomSeed: 7
+                },
+                physics: {
+                    enabled: false,
+                    stabilization: {
+                        enabled: false
+                    }
+                },
+                interaction: {
+                    dragNodes: false,
+                    dragView: true,
+                    zoomView: true,
+                    navigationButtons: false
+                },
+                nodes: {
+                    // Default styling - individual nodes can override
+                    shape: 'box',
+                    borderWidth: 2
+                },
+                edges: {
+                    // Default edge styling - individual edges override
+                    smooth: { enabled: true }
+                }
+            };
+
+            network = new vis.Network(container, data, options);
+            
+            // Store network globally for later access
+            window.network = network;
+            
+            console.log('Network created successfully');
+            console.log('Network object:', network);
+            
+            // Check canvas creation
+            const canvas = container.querySelector('canvas');
+            console.log('Canvas element after network creation:', canvas);
+            if (canvas) {
+                console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+                console.log('Canvas style:', canvas.style.cssText);
+            } else {
+                console.error('Canvas element not found in container!');
+            }
+        } catch (networkError) {
+            console.error('Error creating network:', networkError);
+            console.error('Stack:', networkError.stack);
+            // Fallback to simple visualization
+            if (container) {
+                createFallbackVisualization(container, nodesData, edgesData);
+            }
+            return;
+        }
+        
+        try {
+            // Wait for network to initialize
+            network.on('stabilizationIterationsDone', function() {
+                network.setOptions({ physics: false });
+                console.log('Network initialized');
+            });
+
+            // Prevent canvas from capturing scroll wheel - allow page scroll
+            container.addEventListener('wheel', (e) => {
+                // Let the event bubble up to allow page scrolling
+                return true;
+            }, { passive: true });
+
+            // Calculate and set container height based on levels
+            const nodeCount = nodesData.length;
+            const numLevels = nodesByLevel ? nodesByLevel.size : Math.ceil(nodeCount / 4);
+            const estimatedHeight = Math.max(700, numLevels * V_SPACING + 400);
+            container.style.minHeight = estimatedHeight + 'px';
+            container.style.height = estimatedHeight + 'px';
+
+            // Position nodes properly
+            setTimeout(() => {
+                if (window.network) {
+                    try {
+                        // Fit the network to the viewport and then resize container based on graph size
+                        window.network.fit({ 
+                            animation: false,
+                            padding: {
+                                top: 70,
+                                right: 80,
+                                bottom: 70,
+                                left: 80
+                            }
+                        });
+
+                        resizeRoadmapContainerToGraph(container, window.network, nodesData);
+
+                        window.network.fit({ 
+                            animation: false,
+                            padding: {
+                                top: 70,
+                                right: 80,
+                                bottom: 70,
+                                left: 80
+                            }
+                        });
+
+                        console.log('Network fitted successfully');
+                    } catch (e) {
+                        console.error('Fit error:', e);
+                    }
+                }
+                
+                // Update progress bar, level display, and add hover effects
+                updateProgressBar();
+                updateLevelDisplay();
+                addNodeHoverEffects();
+                checkAchievements();
+            }, 200);
+
+            // POPUP LOGIC: Re-adding the click event
+            try {
+                network.on('click', function(params) {
+                    if (params.nodes.length > 0) {
+                        const nodeId = params.nodes[0];
+                        
+                        // Skip year label nodes (they are not interactive)
+                        if (String(nodeId).startsWith('year-label-')) {
+                            return;
+                        }
+                        
+                        const node = window.nodesData.find(n => n.id === nodeId || String(n.id) === String(nodeId));
+                        if (node) {
+                            const moduleData = modulesById.get(String(nodeId));
+
+                            // Store current node ID for quiz button
+                            window.currentNodeId = nodeId;
+                            window.currentTopicId = moduleTopicMap.get(String(nodeId)) || null;
+
+                            if (moduleData) {
+                                document.getElementById('modal-title').textContent = moduleData.title;
+                                const topicsList = (moduleData.topics || []).map(t => `<li>${t.title}</li>`).join('');
+                                const topicsHtml = topicsList ? `<ul style="margin: 10px 0 0 18px;">${topicsList}</ul>` : '<p style="margin-top: 10px; color: #666;">No topics listed.</p>';
+                                
+                                // Show year info
+                                const yearInfo = node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">📅 Year ${node.year}</div>` : '';
+                                
+                                document.getElementById('modal-content').innerHTML = `
+                                    ${yearInfo}
+                                    <div style="font-size: 14px; color: #555;">${moduleData.description || 'Module details coming soon.'}</div>
+                                    <div style="margin-top: 10px; font-weight: 600; color: #1abc9c;">Topics</div>
+                                    ${topicsHtml}
+                                `;
+                            } else {
+                                const yearInfo = node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">📅 Year ${node.year}</div>` : '';
+                                document.getElementById('modal-title').textContent = node.label;
+                                document.getElementById('modal-content').innerHTML = `
+                                    ${yearInfo}
+                                    <div style="font-size: 14px; color: #555;">Detailed resources for learning ${node.label} will appear here.</div>
+                                `;
+                            }
+
+                            // Check if quiz has been completed for this module
+                            const quizResultsKey = `quiz-${nodeId}`;
+                            const quizResults = JSON.parse(localStorage.getItem(quizResultsKey));
+                            
+                            if (quizResults) {
+                                // Show quiz score
+                                document.getElementById('quiz-score').textContent = `Your Quiz Score: ${quizResults.score}%`;
+                                document.getElementById('quiz-score').style.display = 'block';
+                            } else {
+                                document.getElementById('quiz-score').style.display = 'none';
+                            }
+                            
+                            document.getElementById('node-modal').style.display = 'block';
+                        }
+                    }
+                });
+            } catch (eventError) {
+                console.error('Error setting up network events:', eventError);
+            }
+
+        } catch (generalError) {
+            console.error('Error in createNetwork function:', generalError);
+            console.error('Stack:', generalError.stack);
+            // Try to show fallback visualization
+            try {
+                const container = document.getElementById('roadmap');
+                if (container) {
+                    createFallbackVisualization(container, nodesData, edgesData);
+                }
+            } catch (fallbackError) {
+                console.error('Error creating fallback visualization:', fallbackError);
+            }
+        }
+        }
+
+        function closeModal() {
+            document.getElementById('node-modal').style.display = 'none';
+        }
+
+        function openQuiz() {
+            const nodeId = window.currentNodeId;
+            if (!nodeId || !window.nodesData) {
+                alert('Error: Could not load quiz. Please try again.');
+                return;
+            }
+            
+            const node = window.nodesData.find(n => n.id === nodeId);
+            if (node) {
+                const params = new URLSearchParams();
+                params.set('moduleId', nodeId);
+                params.set('topic', node.label);
+                if (window.currentTopicId) {
+                    params.set('topicId', window.currentTopicId);
+                }
+                if (roadmapIdParam) {
+                    params.set('roadmap_id', roadmapIdParam);
+                }
+                window.location.href = `quiz.html?${params.toString()}`;
+            } else {
+                alert('Error: Module not found');
+            }
+        }
+
+        function toggleMenu() {
+            const menu = document.getElementById('menu-dropdown');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Add new module to the roadmap
+        function addModuleToRoadmap() {
+            // Check if network and nodes exist
+            if (!window.network || !window.nodes || !window.edges) {
+                alert('Please wait for the roadmap to load');
+                return;
+            }
+            
+            const input = document.getElementById('new-module-input');
+            const moduleName = input.value.trim();
+            
+            if (!moduleName) {
+                alert('Please enter a module name');
+                return;
+            }
+            
+            // Get all current nodes
+            const currentNodes = window.nodes.get();
+            const nodeIds = currentNodes.map(n => n.id);
+            const maxId = nodeIds.length > 0 ? Math.max(...nodeIds) : 0;
+            const newId = maxId + 1;
+            
+            // Add new node to the network
+            const newNode = {
+                id: newId,
+                label: moduleName
+            };
+            window.nodes.add([newNode]);
+            
+            // Also update window.nodesData for quiz functionality
+            if (!window.nodesData) window.nodesData = [];
+            window.nodesData.push(newNode);
+            
+            // Connect the new module to the last module in the sequence
+            if (nodeIds.length > 0) {
+                const lastNodeId = nodeIds[nodeIds.length - 1];
+                window.edges.add([{
+                    from: lastNodeId,
+                    to: newId
+                }]);
+            }
+            
+            // Clear input field
+            input.value = '';
+            
+            // Trigger network animation to fit the new node
+            if (window.network.fit) {
+                window.network.fit({
+                    animation: {
+                        duration: 400,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+                resizeRoadmapContainerToGraph(document.getElementById('roadmap'), window.network, window.nodesData || []);
+                window.network.fit({
+                    animation: {
+                        duration: 300,
+                        easingFunction: 'easeInOutQuad'
+                    },
+                    padding: {
+                        top: 70,
+                        right: 80,
+                        bottom: 70,
+                        left: 80
+                    }
+                });
+            }
+            
+            // Close menu
+            document.getElementById('menu-dropdown').style.display = 'none';
+            
+            // Update progress bar
+            updateProgressBar();
+            
+            // Check for achievements
+            checkAchievements();
+        }
+
+        // Update progress bar based on completed modules
+        function updateProgressBar() {
+            const totalModules = Array.isArray(window.nodesData) ? window.nodesData.length : 0;
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+
+            if (totalModules === 0) {
+                if (progressFill) {
+                    progressFill.style.width = '0%';
+                }
+                if (progressText) {
+                    progressText.textContent = '0/0 Modules';
+                }
+                return;
+            }
+            
+            let completedModules = 0;
+            window.nodesData.forEach(node => {
+                const quizResultsKey = `quiz-${node.id}`;
+                if (localStorage.getItem(quizResultsKey)) {
+                    completedModules++;
+                }
+            });
+            
+            const progressPercent = (completedModules / totalModules) * 100;
+            
+            if (progressFill) {
+                progressFill.style.width = progressPercent + '%';
+            }
+            if (progressText) {
+                progressText.textContent = `${completedModules}/${totalModules} Modules`;
+            }
+        }
+
+        // Achievement System
+        const achievements = [
+            { id: 'first-quiz', name: 'First Step', description: 'Complete your first quiz', icon: '✓' },
+            { id: 'three-quizzes', name: 'Quick Learner', description: 'Complete 3 quizzes', icon: '⚡' },
+            { id: 'half-done', name: 'Halfway There', description: 'Complete 50% of modules', icon: '🌟' },
+            { id: 'all-modules', name: 'Roadmap Master', description: 'Complete all modules', icon: '👑' },
+            { id: 'perfect-score', name: 'Perfect', description: 'Score 100% on a quiz', icon: '💯' },
+            { id: 'high-achiever', name: 'High Achiever', description: 'Score 95%+ on 3 quizzes', icon: '🏆' },
+            { id: 'level-5', name: 'Rising Star', description: 'Reach Level 5', icon: '⭐' },
+            { id: 'level-10', name: 'Legendary', description: 'Reach Level 10', icon: '👑' }
+        ];
+
+        function initAchievements() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return;
+            
+            const userData = JSON.parse(user);
+            const achievementsKey = `achievements-${userData.email}`;
+            
+            if (!localStorage.getItem(achievementsKey)) {
+                localStorage.setItem(achievementsKey, JSON.stringify([]));
+            }
+        }
+
+        function checkAchievements() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return;
+            
+            const userData = JSON.parse(user);
+            const achievementsKey = `achievements-${userData.email}`;
+            let userAchievements = JSON.parse(localStorage.getItem(achievementsKey)) || [];
+            
+            let completedCount = 0;
+            let perfectScoreFound = false;
+            let highScoreCount = 0;
+            
+            if (window.nodesData) {
+                window.nodesData.forEach(node => {
+                    const quizResultsKey = `quiz-${node.id}`;
+                    const results = JSON.parse(localStorage.getItem(quizResultsKey));
+                    
+                    if (results) {
+                        completedCount++;
+                        if (results.score === 100) perfectScoreFound = true;
+                        if (results.score >= 95) highScoreCount++;
+                    }
+                });
+            }
+            
+            // Check for new achievements
+            if (completedCount >= 1 && !userAchievements.includes('first-quiz')) {
+                userAchievements.push('first-quiz');
+            }
+            if (completedCount >= 3 && !userAchievements.includes('three-quizzes')) {
+                userAchievements.push('three-quizzes');
+            }
+            if (window.nodesData && completedCount >= (window.nodesData.length / 2) && !userAchievements.includes('half-done')) {
+                userAchievements.push('half-done');
+            }
+            if (window.nodesData && completedCount === window.nodesData.length && !userAchievements.includes('all-modules')) {
+                userAchievements.push('all-modules');
+            }
+            if (perfectScoreFound && !userAchievements.includes('perfect-score')) {
+                userAchievements.push('perfect-score');
+            }
+            if (highScoreCount >= 3 && !userAchievements.includes('high-achiever')) {
+                userAchievements.push('high-achiever');
+            }
+            
+            localStorage.setItem(achievementsKey, JSON.stringify(userAchievements));
+        }
+
+        function openAchievements() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) {
+                alert('Please login to view achievements');
+                return;
+            }
+            
+            const userData = JSON.parse(user);
+            const achievementsKey = `achievements-${userData.email}`;
+            const userAchievements = JSON.parse(localStorage.getItem(achievementsKey)) || [];
+            
+            // Build dynamic achievements list including level achievements
+            let allAchievements = [...achievements];
+            for (let i = 1; i <= 10; i++) {
+                if (i <= 4) continue; // Skip 1-4 as they're covered by other achievements
+                const levelName = i === 5 ? 'Rising Star' : i === 10 ? 'Legendary' : `Level ${i}`;
+                const levelIcon = i === 5 ? '⭐' : i === 10 ? '👑' : '⭐';
+                allAchievements.push({ 
+                    id: `level-${i}`, 
+                    name: levelName, 
+                    description: `Reach Level ${i}`, 
+                    icon: levelIcon 
+                });
+            }
+            
+            let html = '<h2>🏆 Achievements</h2>';
+            html += '<p style="font-size: 12px; color: #666; margin: 10px 0;">You have earned ' + userAchievements.length + ' achievements</p>';
+            html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">';
+            
+            allAchievements.forEach(achievement => {
+                const earned = userAchievements.includes(achievement.id);
+                html += `
+                    <div style="padding: 12px; border-radius: 8px; background: ${earned ? '#f0f9f8' : '#f5f5f5'}; border: 2px solid ${earned ? '#1abc9c' : '#ddd'}; text-align: center; opacity: ${earned ? '1' : '0.6'};">
+                        <div style="font-size: 24px; margin-bottom: 5px;">${achievement.icon}</div>
+                        <strong style="font-size: 12px; display: block; color: #1abc9c;">${achievement.name}</strong>
+                        <small style="color: #666; display: block; margin-top: 5px;">${achievement.description}</small>
+                        ${earned ? '<small style="color: #1abc9c; display: block; margin-top: 5px;">✓ Earned</small>' : '<small style="color: #999;">Locked</small>'}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            // Show in modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                modal.innerHTML = html + '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
+                modal.style.display = 'block';
+            }
+        }
+
+        // XP and Leveling System (already defined at top of script)
+
+        function initUserLevel() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return;
+            
+            const userData = JSON.parse(user);
+            const userLevelKey = `user-level-${userData.email}`;
+            const userXPKey = `user-xp-${userData.email}`;
+            
+            if (!localStorage.getItem(userLevelKey)) {
+                localStorage.setItem(userLevelKey, '1');
+                localStorage.setItem(userXPKey, '0');
+            }
+            
+            updateLevelDisplay();
+        }
+
+        function addXP(amount) {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return;
+            
+            const userData = JSON.parse(user);
+            const userXPKey = `user-xp-${userData.email}`;
+            const userLevelKey = `user-level-${userData.email}`;
+            
+            let currentXP = parseInt(localStorage.getItem(userXPKey)) || 0;
+            let currentLevel = parseInt(localStorage.getItem(userLevelKey)) || 1;
+            
+            currentXP += amount;
+            
+            // Check for level ups
+            while (currentLevel < levelThresholds.length && currentXP >= levelThresholds[currentLevel]) {
+                currentLevel++;
+                showLevelUpNotification(currentLevel);
+                addLevelAchievement(currentLevel);
+            }
+            
+            localStorage.setItem(userXPKey, currentXP);
+            localStorage.setItem(userLevelKey, currentLevel);
+            
+            updateLevelDisplay();
+            checkAchievements();
+        }
+
+        function calculateQuizXP(score) {
+            let xp = 100; // Base XP
+            
+            if (score >= 50) {
+                // Bonus XP: 20 XP per 10% above 50%
+                const bonusPercent = Math.floor((score - 50) / 10);
+                xp += bonusPercent * 20;
+            }
+            
+            return Math.min(xp, 200); // Max 200 XP per quiz
+        }
+
+        function updateLevelDisplay() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return;
+            
+            const userData = JSON.parse(user);
+            const userLevelKey = `user-level-${userData.email}`;
+            const userXPKey = `user-xp-${userData.email}`;
+            
+            const currentLevel = parseInt(localStorage.getItem(userLevelKey)) || 1;
+            const currentXP = parseInt(localStorage.getItem(userXPKey)) || 0;
+            
+            const levelNumber = document.getElementById('level-number');
+            const xpBar = document.getElementById('xp-fill');
+            const xpText = document.getElementById('xp-text');
+            
+            if (currentLevel >= levelThresholds.length) {
+                // Max level reached
+                if (levelNumber) levelNumber.textContent = `Level ${currentLevel} (MAX)`;
+                if (xpBar) xpBar.style.width = '100%';
+                if (xpText) xpText.textContent = `${currentXP} XP (Max Level)`;
+                return;
+            }
+            
+            const currentLevelXP = levelThresholds[currentLevel - 1];
+            const nextLevelXP = levelThresholds[currentLevel];
+            const xpInCurrentLevel = currentXP - currentLevelXP;
+            const xpNeededForLevel = nextLevelXP - currentLevelXP;
+            const progressPercent = (xpInCurrentLevel / xpNeededForLevel) * 100;
+            
+            if (levelNumber) levelNumber.textContent = `Level ${currentLevel}`;
+            if (xpBar) xpBar.style.width = Math.min(progressPercent, 100) + '%';
+            if (xpText) xpText.textContent = `${xpInCurrentLevel} / ${xpNeededForLevel} XP`;
+        }
+
+        function showLevelUpNotification(level) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+                color: white;
+                padding: 30px 50px;
+                border-radius: 15px;
+                font-size: 32px;
+                font-weight: bold;
+                z-index: 3000;
+                text-align: center;
+                box-shadow: 0 10px 40px rgba(255, 140, 0, 0.4);
+                animation: levelUpPop 0.6s ease-out;
+            `;
+            
+            notification.innerHTML = `<div>⭐ LEVEL UP! ⭐</div><div style="font-size: 48px; margin-top: 10px;">Level ${level}</div>`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.4s ease-out';
+                setTimeout(() => notification.remove(), 400);
+            }, 2000);
+        }
+
+        function addLevelAchievement(level) {
+            const user = localStorage.getItem('currentUser');
+            if (!user) return;
+            
+            const userData = JSON.parse(user);
+            const achievementsKey = `achievements-${userData.email}`;
+            let userAchievements = JSON.parse(localStorage.getItem(achievementsKey)) || [];
+            
+            const levelAchievementId = `level-${level}`;
+            if (!userAchievements.includes(levelAchievementId)) {
+                userAchievements.push(levelAchievementId);
+                localStorage.setItem(achievementsKey, JSON.stringify(userAchievements));
+            }
+        }
+
+        // Add hovereeffects to nodes
+        function addNodeHoverEffects() {
+            if (!window.network) return;
+            
+            window.network.on('hoverNode', function(event) {
+                const nodeId = event.node;
+                // Vis.js provides built-in hover effects via the color.hover property
+                // Additional glow effect can be achieved through the hover action
+            });
+            
+            window.network.on('blurNode', function(event) {
+                // Reset when mouse leaves node
+            });
+        }
+
+        // Close menu when clicking outside
+        window.addEventListener('click', function(e) {
+            const menu = document.getElementById('menu-dropdown');
+            const menuBtn = document.getElementById('menu-btn');
+            if (!menuBtn.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
+
+        // Initialize roadmap when page is fully loaded
+        // Initialize roadmap immediately
+        async function initializeRoadmap() {
+            try {
+                console.log('Initializing roadmap at', new Date().toLocaleTimeString());
+                console.log('Input:', input);
+                console.log('Container exists:', !!document.getElementById('roadmap'));
+
+                if (roadmapIdParam) {
+                    if (!ApiService.isAuthenticated()) {
+                        alert('Please login to view this roadmap.');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    const graphResponse = await ApiService.getRoadmapGraph(roadmapIdParam);
+                    if (graphResponse.ok && graphResponse.data) {
+                        const graphData = graphResponse.data;
+
+                        const extractModulesFromPayload = (payload) => {
+                            if (!payload || typeof payload !== 'object') return [];
+                            if (Array.isArray(payload.modules)) return payload.modules;
+                            if (payload.roadmap && Array.isArray(payload.roadmap.modules)) return payload.roadmap.modules;
+                            if (payload.data && Array.isArray(payload.data.modules)) return payload.data.modules;
+                            return [];
+                        };
+
+                        const moduleNodes = (graphData.nodes || [])
+                            .filter(node => node.type === 'module')
+                            .sort((a, b) => (a.order || 0) - (b.order || 0));
+                        const topicNodes = (graphData.nodes || [])
+                            .filter(node => node.type === 'topic');
+
+                        // Fetch full roadmap details and prefer it when it has more modules than graph payload
+                        let fullRoadmap = null;
+                        const fullRoadmapResponse = await ApiService.getRoadmap(roadmapIdParam);
+                        if (fullRoadmapResponse.ok) {
+                            fullRoadmap = fullRoadmapResponse.data;
+                        }
+
+                        const fullRoadmapModules = extractModulesFromPayload(fullRoadmap);
+                        const graphPayloadModules = extractModulesFromPayload(graphData);
+                        const roadmapModuleCache = JSON.parse(localStorage.getItem('roadmapModuleCache') || '{}');
+                        const cachedModules = Array.isArray(roadmapModuleCache[String(roadmapIdParam)])
+                            ? roadmapModuleCache[String(roadmapIdParam)]
+                            : [];
+
+                        let modulesForDisplay;
+                        if (fullRoadmapModules.length > 0) {
+                            modulesForDisplay = fullRoadmapModules
+                                .slice()
+                                .sort((a, b) => (a.order || 0) - (b.order || 0))
+                                .map((module, index) => ({
+                                    id: module.id ?? module.module_id ?? `full-${index + 1}`,
+                                    title: module.title,
+                                    description: module.description || '',
+                                    topics: (module.topics || [])
+                                        .slice()
+                                        .sort((a, b) => (a.order || 0) - (b.order || 0))
+                                        .map(topic => ({ id: topic.id, title: topic.title, description: topic.description || '' }))
+                                }));
+                        } else if (graphPayloadModules.length > 0) {
+                            modulesForDisplay = graphPayloadModules
+                                .slice()
+                                .sort((a, b) => (a.order || 0) - (b.order || 0))
+                                .map((module, index) => ({
+                                    id: module.id ?? module.module_id ?? `graph-${index + 1}`,
+                                    title: module.title,
+                                    description: module.description || '',
+                                    topics: (module.topics || [])
+                                        .slice()
+                                        .sort((a, b) => (a.order || 0) - (b.order || 0))
+                                        .map(topic => ({ id: topic.id, title: topic.title, description: topic.description || '' }))
+                                }));
+                        } else {
+                            modulesForDisplay = moduleNodes.map(moduleNode => ({
+                                id: moduleNode.id,
+                                title: moduleNode.title,
+                                description: moduleNode.description || '',
+                                topics: topicNodes
+                                    .filter(topic => topic.parent_module_id === moduleNode.id)
+                                    .sort((a, b) => (a.order || 0) - (b.order || 0))
+                                    .map(topic => ({ id: topic.id, title: topic.title, description: topic.description || '' }))
+                            }));
+                        }
+
+                        if (cachedModules.length > 0) {
+                            const existingTitles = new Set(
+                                modulesForDisplay
+                                    .map(module => String(module.title || '').trim().toLowerCase())
+                                    .filter(Boolean)
+                            );
+                            const missingCached = cachedModules
+                                .filter(title => title && !existingTitles.has(String(title).trim().toLowerCase()))
+                                .map((moduleTitle, index) => ({
+                                    id: `cached-${index + 1}`,
+                                    title: moduleTitle,
+                                    description: '',
+                                    topics: []
+                                }));
+                            modulesForDisplay = modulesForDisplay.concat(missingCached);
+                        }
+
+                        const seenModuleIds = new Set();
+                        modulesForDisplay = modulesForDisplay
+                            .filter(module => module && module.title)
+                            .map((module, index) => {
+                                let resolvedId = module.id;
+                                if (resolvedId === undefined || resolvedId === null || seenModuleIds.has(String(resolvedId))) {
+                                    resolvedId = `module-${index + 1}`;
+                                }
+                                seenModuleIds.add(String(resolvedId));
+                                return {
+                                    ...module,
+                                    id: String(resolvedId)
+                                };
+                            });
+
+                        // Calculate year distribution
+                        const totalModules = modulesForDisplay.length;
+                        const modulesPerYear = Math.ceil(totalModules / 3);
+                        
+                        const nodesData = modulesForDisplay.map((moduleNode, index) => {
+                            // Determine year from module data or infer from order
+                            let year = 1;
+                            if (moduleNode.year !== undefined) {
+                                year = moduleNode.year;
+                            } else if (moduleNode.level !== undefined) {
+                                year = moduleNode.level;
+                            } else {
+                                year = Math.floor(index / modulesPerYear) + 1;
+                                year = Math.min(year, 3);
+                            }
+                            
+                            return {
+                                id: moduleNode.id,
+                                label: moduleNode.title,
+                                year: year,
+                                order: moduleNode.order || index
+                            };
+                        });
+
+                        moduleTopicMap = new Map();
+                        modulesById = new Map();
+                        modulesForDisplay.forEach((moduleNode) => {
+                            const moduleId = String(moduleNode.id);
+                            modulesById.set(moduleId, { ...moduleNode, id: moduleId });
+                            if (moduleNode.topics && moduleNode.topics.length > 0) {
+                                moduleTopicMap.set(moduleId, moduleNode.topics[0].id);
+                            }
+                        });
+
+                        const moduleIdSet = new Set(nodesData.map(n => String(n.id)));
+                        let edgesData = (graphData.edges || [])
+                            .map(edge => ({ from: String(edge.source), to: String(edge.target) }))
+                            .filter(edge => moduleIdSet.has(edge.from) && moduleIdSet.has(edge.to));
+
+                        if (edgesData.length === 0 && fullRoadmap && Array.isArray(fullRoadmap.edges)) {
+                            edgesData = fullRoadmap.edges
+                                .map(edge => ({ from: String(edge.source), to: String(edge.target) }))
+                                .filter(edge => moduleIdSet.has(edge.from) && moduleIdSet.has(edge.to));
+                        }
+
+                        const roadmapTitle = (fullRoadmap && fullRoadmap.title) || graphData.roadmap_title || 'Roadmap';
+                        const progressValue = graphData.overall_progress_percent || (fullRoadmap && fullRoadmap.overall_progress_percent) || 0;
+                        document.getElementById('input-display').textContent = `Tailored Roadmap for: ${roadmapTitle}`;
+                        document.getElementById('university-display').textContent = `📚 Progress: ${progressValue}%`;
+                        createNetwork(nodesData, edgesData);
+                        return;
+                    }
+
+                    const response = await ApiService.getRoadmap(roadmapIdParam);
+                    if (!response.ok) {
+                        throw new Error(ApiService.getErrorMessage(response));
+                    }
+
+                    buildNetworkFromRoadmap(response.data);
+                    return;
+                }
+                
+                // Prioritize URL input over saved state
+                if (input && input.trim()) {
+                    // Create from URL input (new roadmap generation)
+                    const moduleNames = input.split(',').map(name => name.trim()).filter(name => name);
+            
+                    if (moduleNames.length > 0) {
+                        console.log('Creating network from input with', moduleNames.length, 'modules');
+                        
+                        // Distribute modules across 3 years
+                        const modulesPerYear = Math.ceil(moduleNames.length / 3);
+                        
+                        const nodesData = moduleNames.map((name, index) => {
+                            const year = Math.min(Math.floor(index / modulesPerYear) + 1, 3);
+                            return { 
+                                id: String(index + 1), 
+                                label: name,
+                                year: year,
+                                order: index
+                            };
+                        });
+
+                        // Create edges only between sequential modules (basic chain)
+                        // Real edges will come from the relationship matrix when loaded from API
+                        const edgesData = [];
+                        for (let i = 0; i < nodesData.length - 1; i++) {
+                            edgesData.push({ 
+                                from: nodesData[i].id, 
+                                to: nodesData[i+1].id
+                            });
+                        }
+
+                        createNetwork(nodesData, edgesData);
+                    } else {
+                        console.log('No modules in input, using sample data');
+                        createNetwork(sampleNodes, sampleEdges);
+                    }
+                } else {
+                    // No URL input - try to restore saved state
+                    const savedState = restoreRoadmapState();
+                    if (savedState && savedState.nodes && savedState.nodes.length > 0) {
+                        console.log('Creating network from saved state with', savedState.nodes.length, 'nodes');
+                        createNetwork(savedState.nodes, savedState.edges);
+                    } else {
+                        console.log('No input and no saved state, using sample data');
+                        createNetwork(sampleNodes, sampleEdges);
+                    }
+                }
+            } catch (error) {
+                console.error('Error initializing roadmap:', error);
+                console.error('Stack:', error.stack);
+                if (roadmapIdParam) {
+                    const container = document.getElementById('roadmap');
+                    if (container) {
+                        container.innerHTML = '<div style="padding: 24px; color: #c33; font-weight: 600; text-align: center;">Failed to load this roadmap. Please refresh and try again.</div>';
+                    }
+                    return;
+                }
+                try {
+                    console.log('Attempting fallback creation...');
+                    createNetwork(sampleNodes, sampleEdges);
+                } catch (e2) {
+                    console.error('Failed to create network:', e2);
+                    // Last resort - create the container manually
+                    const container = document.getElementById('roadmap');
+                    if (container) {
+                        console.log('Creating fallback visualization directly...');
+                        createFallbackVisualization(container, sampleNodes, sampleEdges);
+                    }
+                }
+            }
+        }
+        
+        // Initialize on DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('[DEBUG] DOMContentLoaded event fired');
+                setTimeout(initializeRoadmap, 100);
+            });
+        } else {
+            console.log('[DEBUG] DOM already loaded, initializing...');
+            setTimeout(initializeRoadmap, 100);
+        }
+        
+        console.log('[DEBUG] Roadmap script loaded, waiting for initialization...');
+    
+    // Save roadmap state before leaving page
+        window.addEventListener('beforeunload', saveRoadmapState);
+        window.addEventListener('pagehide', saveRoadmapState);    </script>
+</body>
+</html>

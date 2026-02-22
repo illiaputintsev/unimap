@@ -1,3 +1,6 @@
+import math
+from collections import deque
+
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -21,6 +24,323 @@ def _safe_float(value, default=0.0):
         return float(value)
     except (TypeError, ValueError):
         return default
+
+
+def _build_module_neighbors(module_nodes, edges):
+    module_ids = {module.id for module in module_nodes}
+    neighbors = {module_id: {} for module_id in module_ids}
+
+    for edge in edges:
+        source_id = edge.source_id
+        target_id = edge.target_id
+
+        if source_id not in module_ids or target_id not in module_ids:
+            continue
+        if source_id == target_id:
+            continue
+
+        influence = _safe_float(getattr(edge, "influence", 1.0), 1.0)
+        weight = max(0.05, min(influence, 1.0))
+
+        neighbors[source_id][target_id] = neighbors[source_id].get(target_id, 0.0) + weight
+        neighbors[target_id][source_id] = neighbors[target_id].get(source_id, 0.0) + weight
+
+    return neighbors
+
+
+def _shortest_distances(seed_id, cluster_id_set, neighbors):
+    distances = {seed_id: 0}
+    queue = deque([seed_id])
+
+    while queue:
+        current = queue.popleft()
+        current_distance = distances[current]
+        for neighbor_id in neighbors.get(current, {}):
+            if neighbor_id not in cluster_id_set:
+                continue
+            if neighbor_id in distances:
+                continue
+            distances[neighbor_id] = current_distance + 1
+            queue.append(neighbor_id)
+
+    return distances
+
+
+def _split_cluster_by_connectivity(node_ids, neighbors, module_order_map, parts=2):
+    if not isinstance(node_ids, list):
+        return [node_ids]
+    if len(node_ids) < max(4, parts * 2) or parts < 2:
+        return [node_ids]
+
+    cluster_id_set = set(node_ids)
+    degree_map = {
+        node_id: sum(1 for neighbor_id in neighbors.get(node_id, {}) if neighbor_id in cluster_id_set)
+        for node_id in node_ids
+    }
+
+    def priority(node_id):
+        return (
+            -(degree_map.get(node_id, 0)),
+            module_order_map.get(node_id, math.inf),
+            node_id,
+        )
+
+    sorted_node_ids = sorted(node_ids, key=priority)
+    seeds = [sorted_node_ids[0]]
+
+    while len(seeds) < parts:
+        seed_distance_maps = [
+            _shortest_distances(seed_id, cluster_id_set, neighbors) for seed_id in seeds
+        ]
+        best_candidate = None
+        best_distance = -1
+
+        for candidate_id in node_ids:
+            if candidate_id in seeds:
+                continue
+
+            min_distance = math.inf
+            for distance_map in seed_distance_maps:
+                min_distance = min(min_distance, distance_map.get(candidate_id, math.inf))
+
+            if min_distance > best_distance:
+                best_candidate = candidate_id
+                best_distance = min_distance
+            elif min_distance == best_distance and best_candidate is not None:
+                if priority(candidate_id) < priority(best_candidate):
+                    best_candidate = candidate_id
+
+        if best_candidate is None or best_candidate in seeds:
+            break
+        seeds.append(best_candidate)
+
+    if len(seeds) < 2:
+        return [node_ids]
+
+    seed_distances = {
+        seed_id: _shortest_distances(seed_id, cluster_id_set, neighbors) for seed_id in seeds
+    }
+    assigned = {seed_id: [] for seed_id in seeds}
+    load = {seed_id: 0 for seed_id in seeds}
+
+    for node_id in sorted(node_ids, key=priority):
+        best_seed = seeds[0]
+        best_distance = math.inf
+        best_load = load[best_seed]
+
+        for seed_id in seeds:
+            distance = seed_distances[seed_id].get(node_id, math.inf)
+            seed_load = load[seed_id]
+            if distance < best_distance:
+                best_seed = seed_id
+                best_distance = distance
+                best_load = seed_load
+            elif distance == best_distance and seed_load < best_load:
+                best_seed = seed_id
+                best_load = seed_load
+
+        assigned[best_seed].append(node_id)
+        load[best_seed] += 1
+
+    groups = [group for group in assigned.values() if group]
+    if len(groups) < 2:
+        ordered = sorted(node_ids, key=lambda node_id: (module_order_map.get(node_id, math.inf), node_id))
+        midpoint = max(1, len(ordered) // 2)
+        groups = [ordered[:midpoint], ordered[midpoint:]]
+        groups = [group for group in groups if group]
+
+    for group in groups:
+        group.sort(key=lambda node_id: (module_order_map.get(node_id, math.inf), node_id))
+
+    return groups
+
+
+def _enforce_cluster_count(clusters, neighbors, module_order_map, total_nodes):
+    normalized_clusters = [list(cluster) for cluster in clusters if cluster]
+    target_count = max(1, min(6, round(math.sqrt(max(total_nodes, 1) / 2.2))))
+
+    while len(normalized_clusters) < target_count:
+        split_index = -1
+        split_size = 0
+        for index, cluster in enumerate(normalized_clusters):
+            if len(cluster) > split_size:
+                split_index = index
+                split_size = len(cluster)
+
+        if split_index < 0 or split_size < 7:
+            break
+
+        split_result = _split_cluster_by_connectivity(
+            normalized_clusters[split_index],
+            neighbors,
+            module_order_map,
+            parts=2,
+        )
+        split_result = [group for group in split_result if group]
+        if len(split_result) < 2:
+            break
+
+        smallest_group = min(len(group) for group in split_result)
+        if smallest_group < 2:
+            break
+
+        normalized_clusters = (
+            normalized_clusters[:split_index]
+            + split_result
+            + normalized_clusters[split_index + 1 :]
+        )
+
+    return normalized_clusters
+
+
+def _build_cluster_metadata(nodes, edges):
+    module_nodes = sorted(
+        [node for node in nodes if node.type == "module"],
+        key=lambda node: (node.order, node.id),
+    )
+    if not module_nodes:
+        return {}, []
+
+    module_by_id = {module.id: module for module in module_nodes}
+    module_order_map = {
+        module.id: (module.order if module.order is not None else math.inf)
+        for module in module_nodes
+    }
+    neighbors = _build_module_neighbors(module_nodes, edges)
+
+    labels = {module.id: module.id for module in module_nodes}
+    ordered_ids = sorted(
+        [module.id for module in module_nodes],
+        key=lambda module_id: (
+            -len(neighbors.get(module_id, {})),
+            module_order_map.get(module_id, math.inf),
+            module_id,
+        ),
+    )
+
+    for _ in range(25):
+        changed = False
+        cluster_sizes = {}
+        for label in labels.values():
+            cluster_sizes[label] = cluster_sizes.get(label, 0) + 1
+
+        for module_id in ordered_ids:
+            module_neighbors = neighbors.get(module_id, {})
+            if not module_neighbors:
+                continue
+
+            current_label = labels[module_id]
+            label_scores = {current_label: 0.0}
+            for neighbor_id, weight in module_neighbors.items():
+                neighbor_label = labels[neighbor_id]
+                label_scores[neighbor_label] = label_scores.get(neighbor_label, 0.0) + weight
+
+            best_label = current_label
+            best_score = -math.inf
+            for label, score in label_scores.items():
+                size = cluster_sizes.get(label, 1)
+                adjusted_score = score / (size ** 0.35)
+                if label == current_label:
+                    adjusted_score += 0.08
+
+                if adjusted_score > best_score:
+                    best_label = label
+                    best_score = adjusted_score
+                elif adjusted_score == best_score and label < best_label:
+                    best_label = label
+
+            if best_label != current_label:
+                labels[module_id] = best_label
+                changed = True
+
+        if not changed:
+            break
+
+    label_to_ids = {}
+    for module_id, label in labels.items():
+        label_to_ids.setdefault(label, []).append(module_id)
+
+    singleton_ids = []
+    for module_ids in label_to_ids.values():
+        if len(module_ids) != 1:
+            continue
+        candidate_id = module_ids[0]
+        if neighbors.get(candidate_id):
+            singleton_ids.append(candidate_id)
+
+    for module_id in singleton_ids:
+        best_label = labels[module_id]
+        best_weight = -math.inf
+        for neighbor_id, weight in neighbors.get(module_id, {}).items():
+            candidate_label = labels[neighbor_id]
+            if candidate_label == labels[module_id]:
+                continue
+            if weight > best_weight:
+                best_label = candidate_label
+                best_weight = weight
+        if best_label != labels[module_id]:
+            labels[module_id] = best_label
+
+    raw_clusters = {}
+    for module_id, label in labels.items():
+        raw_clusters.setdefault(label, []).append(module_id)
+
+    isolated_ids = []
+    mixed_clusters = []
+    for module_ids in raw_clusters.values():
+        is_isolated = all(not neighbors.get(module_id) for module_id in module_ids)
+        if is_isolated:
+            isolated_ids.extend(module_ids)
+        else:
+            mixed_clusters.append(module_ids)
+
+    if isolated_ids:
+        mixed_clusters.append(isolated_ids)
+
+    rebalanced_clusters = _enforce_cluster_count(
+        mixed_clusters,
+        neighbors,
+        module_order_map,
+        total_nodes=len(module_nodes),
+    )
+
+    for cluster_ids in rebalanced_clusters:
+        cluster_ids.sort(key=lambda module_id: (module_order_map.get(module_id, math.inf), module_id))
+
+    rebalanced_clusters.sort(
+        key=lambda cluster_ids: (
+            -len(cluster_ids),
+            sum(module_order_map.get(module_id, 0) for module_id in cluster_ids)
+            / max(len(cluster_ids), 1),
+        )
+    )
+
+    module_cluster_map = {}
+    cluster_payload = []
+    for index, cluster_ids in enumerate(rebalanced_clusters, start=1):
+        cluster_id = f"cluster-{index}"
+        cluster_label = f"Cluster {index}"
+        module_titles = [module_by_id[module_id].title for module_id in cluster_ids if module_id in module_by_id]
+
+        cluster_payload.append(
+            {
+                "id": cluster_id,
+                "label": cluster_label,
+                "index": index,
+                "module_count": len(cluster_ids),
+                "module_ids": cluster_ids,
+                "module_titles": module_titles,
+            }
+        )
+
+        for module_id in cluster_ids:
+            module_cluster_map[module_id] = {
+                "id": cluster_id,
+                "label": cluster_label,
+                "index": index,
+            }
+
+    return module_cluster_map, cluster_payload
 
 
 def _build_progress_maps(roadmap, user):
@@ -50,6 +370,7 @@ def _build_progress_maps(roadmap, user):
 def _serialize_roadmap_graph(roadmap, user):
     nodes, progress_map, topics_by_module, module_progress_map = _build_progress_maps(roadmap, user)
     edges = list(roadmap.edges.select_related("source", "target").all())
+    module_cluster_map, clusters_payload = _build_cluster_metadata(nodes, edges)
 
     if module_progress_map:
         overall_progress = sum(module_progress_map.values()) / len(module_progress_map)
@@ -70,9 +391,16 @@ def _serialize_roadmap_graph(roadmap, user):
         if node.type == "module":
             payload["progress_percent"] = round(module_progress_map.get(node.id, 0.0) * 100, 1)
             payload["topics_count"] = len(topics_by_module.get(node.id, []))
+            cluster_meta = module_cluster_map.get(node.id)
         else:
             payload["mastery_percent"] = round(progress_map.get(node.id, 0.0) * 100, 1)
             payload["impact_weight_percent"] = round(node.impact_weight * 100, 1)
+            cluster_meta = module_cluster_map.get(node.parent_module_id)
+
+        if cluster_meta:
+            payload["cluster_id"] = cluster_meta["id"]
+            payload["cluster_label"] = cluster_meta["label"]
+            payload["cluster_index"] = cluster_meta["index"]
 
         graph_nodes.append(payload)
 
@@ -80,6 +408,8 @@ def _serialize_roadmap_graph(roadmap, user):
         "roadmap_id": roadmap.id,
         "roadmap_title": roadmap.title,
         "overall_progress_percent": round(overall_progress * 100, 1),
+        "clustering_method": "graph-connectivity-v1",
+        "clusters": clusters_payload,
         "nodes": graph_nodes,
         "edges": [
             {
@@ -97,9 +427,11 @@ def _serialize_roadmap_graph(roadmap, user):
 
 def _serialize_roadmap_graph_summary(roadmap, user):
     nodes, _, _, module_progress_map = _build_progress_maps(roadmap, user)
+    edges = list(roadmap.edges.select_related("source", "target").all())
+    _, clusters_payload = _build_cluster_metadata(nodes, edges)
     module_count = sum(1 for node in nodes if node.type == "module")
     topic_count = sum(1 for node in nodes if node.type == "topic")
-    edge_count = roadmap.edges.count()
+    edge_count = len(edges)
 
     if module_progress_map:
         overall_progress = sum(module_progress_map.values()) / len(module_progress_map)
@@ -111,6 +443,7 @@ def _serialize_roadmap_graph_summary(roadmap, user):
         "modules_count": module_count,
         "topics_count": topic_count,
         "edges_count": edge_count,
+        "clusters_count": len(clusters_payload),
         "overall_progress_percent": round(overall_progress * 100, 1),
     }
 
@@ -118,6 +451,7 @@ def _serialize_roadmap_graph_summary(roadmap, user):
 def _serialize_roadmap(roadmap, user):
     nodes, progress_map, topics_by_module, module_progress_map = _build_progress_maps(roadmap, user)
     edges = list(roadmap.edges.select_related("source", "target").all())
+    module_cluster_map, clusters_payload = _build_cluster_metadata(nodes, edges)
 
     module_payload = []
 
@@ -139,6 +473,7 @@ def _serialize_roadmap(roadmap, user):
             )
 
         module_progress = module_progress_map.get(module.id, 0.0)
+        cluster_meta = module_cluster_map.get(module.id)
 
         module_payload.append(
             {
@@ -147,6 +482,9 @@ def _serialize_roadmap(roadmap, user):
                 "description": module.description,
                 "order": module.order,
                 "progress_percent": round(module_progress * 100, 1),
+                "cluster_id": cluster_meta["id"] if cluster_meta else None,
+                "cluster_label": cluster_meta["label"] if cluster_meta else None,
+                "cluster_index": cluster_meta["index"] if cluster_meta else None,
                 "topics": topic_payload,
             }
         )
@@ -173,6 +511,8 @@ def _serialize_roadmap(roadmap, user):
         "manual_course_title": roadmap.manual_course_title,
         "course": course_payload,
         "overall_progress_percent": round(overall_progress * 100, 1),
+        "clustering_method": "graph-connectivity-v1",
+        "clusters": clusters_payload,
         "modules": module_payload,
         "edges": [
             {

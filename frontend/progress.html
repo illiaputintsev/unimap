@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Progress - Student Roadmap</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .header-section {
+            max-width: 1200px;
+            margin: 0 auto 40px;
+            text-align: center;
+        }
+        .header-section h1 {
+            color: #1abc9c;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        .header-section p {
+            color: #666;
+            font-size: 16px;
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(214, 48, 49, 0.4);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .no-data {
+            background-color: white;
+            padding: 60px 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .no-data h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        .no-data p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .no-data a {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .no-data a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(214, 48, 49, 0.4);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #1abc9c;
+        }
+        .stat-card h3 {
+            color: #1abc9c;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .stat-card .value {
+            color: #333;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        .stat-card .unit {
+            color: #999;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .chart-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .chart-container h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            border-bottom: 2px solid #1abc9c;
+            padding-bottom: 10px;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+        }
+        @media (max-width: 768px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+            .chart-wrapper {
+                height: 300px;
+            }
+            .header-section h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#" class="back-button" onclick="goBackToRoadmap(); return false;">← Back to Roadmap</a>
+    
+    <div class="header-section">
+        <h1>📊 Your Progress</h1>
+        <p>Track your improvement across all topics</p>
+    </div>
+
+    <div class="container">
+        <div id="no-data-message" class="no-data" style="display: none;">
+            <h2>📚 No Quiz Results Yet</h2>
+            <p>Start taking quizzes to track your progress and see improvement curves!</p>
+            <a href="roadmap.html">Go to Roadmap</a>
+        </div>
+
+        <div id="progress-content" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Quizzes</h3>
+                    <div><span class="value" id="total-quizzes">0</span></div>
+                </div>
+                <div class="stat-card">
+                    <h3>Average Score</h3>
+                    <div><span class="value" id="average-score">0</span><span class="unit">%</span></div>
+                </div>
+                <div class="stat-card">
+                    <h3>Best Score</h3>
+                    <div><span class="value" id="best-score">0</span><span class="unit">%</span></div>
+                </div>
+                <div class="stat-card">
+                    <h3>Topics Completed</h3>
+                    <div><span class="value" id="topics-completed">0</span></div>
+                </div>
+            </div>
+
+            <div class="charts-section" id="charts-section">
+                <!-- Charts will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Go back to roadmap while preserving state
+        function goBackToRoadmap() {
+            // Navigate back to roadmap
+            window.location.href = 'roadmap.html';
+        }
+
+        // Load quiz results from localStorage
+        function loadProgressData() {
+            const quizResults = {};
+            
+            // Scan localStorage for quiz results
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('quiz-')) {
+                    try {
+                        const result = JSON.parse(localStorage.getItem(key));
+                        const topicName = result.topic || key.replace('quiz-', '');
+                        
+                        if (!quizResults[topicName]) {
+                            quizResults[topicName] = [];
+                        }
+                        
+                        quizResults[topicName].push({
+                            score: result.score,
+                            completedAt: new Date(result.completedAt)
+                        });
+                    } catch (e) {
+                        console.error('Error parsing quiz result:', key);
+                    }
+                }
+            }
+            
+            // Sort results by date for each topic
+            Object.keys(quizResults).forEach(topic => {
+                quizResults[topic].sort((a, b) => a.completedAt - b.completedAt);
+            });
+            
+            return quizResults;
+        }
+
+        // Calculate statistics
+        function calculateStats(quizResults) {
+            let totalQuizzes = 0;
+            let totalScore = 0;
+            let bestScore = 0;
+            const topics = Object.keys(quizResults);
+
+            topics.forEach(topic => {
+                quizResults[topic].forEach(result => {
+                    totalQuizzes++;
+                    totalScore += result.score;
+                    bestScore = Math.max(bestScore, result.score);
+                });
+            });
+
+            const avgScore = totalQuizzes > 0 ? Math.round(totalScore / totalQuizzes) : 0;
+
+            return {
+                totalQuizzes,
+                avgScore,
+                bestScore,
+                topicsCompleted: topics.length
+            };
+        }
+
+        // Display statistics
+        function displayStats(stats) {
+            document.getElementById('total-quizzes').textContent = stats.totalQuizzes;
+            document.getElementById('average-score').textContent = stats.avgScore;
+            document.getElementById('best-score').textContent = stats.bestScore;
+            document.getElementById('topics-completed').textContent = stats.topicsCompleted;
+        }
+
+        // Create individual improvement charts for each topic
+        function createProgressCharts(quizResults) {
+            const chartsSection = document.getElementById('charts-section');
+            chartsSection.innerHTML = '';
+            
+            const topics = Object.keys(quizResults).sort();
+
+            topics.forEach(topic => {
+                const results = quizResults[topic];
+                
+                const chartContainer = document.createElement('div');
+                chartContainer.className = 'chart-container';
+                
+                const heading = document.createElement('h3');
+                heading.textContent = `📈 ${topic}`;
+                chartContainer.appendChild(heading);
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = 'chart-wrapper';
+                
+                const canvas = document.createElement('canvas');
+                canvas.id = `chart-${topic.replace(/\s+/g, '-')}`;
+                wrapper.appendChild(canvas);
+                
+                chartContainer.appendChild(wrapper);
+                chartsSection.appendChild(chartContainer);
+                
+                // Prepare data
+                const labels = results.map((r, i) => `Attempt ${i + 1}`);
+                const scores = results.map(r => r.score);
+                const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+                
+                // Create chart
+                const ctx = canvas.getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Score',
+                                data: scores,
+                                borderColor: '#1abc9c',
+                                backgroundColor: 'rgba(214, 48, 49, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 6,
+                                pointBackgroundColor: '#1abc9c',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 8,
+                                pointHoverBackgroundColor: '#16a085'
+                            },
+                            {
+                                label: 'Average',
+                                data: Array(scores.length).fill(avgScore),
+                                borderColor: '#999',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                pointRadius: 0,
+                                fill: false,
+                                tension: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    font: { size: 13, weight: '600' },
+                                    color: '#333',
+                                    usePointStyle: true,
+                                    padding: 15
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) { return value + '%'; },
+                                    font: { size: 12 }
+                                },
+                                grid: {
+                                    color: 'rgba(0,0,0,0.05)'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: { size: 12 }
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        // Initialize progress page
+        function initProgress() {
+            const quizResults = loadProgressData();
+            const hasResults = Object.keys(quizResults).length > 0;
+
+            if (!hasResults) {
+                document.getElementById('no-data-message').style.display = 'block';
+                document.getElementById('progress-content').style.display = 'none';
+            } else {
+                document.getElementById('no-data-message').style.display = 'none';
+                document.getElementById('progress-content').style.display = 'block';
+                
+                const stats = calculateStats(quizResults);
+                displayStats(stats);
+                createProgressCharts(quizResults);
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', initProgress);
+    </script>
+</body>
+</html>
