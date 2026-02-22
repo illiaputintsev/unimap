@@ -1,5 +1,5 @@
 /**
- * API Service for StudentRoadmap Backend
+ * API Service for UniMap Backend
  * Handles all communication with the backend API
  */
 
@@ -431,6 +431,29 @@ class ApiService {
   static async deleteModuleNote(noteId) {
     return this.request(`api/quizzes/module-notes/${noteId}/`, {
       method: 'DELETE'
+    });
+  }
+
+  /**
+   * Load module workspace state (topics/progress/mistakes/attempts)
+   * GET /api/quizzes/module-workspace/?module_id=...&roadmap_id=...
+   */
+  static async getModuleWorkspaceState({ moduleId, roadmapId } = {}) {
+    const params = new URLSearchParams();
+    if (moduleId !== undefined && moduleId !== null) params.set('module_id', String(moduleId));
+    if (roadmapId !== undefined && roadmapId !== null && roadmapId !== '') params.set('roadmap_id', String(roadmapId));
+    const qs = params.toString();
+    return this.request(`api/quizzes/module-workspace/${qs ? `?${qs}` : ''}`);
+  }
+
+  /**
+   * Save module workspace state (topics/progress/mistakes/attempts)
+   * PUT /api/quizzes/module-workspace/
+   */
+  static async saveModuleWorkspaceState(payload) {
+    return this.request('api/quizzes/module-workspace/', {
+      method: 'PUT',
+      body: payload || {}
     });
   }
 

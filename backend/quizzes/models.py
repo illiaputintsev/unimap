@@ -2,6 +2,7 @@ import os
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 
 
 def _module_note_upload_to(instance, filename):
@@ -44,3 +45,48 @@ class ModuleWorkspaceNote(models.Model):
         title = self.module_title or self.module_id or "module"
         return f"{title} · {self.original_filename or self.file.name}"
 
+
+class ModuleWorkspaceState(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="module_workspace_states",
+    )
+    roadmap = models.ForeignKey(
+        "roadmaps.Roadmap",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="module_workspace_states",
+    )
+    module_id = models.CharField(max_length=128)
+    module_title = models.CharField(max_length=255, blank=True, default="")
+    state_version = models.PositiveIntegerField(default=1)
+    topics = models.JSONField(default=list, blank=True)
+    attempts = models.JSONField(default=list, blank=True)
+    mistake_bank = models.JSONField(default=list, blank=True)
+    topic_stats = models.JSONField(default=dict, blank=True)
+    activity = models.JSONField(default=list, blank=True)
+    last_generated = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-updated_at", "-id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("user", "roadmap", "module_id"),
+                condition=Q(roadmap__isnull=False),
+                name="uniq_module_workspace_state_user_roadmap_module",
+            ),
+            models.UniqueConstraint(
+                fields=("user", "module_id"),
+                condition=Q(roadmap__isnull=True),
+                name="uniq_module_workspace_state_user_local_module",
+            ),
+        ]
+
+    def __str__(self):
+        scope = f"roadmap {self.roadmap_id}" if self.roadmap_id else "local"
+        title = self.module_title or self.module_id or "module"
+        return f"{title} · {scope}"

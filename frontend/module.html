@@ -3,27 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Module Workspace - Student Roadmap</title>
+    <title>UniMap - Module Workspace</title>
     <link rel="stylesheet" href="theme.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         :root {
-            --module-line: rgba(148, 163, 184, 0.2);
-            --module-soft: rgba(248, 250, 252, 0.9);
-            --module-card: rgba(255, 255, 255, 0.9);
-            --module-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+            --uni-sage: #83AF9B;
+            --uni-sage-dark: #6d9b89;
+            --uni-coral: #FE4365;
+            --uni-coral-soft: #FC9D9A;
+            --uni-cream: #F9CDAD;
+            --module-line: rgba(131, 175, 155, 0.18);
+            --module-soft: rgba(255, 252, 248, 0.92);
+            --module-card: rgba(255, 255, 255, 0.92);
+            --module-shadow: 0 18px 44px rgba(80, 66, 60, 0.08);
         }
 
         body.page-module {
             padding: 20px 16px 28px;
             min-height: 100vh;
+            background:
+                radial-gradient(circle at 7% 8%, rgba(131,175,155,0.14), transparent 34%),
+                radial-gradient(circle at 92% 4%, rgba(254,67,101,0.10), transparent 36%),
+                linear-gradient(135deg, #f5f5f5 0%, #eeeae5 100%);
+            background-attachment: fixed;
         }
 
         .module-shell {
-            max-width: 1320px;
+            max-width: 1120px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: minmax(0, 1.85fr) minmax(300px, 0.95fr);
+            grid-template-columns: minmax(0, 1fr);
             gap: 18px;
             align-items: start;
         }
@@ -34,8 +44,12 @@
             gap: 18px;
         }
 
+        .module-side {
+            display: none;
+        }
+
         .module-card {
-            background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.88));
+            background: linear-gradient(180deg, rgba(255,255,255,0.97), rgba(255,253,250,0.90));
             border: 1px solid var(--module-line);
             border-radius: 22px;
             box-shadow: var(--module-shadow);
@@ -43,7 +57,7 @@
         }
 
         .card-body {
-            padding: 16px;
+            padding: 14px 16px;
         }
 
         .card-header {
@@ -52,8 +66,8 @@
             justify-content: space-between;
             gap: 12px;
             padding: 14px 16px;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.16);
-            background: linear-gradient(180deg, rgba(248,250,252,0.8), rgba(255,255,255,0.35));
+            border-bottom: 1px solid rgba(131, 175, 155, 0.14);
+            background: linear-gradient(180deg, rgba(249,205,173,0.15), rgba(255,255,255,0.55));
         }
 
         .card-title {
@@ -90,9 +104,9 @@
             color: #334155;
         }
 
-        .chip.success { color: #166534; background: rgba(240,253,244,0.92); border-color: rgba(22,163,74,0.18); }
-        .chip.warn { color: #92400e; background: rgba(255,251,235,0.92); border-color: rgba(245,158,11,0.18); }
-        .chip.info { color: #1d4ed8; background: rgba(239,246,255,0.92); border-color: rgba(37,99,235,0.18); }
+        .chip.success { color: #3f6f5d; background: rgba(232,240,237,0.92); border-color: rgba(131,175,155,0.24); }
+        .chip.warn { color: #b43a57; background: rgba(254,242,245,0.92); border-color: rgba(254,67,101,0.18); }
+        .chip.info { color: #3f6f5d; background: rgba(232,240,237,0.92); border-color: rgba(131,175,155,0.24); }
 
         .toolbar {
             display: flex;
@@ -122,8 +136,8 @@
 
         .btn {
             color: white;
-            background: linear-gradient(135deg, #0ea5a3 0%, #2563eb 100%);
-            box-shadow: 0 10px 22px rgba(37,99,235,0.16);
+            background: linear-gradient(135deg, var(--uni-sage) 0%, var(--uni-sage-dark) 100%);
+            box-shadow: 0 10px 22px rgba(131,175,155,0.22);
         }
 
         .btn:hover,
@@ -135,21 +149,21 @@
 
         .btn-secondary {
             color: #0f172a;
-            background: rgba(255,255,255,0.9);
-            border-color: rgba(148,163,184,0.2);
-            box-shadow: 0 8px 18px rgba(15,23,42,0.06);
+            background: rgba(255,255,255,0.94);
+            border-color: rgba(131,175,155,0.22);
+            box-shadow: 0 8px 18px rgba(131,175,155,0.08);
         }
 
         .btn-danger {
             color: white;
-            background: linear-gradient(135deg, #fb7185 0%, #ef4444 100%);
-            box-shadow: 0 10px 18px rgba(239,68,68,0.15);
+            background: linear-gradient(135deg, var(--uni-coral-soft) 0%, var(--uni-coral) 100%);
+            box-shadow: 0 10px 18px rgba(254,67,101,0.18);
         }
 
         .btn-ghost {
             color: #475569;
-            background: rgba(241,245,249,0.85);
-            border-color: rgba(148,163,184,0.16);
+            background: rgba(250,247,243,0.92);
+            border-color: rgba(131,175,155,0.12);
         }
 
         .btn:disabled,
@@ -171,8 +185,8 @@
             position: absolute;
             inset: 0;
             background:
-                radial-gradient(circle at 7% 6%, rgba(14,165,163,0.11), transparent 40%),
-                radial-gradient(circle at 88% 0%, rgba(37,99,235,0.11), transparent 42%);
+                radial-gradient(circle at 7% 6%, rgba(131,175,155,0.15), transparent 40%),
+                radial-gradient(circle at 88% 0%, rgba(254,67,101,0.10), transparent 42%);
             pointer-events: none;
         }
 
@@ -260,6 +274,7 @@
         .topic-list {
             display: grid;
             gap: 10px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .topic-row {
@@ -281,9 +296,9 @@
             place-items: center;
             font-weight: 800;
             font-size: 12px;
-            color: #1d4ed8;
-            background: rgba(239,246,255,0.9);
-            border: 1px solid rgba(37,99,235,0.14);
+            color: #b13f5f;
+            background: rgba(254,242,245,0.92);
+            border: 1px solid rgba(254,67,101,0.16);
             margin-top: 5px;
         }
 
@@ -311,8 +326,8 @@
         }
 
         .topic-row.topic-focus-active {
-            border-color: rgba(37,99,235,0.24);
-            box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+            border-color: rgba(131,175,155,0.28);
+            box-shadow: 0 0 0 3px rgba(131,175,155,0.10);
         }
 
         .topic-topline {
@@ -452,21 +467,78 @@
             display: grid;
         }
 
-        .topic-focus-quiz {
-            margin-top: 12px;
-            border: 1px solid rgba(148,163,184,0.14);
-            border-radius: 14px;
-            background: rgba(255,255,255,0.82);
-            padding: 12px;
-            display: grid;
-            gap: 10px;
+        .module-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
         }
 
-        .topic-focus-quiz-header {
+        .module-overlay.show {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
+        }
+
+        .module-overlay-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.52);
+            backdrop-filter: blur(4px);
+        }
+
+        .module-overlay-sheet {
+            position: relative;
+            z-index: 1;
+            width: min(980px, 100%);
+            max-height: min(86vh, 980px);
+            overflow: auto;
+            border-radius: 20px;
+            border: 1px solid rgba(131,175,155,0.18);
+            background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,252,248,0.94));
+            box-shadow: 0 24px 60px rgba(15,23,42,0.22);
+        }
+
+        .module-overlay-header {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            display: flex;
             align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(131,175,155,0.12);
+            background: linear-gradient(180deg, rgba(249,205,173,0.16), rgba(255,255,255,0.92));
+        }
+
+        .module-overlay-title {
+            margin: 0;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.05rem;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+        }
+
+        .module-overlay-close {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: 1px solid rgba(131,175,155,0.18);
+            background: rgba(255,255,255,0.9);
+            color: #334155;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            padding: 0;
+        }
+
+        .module-overlay-body {
+            padding: 14px 16px 16px;
+            display: grid;
             gap: 10px;
         }
 
@@ -604,10 +676,10 @@
         .quiz-q-topic {
             font-size: 11px;
             font-weight: 700;
-            color: #1d4ed8;
-            background: rgba(239,246,255,0.92);
+            color: #3f6f5d;
+            background: rgba(232,240,237,0.92);
             border-radius: 999px;
-            border: 1px solid rgba(37,99,235,0.14);
+            border: 1px solid rgba(131,175,155,0.16);
             padding: 3px 8px;
         }
 
@@ -635,7 +707,7 @@
 
         .quiz-option input {
             margin-top: 2px;
-            accent-color: #2563eb;
+            accent-color: var(--uni-sage);
         }
 
         .quiz-actions {
@@ -662,19 +734,19 @@
             border-radius: 16px;
             padding: 14px;
             border: 1px solid rgba(148,163,184,0.14);
-            background: linear-gradient(180deg, rgba(239,246,255,0.95), rgba(255,255,255,0.92));
+            background: linear-gradient(180deg, rgba(249,205,173,0.20), rgba(255,255,255,0.94));
             display: grid;
             gap: 6px;
         }
 
         .score-banner.good {
-            background: linear-gradient(180deg, rgba(240,253,244,0.95), rgba(255,255,255,0.92));
-            border-color: rgba(22,163,74,0.18);
+            background: linear-gradient(180deg, rgba(232,240,237,0.95), rgba(255,255,255,0.94));
+            border-color: rgba(131,175,155,0.24);
         }
 
         .score-banner.bad {
-            background: linear-gradient(180deg, rgba(254,242,242,0.95), rgba(255,255,255,0.92));
-            border-color: rgba(239,68,68,0.18);
+            background: linear-gradient(180deg, rgba(254,242,245,0.95), rgba(255,255,255,0.94));
+            border-color: rgba(254,67,101,0.22);
         }
 
         .score-banner .score {
@@ -730,7 +802,7 @@
             display: block;
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #0ea5a3 0%, #2563eb 100%);
+            background: linear-gradient(90deg, var(--uni-sage) 0%, var(--uni-coral-soft) 100%);
         }
 
         .mastery-item {
@@ -776,7 +848,7 @@
         .status-line.success { color: #166534; }
 
         .inline-link {
-            color: #2563eb;
+            color: var(--uni-sage-dark);
             font-weight: 700;
             text-decoration: none;
         }
@@ -795,6 +867,9 @@
             }
             .module-side {
                 order: -1;
+            }
+            .topic-list {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -831,13 +906,16 @@
             .topic-mastery-caption {
                 white-space: normal;
             }
-            .topic-focus-quiz-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
             .quiz-actions {
                 flex-direction: column;
                 align-items: stretch;
+            }
+            .module-overlay {
+                padding: 10px;
+            }
+            .module-overlay-sheet {
+                max-height: 92vh;
+                border-radius: 16px;
             }
         }
     </style>
@@ -850,13 +928,12 @@
                     <div class="hero-top">
                         <a id="back-link" class="back-link" href="roadmap.html">← Back to Roadmap</a>
                         <div class="toolbar">
-                            <a id="legacy-quiz-link" class="btn-secondary" href="quiz.html" style="text-decoration:none; display:inline-flex; align-items:center;">Open Legacy Quiz</a>
                             <button id="btn-generate-quiz" class="btn" type="button">Start Practice Quiz</button>
                         </div>
                     </div>
                     <div>
                         <h1 id="module-title" class="hero-title">Module Workspace</h1>
-                        <p id="module-subtitle" class="hero-subtitle">Personalized topics, notes, quizzes, and progress tracking for this module.</p>
+                        <p id="module-subtitle" class="hero-subtitle">Topics, notes, and quizzes for this module.</p>
                         <div id="hero-chip-row" class="pill-row"></div>
                     </div>
                     <div class="stats-grid" id="top-stats"></div>
@@ -872,40 +949,14 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <p class="muted">Topics are generated for this module and stored per user. You can edit names, add your own topics, or remove any topic before generating quizzes.</p>
                     <div id="topics-status" class="status-line"></div>
                     <div id="topic-list" class="topic-list"></div>
-                    <div class="topic-focus-quiz">
-                        <div class="topic-focus-quiz-header">
-                            <div>
-                                <div class="card-title" style="margin:0;">Focused Topic Quiz</div>
-                                <div id="topic-quiz-context" class="muted">Pick a topic and use the topic row menu to generate a focused quiz.</div>
-                            </div>
-                            <div class="quiz-controls">
-                                <label class="muted" for="topic-question-count" style="font-weight:700;">Questions</label>
-                                <select id="topic-question-count">
-                                    <option value="4">4</option>
-                                    <option value="5" selected>5</option>
-                                    <option value="6">6</option>
-                                    <option value="8">8</option>
-                                </select>
-                                <label class="muted" style="display:flex;align-items:center;gap:6px;">
-                                    <input type="checkbox" id="topic-focus-mistakes" checked>
-                                    Focus mistakes
-                                </label>
-                                <button id="btn-regenerate-topic-quiz" class="btn-secondary" type="button">Regenerate</button>
-                            </div>
-                        </div>
-                        <div id="topic-quiz-status" class="status-line"></div>
-                        <div id="topic-quiz-panel" class="quiz-panel"></div>
-                        <div id="topic-quiz-results" class="quiz-results"></div>
-                    </div>
                 </div>
             </section>
 
             <section class="module-card">
                 <div class="card-header">
-                    <h2 class="card-title">Notes (PDF Upload → Quiz Context)</h2>
+                    <h2 class="card-title">Notes & PDFs</h2>
                     <div class="toolbar">
                         <label class="btn-secondary" for="pdf-upload" style="display:inline-flex;align-items:center;cursor:pointer;">Upload PDFs</label>
                         <input id="pdf-upload" type="file" accept="application/pdf" multiple>
@@ -914,7 +965,7 @@
                 </div>
                 <div class="card-body">
                     <div class="drop-note">
-                        Upload lecture notes or your own PDFs. The app extracts text snippets in the browser and uses them to generate better personalized quiz questions. When you are logged in, the PDF file and extracted snippet are uploaded to the backend and stored using Django file storage (local media by default, cloud-storage-ready if configured).
+                        Upload lecture notes/PDFs. UniMap uses extracted text snippets to generate better quizzes and personalize practice.
                     </div>
                     <div id="notes-status" class="status-line" style="margin-top:10px;"></div>
                     <div id="notes-list" class="notes-list"></div>
@@ -923,7 +974,7 @@
 
             <section class="module-card">
                 <div class="card-header">
-                    <h2 class="card-title">Practice Quiz (All Topics)</h2>
+                    <h2 class="card-title">Practice Quiz</h2>
                     <div class="quiz-controls">
                         <label class="muted" for="question-count" style="font-weight:700;">Questions</label>
                         <select id="question-count">
@@ -941,6 +992,7 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <div class="muted" style="margin-bottom:10px;">Covers all topics in this module.</div>
                     <div id="quiz-status" class="status-line"></div>
                     <div id="quiz-panel" class="quiz-panel"></div>
                     <div id="quiz-results" class="quiz-results"></div>
@@ -949,7 +1001,7 @@
 
             <section class="module-card">
                 <div class="card-header">
-                    <h2 class="card-title">Mock Exam (Main)</h2>
+                    <h2 class="card-title">Mock Exam</h2>
                     <div class="quiz-controls">
                         <label class="muted" for="mock-question-count" style="font-weight:700;">Questions</label>
                         <select id="mock-question-count">
@@ -967,6 +1019,7 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <div class="muted" style="margin-bottom:10px;">Longer exam-style attempt across the module.</div>
                     <div id="mock-quiz-status" class="status-line"></div>
                     <div id="mock-quiz-panel" class="quiz-panel"></div>
                     <div id="mock-quiz-results" class="quiz-results"></div>
@@ -989,20 +1042,40 @@
                 </div>
             </section>
 
-            <section class="module-card">
-                <div class="card-header"><h2 class="side-stack-title">Recent Attempts</h2></div>
-                <div class="card-body">
-                    <div id="attempts-list" class="attempts-list"></div>
-                </div>
-            </section>
-
-            <section class="module-card">
-                <div class="card-header"><h2 class="side-stack-title">Related Modules</h2></div>
-                <div class="card-body">
-                    <div id="related-list" class="related-list"></div>
-                </div>
-            </section>
         </aside>
+    </div>
+
+    <div id="topic-quiz-modal" class="module-overlay" aria-hidden="true">
+        <div class="module-overlay-backdrop" data-action="close-topic-quiz-modal"></div>
+        <div class="module-overlay-sheet" role="dialog" aria-modal="true" aria-labelledby="topic-quiz-modal-title">
+            <div class="module-overlay-header">
+                <div>
+                    <h2 id="topic-quiz-modal-title" class="module-overlay-title">Topic Quiz</h2>
+                    <div id="topic-quiz-context" class="muted">Pick a topic and use the topic row quiz button to start a focused quiz.</div>
+                </div>
+                <button type="button" class="module-overlay-close" data-action="close-topic-quiz-modal" aria-label="Close topic quiz">×</button>
+            </div>
+            <div class="module-overlay-body">
+                <div class="quiz-controls">
+                    <label class="muted" for="topic-question-count" style="font-weight:700;">Questions</label>
+                    <select id="topic-question-count">
+                        <option value="4">4</option>
+                        <option value="5" selected>5</option>
+                        <option value="6">6</option>
+                        <option value="8">8</option>
+                    </select>
+                    <label class="muted" style="display:flex;align-items:center;gap:6px;">
+                        <input type="checkbox" id="topic-focus-mistakes" checked>
+                        Focus mistakes
+                    </label>
+                    <div class="spacer"></div>
+                    <button id="btn-regenerate-topic-quiz" class="btn-secondary" type="button">Regenerate</button>
+                </div>
+                <div id="topic-quiz-status" class="status-line"></div>
+                <div id="topic-quiz-panel" class="quiz-panel"></div>
+                <div id="topic-quiz-results" class="quiz-results"></div>
+            </div>
+        </div>
     </div>
 
     <script src="api-service.js"></script>
@@ -1029,6 +1102,11 @@
         let activeTopicQuiz = null;
         let lastTopicQuizReview = null;
         let autoSaveTimeout = null;
+        let backendWorkspaceSyncTimeout = null;
+        let backendWorkspaceSyncInFlight = false;
+        let backendWorkspaceSyncQueued = false;
+        let backendWorkspaceBootstrapped = false;
+        let backendWorkspaceExists = false;
         const expandedTopicIds = new Set();
         let openTopicMenuId = null;
         let currentTopicQuizTopicId = null;
@@ -1163,6 +1241,117 @@
             autoSaveTimeout = setTimeout(saveState, 180);
         }
 
+        function buildWorkspaceSyncPayload() {
+            if (!state || !moduleContext || !moduleContext.module) return null;
+            return {
+                module_id: String(moduleContext.module.id || moduleIdParam || ''),
+                roadmap_id: moduleContext.roadmapId || undefined,
+                module_title: String(moduleContext.module.title || moduleNameParam || 'Module'),
+                workspace: {
+                    version: Number(state.version || 1),
+                    moduleId: String(moduleContext.module.id || moduleIdParam || ''),
+                    roadmapId: moduleContext.roadmapId ? String(moduleContext.roadmapId) : null,
+                    topics: Array.isArray(state.topics) ? state.topics : [],
+                    attempts: Array.isArray(state.attempts) ? state.attempts : [],
+                    mistakeBank: Array.isArray(state.mistakeBank) ? state.mistakeBank : [],
+                    topicStats: (state.topicStats && typeof state.topicStats === 'object') ? state.topicStats : {},
+                    activity: Array.isArray(state.activity) ? state.activity : [],
+                    lastGenerated: (state.lastGenerated && typeof state.lastGenerated === 'object') ? state.lastGenerated : {}
+                }
+            };
+        }
+
+        function applyRemoteWorkspaceState(remoteWorkspace) {
+            if (!remoteWorkspace || typeof remoteWorkspace !== 'object' || !state) return false;
+            state.version = Number(remoteWorkspace.version || state.version || 1);
+            state.topics = (Array.isArray(remoteWorkspace.topics) ? remoteWorkspace.topics : [])
+                .map(normalizeTopic)
+                .filter(Boolean)
+                .slice(0, 40);
+            state.attempts = Array.isArray(remoteWorkspace.attempts) ? remoteWorkspace.attempts.slice(-50) : [];
+            state.mistakeBank = Array.isArray(remoteWorkspace.mistakeBank) ? remoteWorkspace.mistakeBank.slice(0, 120) : [];
+            state.topicStats = remoteWorkspace.topicStats && typeof remoteWorkspace.topicStats === 'object' ? remoteWorkspace.topicStats : {};
+            state.activity = Array.isArray(remoteWorkspace.activity) ? remoteWorkspace.activity.slice(0, 30) : [];
+            state.lastGenerated = remoteWorkspace.lastGenerated && typeof remoteWorkspace.lastGenerated === 'object'
+                ? { ...state.lastGenerated, ...remoteWorkspace.lastGenerated }
+                : state.lastGenerated;
+            return true;
+        }
+
+        async function loadBackendWorkspaceIfAvailable() {
+            if (!window.ApiService || typeof ApiService.getModuleWorkspaceState !== 'function' || !ApiService.isAuthenticated()) {
+                return 'skipped';
+            }
+
+            try {
+                const response = await ApiService.getModuleWorkspaceState({
+                    moduleId: moduleContext?.module?.id || moduleIdParam,
+                    roadmapId: moduleContext?.roadmapId || ''
+                });
+                if (!response.ok) {
+                    console.warn('Failed to load backend workspace state:', response);
+                    return 'error';
+                }
+
+                if (response.data?.exists && response.data?.workspace) {
+                    backendWorkspaceExists = true;
+                    applyRemoteWorkspaceState(response.data.workspace);
+                    saveState(); // local cache refresh only (backend sync disabled until bootstrap)
+                    return 'loaded';
+                }
+
+                backendWorkspaceExists = false;
+                return 'missing';
+            } catch (error) {
+                console.warn('Backend workspace load error:', error);
+                return 'error';
+            }
+        }
+
+        function queueBackendWorkspaceSave(delay = 650) {
+            if (!backendWorkspaceBootstrapped) return;
+            if (!window.ApiService || typeof ApiService.saveModuleWorkspaceState !== 'function' || !ApiService.isAuthenticated()) {
+                return;
+            }
+            clearTimeout(backendWorkspaceSyncTimeout);
+            backendWorkspaceSyncTimeout = setTimeout(() => {
+                void persistWorkspaceToBackend();
+            }, Math.max(0, Number(delay || 0)));
+        }
+
+        async function persistWorkspaceToBackend() {
+            if (!backendWorkspaceBootstrapped) return;
+            if (!window.ApiService || typeof ApiService.saveModuleWorkspaceState !== 'function' || !ApiService.isAuthenticated()) {
+                return;
+            }
+            if (backendWorkspaceSyncInFlight) {
+                backendWorkspaceSyncQueued = true;
+                return;
+            }
+
+            const payload = buildWorkspaceSyncPayload();
+            if (!payload || !payload.module_id) return;
+
+            backendWorkspaceSyncInFlight = true;
+            backendWorkspaceSyncQueued = false;
+            try {
+                const response = await ApiService.saveModuleWorkspaceState(payload);
+                if (!response.ok) {
+                    console.warn('Failed to save backend workspace state:', response);
+                } else {
+                    backendWorkspaceExists = true;
+                }
+            } catch (error) {
+                console.warn('Backend workspace save error:', error);
+            } finally {
+                backendWorkspaceSyncInFlight = false;
+                if (backendWorkspaceSyncQueued) {
+                    backendWorkspaceSyncQueued = false;
+                    queueBackendWorkspaceSave(200);
+                }
+            }
+        }
+
         function saveState() {
             if (!state) return;
             try {
@@ -1171,6 +1360,7 @@
                 console.error('Failed to save module workspace:', error);
                 setStatus('topics-status', 'Local storage is full. Consider clearing some notes.', 'error');
             }
+            queueBackendWorkspaceSave();
         }
 
         function addActivity(message) {
@@ -1446,12 +1636,14 @@
             backLink.href = moduleContext.roadmapId ? `roadmap.html?roadmap_id=${encodeURIComponent(moduleContext.roadmapId)}` : 'roadmap.html';
 
             const legacyQuizLink = document.getElementById('legacy-quiz-link');
-            const quizParams = new URLSearchParams();
-            quizParams.set('moduleId', moduleContext.module.id);
-            quizParams.set('topic', moduleContext.module.title);
-            if (topicIdParam) quizParams.set('topicId', topicIdParam);
-            if (moduleContext.roadmapId) quizParams.set('roadmap_id', moduleContext.roadmapId);
-            legacyQuizLink.href = `quiz.html?${quizParams.toString()}`;
+            if (legacyQuizLink) {
+                const quizParams = new URLSearchParams();
+                quizParams.set('moduleId', moduleContext.module.id);
+                quizParams.set('topic', moduleContext.module.title);
+                if (topicIdParam) quizParams.set('topicId', topicIdParam);
+                if (moduleContext.roadmapId) quizParams.set('roadmap_id', moduleContext.roadmapId);
+                legacyQuizLink.href = `quiz.html?${quizParams.toString()}`;
+            }
 
             const chipRow = document.getElementById('hero-chip-row');
             const chips = [];
@@ -1459,7 +1651,6 @@
             chips.push(`<span class="chip">🧩 Module ID: ${escapeHtml(moduleContext.module.id)}</span>`);
             if (moduleContext.roadmapId) chips.push(`<span class="chip">🗺️ Roadmap ${escapeHtml(moduleContext.roadmapId)}</span>`);
             if (state.lastGenerated.topicsSource) chips.push(`<span class="chip success">Topics: ${escapeHtml(state.lastGenerated.topicsSource)}</span>`);
-            if (state.lastGenerated.quizSource) chips.push(`<span class="chip warn">Quiz: ${escapeHtml(state.lastGenerated.quizSource)}</span>`);
             chipRow.innerHTML = chips.join('');
 
             renderTopStats();
@@ -1509,6 +1700,7 @@
         function renderTopicQuizContext() {
             const contextEl = document.getElementById('topic-quiz-context');
             const regenButton = document.getElementById('btn-regenerate-topic-quiz');
+            const titleEl = document.getElementById('topic-quiz-modal-title');
             if (!contextEl) return;
 
             const topic = (state.topics || []).find(t => String(t.id) === String(currentTopicQuizTopicId));
@@ -1520,7 +1712,8 @@
                     renderTopicQuizPanel();
                     renderTopicQuizResults();
                 }
-                contextEl.textContent = 'Pick a topic and use the topic row menu to generate a focused quiz.';
+                if (titleEl) titleEl.textContent = 'Topic Quiz';
+                contextEl.textContent = 'Pick a topic and press Quiz on any topic card to open a focused quiz.';
                 if (regenButton) regenButton.disabled = true;
                 return;
             }
@@ -1529,8 +1722,35 @@
             const perfText = mastery.totalQuestions
                 ? `${mastery.accuracy}% accuracy · ${mastery.correctQuestions}/${mastery.totalQuestions} correct`
                 : 'No topic quiz history yet';
+            if (titleEl) titleEl.textContent = `Topic Quiz · ${topic.title}`;
             contextEl.textContent = `Focused on: ${topic.title} · ${perfText}`;
             if (regenButton) regenButton.disabled = false;
+        }
+
+        function isTopicQuizModalOpen() {
+            return !!document.getElementById('topic-quiz-modal')?.classList.contains('show');
+        }
+
+        function openTopicQuizModal() {
+            const modal = document.getElementById('topic-quiz-modal');
+            if (!modal) return;
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTopicQuizModal() {
+            const modal = document.getElementById('topic-quiz-modal');
+            if (!modal) return;
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        function handleTopicQuizModalKeydown(event) {
+            if (event.key === 'Escape' && isTopicQuizModalOpen()) {
+                closeTopicQuizModal();
+            }
         }
 
         function renderTopics() {
@@ -1561,7 +1781,7 @@
                                     <div class="topic-title-text">${escapeHtml(topic.title)}</div>
                                     <div class="topic-meta">
                                         <span class="tiny-chip">${escapeHtml(topic.source || 'custom')}</span>
-                                        ${isFocusTarget ? '<span class="tiny-chip" style="color:#1d4ed8;border-color:rgba(37,99,235,0.15);background:rgba(239,246,255,0.92);">Focused quiz target</span>' : ''}
+                                        ${isFocusTarget ? '<span class="tiny-chip" style="color:#3f6f5d;border-color:rgba(131,175,155,0.2);background:rgba(232,240,237,0.92);">Focused quiz target</span>' : ''}
                                     </div>
                                 </div>
                                 <div class="topic-actions-inline">
@@ -1759,6 +1979,7 @@
             currentTopicQuizTopicId = String(topicId);
             openTopicMenuId = null;
             renderTopics();
+            openTopicQuizModal();
             const generationPromise = generateQuizForPanel({
                 kind: 'topic',
                 mode: 'topic',
@@ -1767,7 +1988,7 @@
                 label: `Topic Quiz · ${topic.title}`,
                 focusMistakes: !!document.getElementById('topic-focus-mistakes')?.checked
             });
-            document.getElementById('topic-quiz-panel')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            document.getElementById('topic-quiz-modal-title')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             return generationPromise;
         }
 
@@ -2032,6 +2253,15 @@
             });
         }
 
+        async function startPracticeQuizFromHero() {
+            const practicePanel = document.getElementById('quiz-panel');
+            const practiceSection = practicePanel?.closest('.module-card');
+            if (practiceSection) {
+                practiceSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            return generateQuiz({});
+        }
+
         async function generateMockExam() {
             return generateQuizForPanel({
                 kind: 'mock',
@@ -2225,19 +2455,24 @@
             const review = [];
             const topicStatsDelta = {};
             const newMistakes = [];
+            const selectedTopic = kind === 'topic' ? getCurrentTopicQuizTopic() : null;
+            const forcedTopicTitle = selectedTopic?.title || '';
 
             quiz.questions.forEach((q, index) => {
                 const answerIndex = answers[index];
                 const isCorrect = answerIndex === q.correct;
                 if (isCorrect) correctCount += 1;
-                const topicKey = String(q.topic || moduleContext.module.title).toLowerCase();
-                topicStatsDelta[topicKey] = topicStatsDelta[topicKey] || { topicTitle: q.topic || moduleContext.module.title, totalQuestions: 0, correctQuestions: 0 };
+                const effectiveTopicTitle = kind === 'topic'
+                    ? (forcedTopicTitle || q.topic || moduleContext.module.title)
+                    : (q.topic || moduleContext.module.title);
+                const topicKey = String(effectiveTopicTitle).toLowerCase();
+                topicStatsDelta[topicKey] = topicStatsDelta[topicKey] || { topicTitle: effectiveTopicTitle, totalQuestions: 0, correctQuestions: 0 };
                 topicStatsDelta[topicKey].totalQuestions += 1;
                 if (isCorrect) topicStatsDelta[topicKey].correctQuestions += 1;
 
                 if (!isCorrect) {
                     newMistakes.push({
-                        topic: q.topic || moduleContext.module.title,
+                        topic: effectiveTopicTitle,
                         question: q.question,
                         correctAnswer: q.options[q.correct],
                         lastUserAnswer: q.options[answerIndex] || '',
@@ -2247,7 +2482,7 @@
 
                 review.push({
                     index,
-                    topic: q.topic || moduleContext.module.title,
+                    topic: effectiveTopicTitle,
                     question: q.question,
                     isCorrect,
                     userAnswer: q.options[answerIndex] || '',
@@ -2474,6 +2709,7 @@
 
         function renderAttemptsList() {
             const container = document.getElementById('attempts-list');
+            if (!container) return;
             const attempts = (state.attempts || []).slice().reverse().slice(0, 10);
             if (!attempts.length) {
                 container.innerHTML = '<div class="empty-state">No attempts yet. Generate a quiz and submit it to start tracking progress.</div>';
@@ -2502,6 +2738,7 @@
 
         function renderRelatedModules() {
             const container = document.getElementById('related-list');
+            if (!container) return;
             const related = Array.isArray(moduleContext.module.related_modules) ? moduleContext.module.related_modules.slice(0, 8) : [];
             if (!related.length) {
                 container.innerHTML = '<div class="empty-state">No related modules were provided for this module in the current roadmap context.</div>';
@@ -2528,25 +2765,28 @@
         function renderAllSidebar() {
             renderProgressSummary();
             renderMistakesList();
-            renderAttemptsList();
-            renderRelatedModules();
         }
 
         function bindUI() {
             document.getElementById('btn-add-topic').addEventListener('click', addBlankTopic);
             document.getElementById('btn-regenerate-topics').addEventListener('click', generateTopicsWithGemini);
-            document.getElementById('btn-generate-quiz').addEventListener('click', generateQuiz);
+            document.getElementById('btn-generate-quiz').addEventListener('click', startPracticeQuizFromHero);
             document.getElementById('btn-generate-quiz-secondary').addEventListener('click', generateQuiz);
             document.getElementById('btn-generate-mock-quiz').addEventListener('click', generateMockExam);
             document.getElementById('btn-regenerate-topic-quiz').addEventListener('click', generateCurrentTopicQuiz);
             document.getElementById('pdf-upload').addEventListener('change', handlePdfUpload);
             document.getElementById('btn-clear-notes').addEventListener('click', clearNotes);
+            document.querySelectorAll('[data-action="close-topic-quiz-modal"]').forEach(el => {
+                el.addEventListener('click', closeTopicQuizModal);
+            });
             document.addEventListener('click', handleGlobalClick);
+            document.addEventListener('keydown', handleTopicQuizModalKeydown);
         }
 
         async function init() {
             loadContext();
             loadState();
+            await loadBackendWorkspaceIfAvailable();
             await loadBackendNotesIfAvailable();
             bindUI();
             renderHero();
@@ -2573,6 +2813,12 @@
             renderMockQuizPanel();
             renderMockQuizResults();
             renderAllSidebar();
+
+            backendWorkspaceBootstrapped = true;
+            if (window.ApiService && ApiService.isAuthenticated()) {
+                // Seed backend on first authenticated visit and persist any init-generated topic updates.
+                queueBackendWorkspaceSave(250);
+            }
 
             if (!ApiService.isAuthenticated()) {
                 setStatus('quiz-status', 'You can use local fallback generation without login. For backend Gemini generation, log in first.', '');
