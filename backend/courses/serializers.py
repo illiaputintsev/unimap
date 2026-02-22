@@ -41,3 +41,17 @@ class CourseModulesConfirmRequestSerializer(serializers.Serializer):
         allow_empty=False,
         max_length=60,
     )
+
+
+class CourseModuleGraphRequestSerializer(serializers.Serializer):
+    modules = serializers.ListField(
+        child=serializers.CharField(max_length=255),
+        required=False,
+        allow_empty=False,
+        max_length=60,
+    )
+    threshold = serializers.FloatField(required=False, min_value=0.0, max_value=1.0, default=0.55)
+    max_outgoing = serializers.IntegerField(required=False, min_value=1, max_value=8, default=3)
+    use_ai = serializers.BooleanField(required=False, default=True)
+    use_draft_fallback = serializers.BooleanField(required=False, default=True)
+    ai_timeout = serializers.IntegerField(required=False, min_value=10, max_value=120, default=60)

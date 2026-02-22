@@ -5,14 +5,20 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 
-from .models import Course, University
+from .models import Course, CourseModule, University
 from .serializers import (
     CourseModulesConfirmRequestSerializer,
+    CourseModuleGraphRequestSerializer,
     CourseModulesDraftRequestSerializer,
     CourseSerializer,
     UniversitySerializer,
 )
-from .services import CourseModuleDraftService, CourseModuleScraperService, DiscoverUniCatalogService
+from .services import (
+    CourseModuleDraftService,
+    CourseModuleGraphService,
+    CourseModuleScraperService,
+    DiscoverUniCatalogService,
+)
 
 
 def _save_latest_draft(course, draft):
@@ -43,6 +49,71 @@ def _save_latest_draft(course, draft):
             "ai_draft_generated_at",
         ]
     )
+
+
+def _sync_draft_modules(course, modules):
+    normalized = [str(m).strip() for m in modules if isinstance(m, str) and str(m).strip()][:60]
+    keep_titles = set(normalized)
+
+    for idx, title in enumerate(normalized):
+        obj, created = CourseModule.objects.get_or_create(
+            course=course,
+            title=title,
+            defaults={
+                "order": idx,
+                "source": CourseModule.SOURCE_DRAFT,
+                "is_confirmed": False,
+            },
+        )
+        if created:
+            continue
+        obj.order = idx
+        if not obj.is_confirmed:
+            obj.source = CourseModule.SOURCE_DRAFT
+        obj.save(update_fields=["order", "source", "updated_at"])
+
+    CourseModule.objects.filter(course=course, is_confirmed=False).exclude(title__in=keep_titles).delete()
+    return list(
+        CourseModule.objects.filter(course=course, title__in=normalized)
+        .order_by("order", "id")
+        .values("id", "title", "is_confirmed", "source")
+    )
+
+
+def _sync_confirmed_modules(course, modules):
+    normalized = [str(m).strip() for m in modules if isinstance(m, str) and str(m).strip()][:60]
+    keep_titles = set(normalized)
+
+    for idx, title in enumerate(normalized):
+        obj, created = CourseModule.objects.get_or_create(
+            course=course,
+            title=title,
+            defaults={
+                "order": idx,
+                "source": CourseModule.SOURCE_CONFIRMED,
+                "is_confirmed": True,
+            },
+        )
+        if created:
+            continue
+        obj.order = idx
+        obj.source = CourseModule.SOURCE_CONFIRMED
+        obj.is_confirmed = True
+        obj.save(update_fields=["order", "source", "is_confirmed", "updated_at"])
+
+    CourseModule.objects.filter(course=course).exclude(title__in=keep_titles).delete()
+    return list(
+        CourseModule.objects.filter(course=course)
+        .order_by("order", "id")
+        .values("id", "title", "is_confirmed", "source")
+    )
+
+
+def _get_stored_modules(course, confirmed_only=False):
+    queryset = CourseModule.objects.filter(course=course)
+    if confirmed_only:
+        queryset = queryset.filter(is_confirmed=True)
+    return list(queryset.order_by("order", "id"))
 
 
 class UniversityListAPIView(generics.ListAPIView):
@@ -175,6 +246,7 @@ class CourseModulesAPIView(APIView):
                 "needs_user_confirmation": draft["needs_user_confirmation"],
                 "draft_notes": draft["notes"],
                 "modules_last_scraped_at": course.modules_last_scraped_at,
+                "stored_modules": _sync_draft_modules(course, draft["modules"]),
             }
         )
 
@@ -256,6 +328,7 @@ class CourseModulesDraftAPIView(APIView):
                 "confidence_percent": round(draft["confidence"] * 100, 1),
                 "needs_user_confirmation": draft["needs_user_confirmation"],
                 "draft_notes": draft["notes"],
+                "stored_modules": _sync_draft_modules(course, draft["modules"]),
             }
         )
 
@@ -277,6 +350,7 @@ class CourseModulesConfirmAPIView(APIView):
         course.scraped_modules = normalized_modules
         course.modules_last_scraped_at = timezone.now()
         course.save(update_fields=["scraped_modules", "modules_last_scraped_at"])
+        stored = _sync_confirmed_modules(course, normalized_modules)
 
         return Response(
             {
@@ -287,5 +361,77 @@ class CourseModulesConfirmAPIView(APIView):
                 "modules_count": len(normalized_modules),
                 "modules": normalized_modules,
                 "modules_last_scraped_at": course.modules_last_scraped_at,
+                "stored_modules": stored,
+            }
+        )
+
+
+class CourseModuleGraphAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, course_id):
+        course = get_object_or_404(Course.objects.select_related("university"), id=course_id)
+        serializer = CourseModuleGraphRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated = serializer.validated_data
+
+        modules = []
+        module_source = "none"
+        stored_module_rows = []
+        if validated.get("modules"):
+            modules = list(validated.get("modules") or [])
+            module_source = "request"
+        else:
+            confirmed_rows = _get_stored_modules(course, confirmed_only=True)
+            if confirmed_rows:
+                stored_module_rows = confirmed_rows
+                modules = [row.title for row in confirmed_rows]
+                module_source = "stored_confirmed"
+            else:
+                draft_rows = _get_stored_modules(course, confirmed_only=False)
+                if draft_rows:
+                    stored_module_rows = draft_rows
+                    modules = [row.title for row in draft_rows]
+                    module_source = "stored_draft"
+                elif course.scraped_modules:
+                    modules = list(course.scraped_modules or [])
+                    module_source = "confirmed_json"
+                elif validated.get("use_draft_fallback", True) and course.ai_draft_modules:
+                    modules = list(course.ai_draft_modules or [])
+                    module_source = "draft_json"
+
+        graph_service = CourseModuleGraphService(
+            enable_ai=validated.get("use_ai", True),
+            request_timeout=validated["ai_timeout"],
+        )
+        if validated.get("use_ai", True) and not graph_service.is_ai_configured:
+            return Response(
+                {"detail": "Gemini is not configured. Set GEMINI_API_KEY in backend/.env and restart the server."},
+                status=503,
+            )
+
+        try:
+            result = graph_service.build_graph(
+                course=course,
+                modules=modules,
+                threshold=validated["threshold"],
+                max_outgoing=validated["max_outgoing"],
+            )
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=400)
+        except RuntimeError as exc:
+            return Response({"detail": str(exc)}, status=503)
+        except Exception as exc:  # pragma: no cover - defensive for unexpected runtime issues
+            return Response({"detail": f"Graph generation failed: {exc}"}, status=503)
+
+        return Response(
+            {
+                "course_id": course.id,
+                "course_title": course.title,
+                "modules": result["modules"],
+                "adjacency_matrix": result["adjacency_matrix"],
+                "source": result["source"],
+                "module_source": module_source,
+                "module_nodes": [{"id": row.id, "title": row.title} for row in stored_module_rows],
             }
         )
