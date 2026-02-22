@@ -278,6 +278,49 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        #user-info:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 18px rgba(131, 175, 155, 0.3);
+        }
+        /* Auth buttons (when not logged in) */
+        .auth-buttons {
+            position: fixed;
+            top: 70px;
+            left: 15px;
+            z-index: 999;
+            display: flex;
+            gap: 10px;
+        }
+        .auth-btn {
+            padding: 10px 20px;
+            border: 2px solid #83AF9B;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .auth-btn.login {
+            background-color: white;
+            color: #83AF9B;
+        }
+        .auth-btn.login:hover {
+            background-color: #83AF9B;
+            color: white;
+        }
+        .auth-btn.signup {
+            background-color: #83AF9B;
+            color: white;
+        }
+        .auth-btn.signup:hover {
+            background-color: #d93757;
+            border-color: #d93757;
         }
         #profile-pic-avatar {
             width: 35px;
@@ -358,22 +401,27 @@
             <button onclick="addModuleToRoadmap()">Add Module</button>
         </div>
         
-        <a href="profile.html">Profile</a>
-        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">My Roadmaps</a>
-        <a href="#" onclick="openAchievements(); return false;">Achievements</a>
-        <a href="progress.html">Your Progress</a>
-        <a href="index.html">Home</a>
-        <a href="login.html">Login</a>
-        <a href="signup.html">Sign Up</a>
-        <a href="#" onclick="logout(); return false;">Logout</a>
+        <a href="index.html" id="menu-home">Home</a>
+        <a href="#" id="my-roads-btn" onclick="openMyRoadmaps(); return false;">My Roadmaps</a>
+        <a href="#" id="menu-achievements" onclick="openAchievements(); return false;">Achievements</a>
+        <a href="progress.html" id="menu-progress">Your Progress</a>
+        <a href="login.html" id="menu-login">Login</a>
+        <a href="signup.html" id="menu-signup">Sign Up</a>
+        <a href="#" id="menu-logout" onclick="logout(); return false;">Logout</a>
     </div>
 
-    <!-- User Info -->
-    <div id="user-info">
+    <!-- Auth Buttons (visible when not logged in) -->
+    <div class="auth-buttons" id="auth-buttons">
+        <a href="login.html" class="auth-btn login">Login</a>
+        <a href="signup.html" class="auth-btn signup">Sign Up</a>
+    </div>
+
+    <!-- User Info (click to go to Profile, visible when logged in) -->
+    <a id="user-info" href="profile.html" style="display: none;">
         <img id="profile-pic-avatar" alt="Profile">
         <span id="username">Guest</span>
         <span id="user-level" style="margin-left: 8px; padding: 4px 10px; background: linear-gradient(135deg, #FC9D9A, #FE4365); color: white; border-radius: 12px; font-size: 13px; font-weight: 700;">Lvl: 1</span>
-    </div>
+    </a>
 
 
 
@@ -451,10 +499,21 @@
         function checkLoginStatus() {
             const user = localStorage.getItem('currentUser');
             const profilePic = document.getElementById('profile-pic-avatar');
+            const authButtons = document.getElementById('auth-buttons');
+            const userInfo = document.getElementById('user-info');
+            const isLoggedIn = ApiService.isAuthenticated() && user;
             
-            if (ApiService.isAuthenticated() && user) {
+            // Menu items visibility based on login
+            const loggedInItems = ['my-roads-btn', 'menu-achievements', 'menu-progress', 'menu-logout'];
+            const loggedOutItems = ['menu-login', 'menu-signup'];
+            
+            if (isLoggedIn) {
                 const userData = JSON.parse(user);
                 document.getElementById('username').textContent = userData.username || userData.email || 'User';
+                
+                // Show profile badge, hide auth buttons
+                authButtons.style.display = 'none';
+                userInfo.style.display = 'flex';
                 
                 // Load and display profile picture if available
                 const profilePictureData = localStorage.getItem('profilePictureData');
@@ -468,9 +527,9 @@
                     profilePic.classList.remove('show');
                 }
                 
-                // Show My Roadmaps button for logged-in users
-                const myRoadsBtn = document.getElementById('my-roads-btn');
-                if (myRoadsBtn) myRoadsBtn.style.display = 'block';
+                // Show logged-in menu items, hide logged-out ones
+                loggedInItems.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'block'; });
+                loggedOutItems.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
                 
                 // Initialize achievements and level system for this user
                 initAchievements();
@@ -478,6 +537,14 @@
             } else {
                 document.getElementById('username').textContent = 'Guest';
                 profilePic.classList.remove('show');
+                
+                // Show auth buttons, hide profile badge
+                authButtons.style.display = 'flex';
+                userInfo.style.display = 'none';
+                
+                // Hide logged-in menu items, show logged-out ones
+                loggedInItems.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+                loggedOutItems.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'block'; });
             }
         }
         
@@ -533,9 +600,6 @@
             if (confirm('Are you sure you want to logout?')) {
                 ApiService.logout();
                 localStorage.removeItem('currentUser');
-                // Hide My Roadmaps button
-                const myRoadsBtn = document.getElementById('my-roads-btn');
-                if (myRoadsBtn) myRoadsBtn.style.display = 'none';
                 alert('Logged out successfully!');
                 checkLoginStatus();
             }
@@ -2061,7 +2125,16 @@
                         
                         const node = window.nodesData.find(n => n.id === nodeId || String(n.id) === String(nodeId));
                         if (node) {
-                            const moduleData = modulesById.get(String(nodeId));
+                            let moduleData = modulesById.get(String(nodeId));
+                            // Fallback: look up by label/title if ID lookup fails
+                            if (!moduleData && node.label) {
+                                for (const [, mod] of modulesById) {
+                                    if (mod.title === node.label || mod.label === node.label) {
+                                        moduleData = mod;
+                                        break;
+                                    }
+                                }
+                            }
 
                             // Store current node ID for quiz button
                             window.currentNodeId = nodeId;
@@ -2277,7 +2350,7 @@
 
         // Achievement System
         const achievements = [
-            { id: 'first-quiz', name: 'First Step', description: 'Complete your first quiz', icon: '✓' },
+            { id: 'first-quiz', name: 'First Step', description: 'Complete your first quiz', icon: '🎯' },
             { id: 'three-quizzes', name: 'Quick Learner', description: 'Complete 3 quizzes', icon: '⚡' },
             { id: 'half-done', name: 'Halfway There', description: 'Complete 50% of modules', icon: '🌟' },
             { id: 'all-modules', name: 'Roadmap Master', description: 'Complete all modules', icon: '👑' },
@@ -2383,7 +2456,7 @@
                         <div style="font-size: 24px; margin-bottom: 5px;">${achievement.icon}</div>
                         <strong style="font-size: 12px; display: block; color: #83AF9B;">${achievement.name}</strong>
                         <small style="color: #666; display: block; margin-top: 5px;">${achievement.description}</small>
-                        ${earned ? '<small style="color: #83AF9B; display: block; margin-top: 5px;">✓ Earned</small>' : '<small style="color: #999;">Locked</small>'}
+                        ${earned ? '<small style="color: #83AF9B; display: block; margin-top: 5px;">&#10004; Earned</small>' : '<small style="color: #999;">Locked</small>'}
                     </div>
                 `;
             });

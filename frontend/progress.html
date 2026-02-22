@@ -148,7 +148,7 @@
     </style>
 </head>
 <body>
-    <a href="#" class="back-button" onclick="goBackToRoadmap(); return false;">← Back to Roadmap</a>
+    <a href="#" class="back-button" onclick="history.back(); return false;">← Back</a>
     
     <div class="header-section">
         <h1>📊 Your Progress</h1>
@@ -189,10 +189,9 @@
     </div>
 
     <script>
-        // Go back to roadmap while preserving state
+        // Go back to previous page
         function goBackToRoadmap() {
-            // Navigate back to roadmap
-            window.location.href = 'roadmap.html';
+            history.back();
         }
 
         // Load quiz results from localStorage
