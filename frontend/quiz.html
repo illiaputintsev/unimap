@@ -496,11 +496,14 @@
         </div>
     </div>
 
+    <script src="api-service.js"></script>
     <script>
         // Get parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
         const topicName = urlParams.get('topic');
         const moduleId = urlParams.get('moduleId');
+        const topicId = urlParams.get('topicId');
+        const roadmapId = urlParams.get('roadmap_id');
 
         // Quiz questions bank (expandable)
         const quizQuestions = {
@@ -904,6 +907,30 @@
             
             // Process XP reward
             addQuizXP(score);
+
+            // Sync progress with backend if topicId is available
+            if (topicId && ApiService.isAuthenticated()) {
+                const syncPromise = roadmapId
+                    ? ApiService.updateRoadmapGraphTopicProgress(roadmapId, topicId, score)
+                    : ApiService.updateTopicProgress(topicId, score);
+
+                syncPromise
+                    .then(async (response) => {
+                        if (!response.ok && roadmapId) {
+                            // Fallback to legacy endpoint
+                            const fallback = await ApiService.updateTopicProgress(topicId, score);
+                            if (!fallback.ok) {
+                                console.error('Failed to sync progress (graph + legacy):', fallback.data);
+                            }
+                            return;
+                        }
+
+                        if (!response.ok) {
+                            console.error('Failed to sync progress:', response.data);
+                        }
+                    })
+                    .catch(error => console.error('Progress sync error:', error));
+            }
             
             // Show results
             document.getElementById('questions-container').style.display = 'none';

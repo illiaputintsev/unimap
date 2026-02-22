@@ -700,6 +700,7 @@
 
             try {
                 let roadmapResponse;
+                let modulesUsedForGeneration = [];
 
                 if (courseId) {
                     let modules = selectedDraftModules.slice();
@@ -716,9 +717,12 @@
                         }
                     }
 
+                    modulesUsedForGeneration = modules.slice();
+
                     roadmapResponse = await ApiService.generateRoadmap({
                         title: `${courseName} Roadmap`,
                         course_id: Number(courseId),
+                        module_names: modules,
                         career_goal: ''
                     });
                 } else {
@@ -734,6 +738,7 @@
                     if (modules.length === 0) {
                         throw new Error('No draft modules available for this course yet.');
                     }
+                    modulesUsedForGeneration = modules.slice();
                     roadmapResponse = await ApiService.generateRoadmap({
                         manual_course_title: courseName || universityName || 'Custom Roadmap',
                         module_names: modules,
@@ -746,6 +751,14 @@
                 }
 
                 const roadmapId = roadmapResponse.data.id;
+
+                if (roadmapId && modulesUsedForGeneration.length > 0) {
+                    const cacheKey = 'roadmapModuleCache';
+                    const existingCache = JSON.parse(localStorage.getItem(cacheKey) || '{}');
+                    existingCache[String(roadmapId)] = modulesUsedForGeneration;
+                    localStorage.setItem(cacheKey, JSON.stringify(existingCache));
+                }
+
                 window.location.href = `roadmap.html?roadmap_id=${roadmapId}`;
             } catch (error) {
                 loading.style.display = 'none';

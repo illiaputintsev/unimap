@@ -174,12 +174,12 @@
 
         <form id="signup-form" onsubmit="handleSignup(event)">
             <div class="form-group">
-                <label for="name">Full Name</label>
+                <label for="username">Username</label>
                 <input 
                     type="text" 
-                    id="name" 
-                    name="name" 
-                    placeholder="John Doe" 
+                    id="username" 
+                    name="username" 
+                    placeholder="your_username" 
                     required
                 >
             </div>
@@ -239,12 +239,13 @@
         </div>
     </div>
 
+    <script src="api-service.js"></script>
     <script>
         async function handleSignup(event) {
             event.preventDefault();
             
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
             const terms = document.getElementById('terms').checked;
@@ -268,61 +269,30 @@
                 return;
             }
 
-            // TODO: Backend API call placeholder
-            // This is where you'll make the API call to your backend for user registration
             try {
-                // Example API call (uncomment when backend is ready):
-                /*
-                const response = await fetch('/api/signup', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        name: name,
-                        email: email,
-                        password: password
-                    })
-                });
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Signup failed');
+                const registerResponse = await ApiService.register(username, email, password);
+                if (!registerResponse.ok) {
+                    throw new Error(ApiService.getErrorMessage(registerResponse));
                 }
-                
-                const data = await response.json();
-                // Backend should return: { token: string, user: { id, name, email } }
-                
-                // Store authentication token and user info
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('currentUser', JSON.stringify(data.user));
-                
-                // Show success and redirect
-                successDiv.textContent = 'Account created successfully! Redirecting...';
-                successDiv.style.display = 'block';
-                
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
-                */
-                
-                // TEMPORARY: Mock signup for demonstration
-                // In production, this will be handled by your backend
-                const mockUser = {
-                    id: 'user-' + Date.now(),
-                    email: email,
-                    name: name
+
+                const loginResponse = await ApiService.login(username, password);
+                if (!loginResponse.ok) {
+                    throw new Error(ApiService.getErrorMessage(loginResponse));
+                }
+
+                const user = {
+                    username: username,
+                    email: email
                 };
-                
-                localStorage.setItem('currentUser', JSON.stringify(mockUser));
-                localStorage.setItem('authToken', 'mock-token-' + Date.now());
-                
+
+                localStorage.setItem('currentUser', JSON.stringify(user));
+
                 successDiv.textContent = 'Account created successfully! Redirecting to home...';
                 successDiv.style.display = 'block';
                 
                 setTimeout(() => {
                     window.location.href = 'index.html';
-                }, 2000);
+                }, 1500);
                 
             } catch (error) {
                 errorDiv.textContent = error.message;
@@ -333,8 +303,7 @@
 
         // Check if already logged in
         window.addEventListener('load', function() {
-            const user = localStorage.getItem('currentUser');
-            if (user) {
+            if (ApiService.isAuthenticated()) {
                 if (confirm('You are already logged in. Go to home page?')) {
                     window.location.href = 'index.html';
                 }
