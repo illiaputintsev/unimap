@@ -310,16 +310,32 @@
             line-height: 1.4;
         }
 
+        .topic-row.topic-focus-active {
+            border-color: rgba(37,99,235,0.24);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+        }
+
         .topic-topline {
             display: grid;
             grid-template-columns: minmax(0, 1fr) auto;
-            gap: 8px;
-            align-items: center;
+            gap: 10px;
+            align-items: start;
+        }
+
+        .topic-title-stack {
+            display: grid;
+            gap: 6px;
+        }
+
+        .topic-title-text {
+            color: #0f172a;
+            font-weight: 700;
+            line-height: 1.3;
+            font-size: 14px;
         }
 
         .topic-actions-inline {
             display: flex;
-            flex-wrap: wrap;
             justify-content: flex-end;
             gap: 6px;
             align-items: center;
@@ -331,19 +347,127 @@
             font-size: 12px;
         }
 
+        .topic-quiz-trigger {
+            white-space: nowrap;
+        }
+
+        .topic-menu-wrap {
+            position: relative;
+        }
+
+        .topic-menu-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid rgba(148,163,184,0.18);
+            background: rgba(255,255,255,0.9);
+            color: #334155;
+            font-weight: 800;
+            font-size: 18px;
+            line-height: 1;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .topic-menu-btn:hover {
+            background: rgba(248,250,252,0.95);
+            border-color: rgba(148,163,184,0.28);
+        }
+
+        .topic-menu-panel {
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            z-index: 20;
+            min-width: 170px;
+            border-radius: 12px;
+            border: 1px solid rgba(148,163,184,0.16);
+            background: rgba(255,255,255,0.97);
+            box-shadow: 0 12px 30px rgba(15,23,42,0.12);
+            padding: 6px;
+            display: none;
+            gap: 4px;
+        }
+
+        .topic-menu-wrap.open .topic-menu-panel {
+            display: grid;
+        }
+
+        .topic-menu-item {
+            border: 0;
+            background: transparent;
+            text-align: left;
+            border-radius: 8px;
+            padding: 8px 10px;
+            color: #334155;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .topic-menu-item:hover {
+            background: rgba(248,250,252,0.95);
+        }
+
+        .topic-menu-item.danger {
+            color: #b91c1c;
+        }
+
         .topic-meta {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
         }
 
+        .topic-mastery-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .topic-mastery-row .progress-bar {
+            height: 7px;
+        }
+
+        .topic-mastery-caption {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
         .topic-detail-box {
             display: none;
             margin-top: 2px;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(148,163,184,0.14);
+            background: rgba(248,250,252,0.72);
+            gap: 8px;
         }
 
         .topic-row.expanded .topic-detail-box {
-            display: block;
+            display: grid;
+        }
+
+        .topic-focus-quiz {
+            margin-top: 12px;
+            border: 1px solid rgba(148,163,184,0.14);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.82);
+            padding: 12px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .topic-focus-quiz-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
         }
 
         .tiny-chip {
@@ -700,6 +824,17 @@
             .topic-actions-inline {
                 justify-content: flex-start;
             }
+            .topic-mastery-row {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+            }
+            .topic-mastery-caption {
+                white-space: normal;
+            }
+            .topic-focus-quiz-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
             .quiz-actions {
                 flex-direction: column;
                 align-items: stretch;
@@ -740,6 +875,31 @@
                     <p class="muted">Topics are generated for this module and stored per user. You can edit names, add your own topics, or remove any topic before generating quizzes.</p>
                     <div id="topics-status" class="status-line"></div>
                     <div id="topic-list" class="topic-list"></div>
+                    <div class="topic-focus-quiz">
+                        <div class="topic-focus-quiz-header">
+                            <div>
+                                <div class="card-title" style="margin:0;">Focused Topic Quiz</div>
+                                <div id="topic-quiz-context" class="muted">Pick a topic and use the topic row menu to generate a focused quiz.</div>
+                            </div>
+                            <div class="quiz-controls">
+                                <label class="muted" for="topic-question-count" style="font-weight:700;">Questions</label>
+                                <select id="topic-question-count">
+                                    <option value="4">4</option>
+                                    <option value="5" selected>5</option>
+                                    <option value="6">6</option>
+                                    <option value="8">8</option>
+                                </select>
+                                <label class="muted" style="display:flex;align-items:center;gap:6px;">
+                                    <input type="checkbox" id="topic-focus-mistakes" checked>
+                                    Focus mistakes
+                                </label>
+                                <button id="btn-regenerate-topic-quiz" class="btn-secondary" type="button">Regenerate</button>
+                            </div>
+                        </div>
+                        <div id="topic-quiz-status" class="status-line"></div>
+                        <div id="topic-quiz-panel" class="quiz-panel"></div>
+                        <div id="topic-quiz-results" class="quiz-results"></div>
+                    </div>
                 </div>
             </section>
 
@@ -823,13 +983,6 @@
             </section>
 
             <section class="module-card">
-                <div class="card-header"><h2 class="side-stack-title">Topic Mastery</h2></div>
-                <div class="card-body">
-                    <div id="mastery-list" class="mastery-list"></div>
-                </div>
-            </section>
-
-            <section class="module-card">
                 <div class="card-header"><h2 class="side-stack-title">Mistake Journal</h2></div>
                 <div class="card-body">
                     <div id="mistakes-list" class="mistakes-list"></div>
@@ -873,8 +1026,12 @@
         let lastQuizReview = null;
         let activeMockQuiz = null;
         let lastMockQuizReview = null;
+        let activeTopicQuiz = null;
+        let lastTopicQuizReview = null;
         let autoSaveTimeout = null;
         const expandedTopicIds = new Set();
+        let openTopicMenuId = null;
+        let currentTopicQuizTopicId = null;
 
         function safeParse(json, fallback) {
             try {
@@ -1339,38 +1496,92 @@
             `).join('');
         }
 
+        function getTopicMasteryStats(topic) {
+            const key = String(topic?.title || '').toLowerCase();
+            const stats = state.topicStats?.[key] || {};
+            const totalQuestions = Number(stats.totalQuestions || 0);
+            const correctQuestions = Number(stats.correctQuestions || 0);
+            const attempts = Number(stats.attempts || 0);
+            const accuracy = totalQuestions ? Math.round((correctQuestions / totalQuestions) * 100) : 0;
+            return { stats, totalQuestions, correctQuestions, attempts, accuracy };
+        }
+
+        function renderTopicQuizContext() {
+            const contextEl = document.getElementById('topic-quiz-context');
+            const regenButton = document.getElementById('btn-regenerate-topic-quiz');
+            if (!contextEl) return;
+
+            const topic = (state.topics || []).find(t => String(t.id) === String(currentTopicQuizTopicId));
+            if (!topic) {
+                if (currentTopicQuizTopicId) {
+                    currentTopicQuizTopicId = null;
+                    activeTopicQuiz = null;
+                    lastTopicQuizReview = null;
+                    renderTopicQuizPanel();
+                    renderTopicQuizResults();
+                }
+                contextEl.textContent = 'Pick a topic and use the topic row menu to generate a focused quiz.';
+                if (regenButton) regenButton.disabled = true;
+                return;
+            }
+
+            const mastery = getTopicMasteryStats(topic);
+            const perfText = mastery.totalQuestions
+                ? `${mastery.accuracy}% accuracy · ${mastery.correctQuestions}/${mastery.totalQuestions} correct`
+                : 'No topic quiz history yet';
+            contextEl.textContent = `Focused on: ${topic.title} · ${perfText}`;
+            if (regenButton) regenButton.disabled = false;
+        }
+
         function renderTopics() {
             const list = document.getElementById('topic-list');
+            if (!list) return;
             const topics = state.topics || [];
             if (!topics.length) {
                 list.innerHTML = '<div class="empty-state">No topics yet. Click <strong>Generate / Refresh with Gemini</strong> to create a personalized list.</div>';
+                renderTopicQuizContext();
                 return;
             }
 
             list.innerHTML = topics.map((topic, index) => {
-                const statsKey = topic.title.toLowerCase();
-                const stats = state.topicStats?.[statsKey] || {};
-                const accuracy = stats.totalQuestions ? Math.round((stats.correctQuestions || 0) / stats.totalQuestions * 100) : 0;
+                const { totalQuestions, correctQuestions, attempts, accuracy } = getTopicMasteryStats(topic);
                 const isExpanded = expandedTopicIds.has(String(topic.id));
+                const isMenuOpen = String(openTopicMenuId || '') === String(topic.id);
+                const isFocusTarget = String(currentTopicQuizTopicId || '') === String(topic.id);
+                const masteryCaption = totalQuestions
+                    ? `${accuracy}% · ${correctQuestions}/${totalQuestions} correct · ${attempts} attempt${attempts === 1 ? '' : 's'}`
+                    : 'No quiz data yet';
+
                 return `
-                    <div class="topic-row ${isExpanded ? 'expanded' : ''}" data-topic-id="${escapeHtml(topic.id)}">
+                    <div class="topic-row ${isExpanded ? 'expanded' : ''} ${isFocusTarget ? 'topic-focus-active' : ''}" data-topic-id="${escapeHtml(topic.id)}">
                         <div class="topic-index">${index + 1}</div>
                         <div class="topic-fields">
                             <div class="topic-topline">
-                                <input type="text" value="${escapeHtml(topic.title)}" data-role="title" placeholder="Topic name">
+                                <div class="topic-title-stack">
+                                    <div class="topic-title-text">${escapeHtml(topic.title)}</div>
+                                    <div class="topic-meta">
+                                        <span class="tiny-chip">${escapeHtml(topic.source || 'custom')}</span>
+                                        ${isFocusTarget ? '<span class="tiny-chip" style="color:#1d4ed8;border-color:rgba(37,99,235,0.15);background:rgba(239,246,255,0.92);">Focused quiz target</span>' : ''}
+                                    </div>
+                                </div>
                                 <div class="topic-actions-inline">
-                                    <button class="btn-secondary" type="button" data-action="topic-quiz">Topic Quiz</button>
-                                    <button class="btn-ghost" type="button" data-action="toggle-details">${isExpanded ? 'Hide details' : 'Details'}</button>
-                                    <button class="btn-ghost" type="button" data-action="duplicate">Copy</button>
-                                    <button class="btn-danger" type="button" data-action="remove">Remove</button>
+                                    <button class="btn-secondary topic-quiz-trigger" type="button" data-action="topic-quiz">Quiz</button>
+                                    <div class="topic-menu-wrap ${isMenuOpen ? 'open' : ''}">
+                                        <button class="topic-menu-btn" type="button" data-action="toggle-menu" aria-haspopup="menu" aria-expanded="${isMenuOpen ? 'true' : 'false'}">⋯</button>
+                                        <div class="topic-menu-panel" role="menu">
+                                            <button class="topic-menu-item" type="button" data-action="toggle-details">${isExpanded ? 'Hide editor' : 'Edit topic'}</button>
+                                            <button class="topic-menu-item" type="button" data-action="duplicate">Duplicate topic</button>
+                                            <button class="topic-menu-item danger" type="button" data-action="remove">Delete topic</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="topic-meta">
-                                <span class="tiny-chip">${escapeHtml(topic.source || 'custom')}</span>
-                                <span class="tiny-chip">Accuracy: ${accuracy}%</span>
-                                <span class="tiny-chip">Questions: ${Number(stats.totalQuestions || 0)}</span>
+                            <div class="topic-mastery-row">
+                                <div class="progress-bar"><span style="width:${accuracy}%;"></span></div>
+                                <div class="topic-mastery-caption">${escapeHtml(masteryCaption)}</div>
                             </div>
                             <div class="topic-detail-box">
+                                <input type="text" value="${escapeHtml(topic.title)}" data-role="title" placeholder="Topic name">
                                 <textarea data-role="why" placeholder="Why this matters / custom notes for this topic (optional)">${escapeHtml(topic.why || '')}</textarea>
                             </div>
                         </div>
@@ -1380,20 +1591,66 @@
 
             list.querySelectorAll('.topic-row').forEach(row => {
                 const topicId = row.dataset.topicId;
-                row.querySelector('[data-role="title"]').addEventListener('input', (e) => updateTopicField(topicId, 'title', e.target.value));
+                const titleField = row.querySelector('[data-role="title"]');
+                if (titleField) {
+                    titleField.addEventListener('input', (e) => updateTopicField(topicId, 'title', e.target.value));
+                    titleField.addEventListener('blur', () => {
+                        renderTopics();
+                        renderAllSidebar();
+                    });
+                }
+
                 const whyField = row.querySelector('[data-role="why"]');
                 if (whyField) {
                     whyField.addEventListener('input', (e) => updateTopicField(topicId, 'why', e.target.value));
                 }
-                row.querySelector('[data-action="remove"]').addEventListener('click', () => removeTopic(topicId));
-                row.querySelector('[data-action="duplicate"]').addEventListener('click', () => duplicateTopic(topicId));
-                row.querySelector('[data-action="toggle-details"]').addEventListener('click', () => toggleTopicDetails(topicId));
-                row.querySelector('[data-action="topic-quiz"]').addEventListener('click', () => generateTopicQuiz(topicId));
+
+                row.querySelector('[data-action="topic-quiz"]')?.addEventListener('click', () => generateTopicQuiz(topicId));
+                row.querySelector('[data-action="toggle-menu"]')?.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleTopicMenu(topicId);
+                });
+                row.querySelector('.topic-menu-wrap')?.addEventListener('click', (e) => e.stopPropagation());
+                row.querySelector('[data-action="remove"]')?.addEventListener('click', () => removeTopic(topicId));
+                row.querySelector('[data-action="duplicate"]')?.addEventListener('click', () => duplicateTopic(topicId));
+                row.querySelector('[data-action="toggle-details"]')?.addEventListener('click', () => {
+                    toggleTopicDetails(topicId);
+                    requestAnimationFrame(() => {
+                        const field = document.querySelector(`.topic-row[data-topic-id="${String(topicId)}"] [data-role="title"]`);
+                        if (field) {
+                            field.focus();
+                            field.select();
+                        }
+                    });
+                });
             });
+
+            renderTopicQuizContext();
+        }
+
+        function toggleTopicMenu(topicId) {
+            const key = String(topicId);
+            openTopicMenuId = String(openTopicMenuId || '') === key ? null : key;
+            renderTopics();
+        }
+
+        function closeTopicMenu() {
+            if (!openTopicMenuId) return;
+            openTopicMenuId = null;
+            renderTopics();
+        }
+
+        function handleGlobalClick(event) {
+            if (!openTopicMenuId) return;
+            if (event.target && event.target.closest && event.target.closest('.topic-menu-wrap')) return;
+            openTopicMenuId = null;
+            renderTopics();
         }
 
         function toggleTopicDetails(topicId) {
             const key = String(topicId);
+            openTopicMenuId = null;
             if (expandedTopicIds.has(key)) expandedTopicIds.delete(key);
             else expandedTopicIds.add(key);
             renderTopics();
@@ -1402,17 +1659,44 @@
         function updateTopicField(topicId, field, value) {
             const topic = (state.topics || []).find(t => String(t.id) === String(topicId));
             if (!topic) return;
+            const previousTitle = String(topic.title || '');
             topic[field] = String(value || '').trimStart();
+            if (field === 'title') {
+                const oldKey = previousTitle.toLowerCase();
+                const newKey = String(topic.title || '').toLowerCase();
+                if (oldKey && newKey && oldKey !== newKey && state.topicStats && state.topicStats[oldKey]) {
+                    const existingNew = state.topicStats[newKey];
+                    if (!existingNew) {
+                        state.topicStats[newKey] = { ...state.topicStats[oldKey], topicTitle: topic.title };
+                    } else {
+                        existingNew.topicTitle = topic.title;
+                    }
+                    delete state.topicStats[oldKey];
+                }
+            }
             if (!topic.source || topic.source === 'gemini' || topic.source === 'fallback' || topic.source === 'roadmap') {
                 topic.source = 'custom';
             }
             queueSave();
+            if (String(currentTopicQuizTopicId || '') === String(topicId)) {
+                renderTopicQuizContext();
+            }
             renderAllSidebar();
             renderHero();
         }
 
         function removeTopic(topicId) {
             state.topics = (state.topics || []).filter(t => String(t.id) !== String(topicId));
+            if (String(currentTopicQuizTopicId || '') === String(topicId)) {
+                currentTopicQuizTopicId = null;
+                activeTopicQuiz = null;
+                lastTopicQuizReview = null;
+                renderTopicQuizPanel();
+                renderTopicQuizResults();
+                setStatus('topic-quiz-status', 'Focused topic was removed. Pick another topic to generate a quiz.', '');
+            }
+            openTopicMenuId = null;
+            expandedTopicIds.delete(String(topicId));
             addActivity('Removed a topic.');
             saveState();
             renderTopics();
@@ -1431,6 +1715,7 @@
             }, 0);
             state.topics.push(copy);
             state.topics = state.topics.slice(0, 40);
+            openTopicMenuId = null;
             addActivity('Duplicated a topic.');
             saveState();
             renderTopics();
@@ -1439,13 +1724,15 @@
         }
 
         function addBlankTopic() {
+            const newTopicId = randomId('topic');
             state.topics.push({
-                id: randomId('topic'),
+                id: newTopicId,
                 title: `${moduleContext.module.title}: New Topic`,
                 why: '',
                 source: 'custom',
                 createdAt: new Date().toISOString()
             });
+            expandedTopicIds.add(String(newTopicId));
             addActivity('Added a custom topic.');
             saveState();
             renderTopics();
@@ -1453,19 +1740,35 @@
             renderHero();
         }
 
+        function getCurrentTopicQuizTopic() {
+            return (state.topics || []).find(t => String(t.id) === String(currentTopicQuizTopicId || '')) || null;
+        }
+
+        async function generateCurrentTopicQuiz() {
+            const topic = getCurrentTopicQuizTopic();
+            if (!topic) {
+                setStatus('topic-quiz-status', 'Select a topic first from the topic list.', 'error');
+                return;
+            }
+            return generateTopicQuiz(topic.id);
+        }
+
         function generateTopicQuiz(topicId) {
             const topic = (state.topics || []).find(t => String(t.id) === String(topicId));
             if (!topic) return;
-            generateQuiz({
+            currentTopicQuizTopicId = String(topicId);
+            openTopicMenuId = null;
+            renderTopics();
+            const generationPromise = generateQuizForPanel({
+                kind: 'topic',
                 mode: 'topic',
                 topicTitles: [topic.title],
-                questionCount: 5,
-                statusId: 'quiz-status',
-                panelType: 'practice',
+                questionCount: Number(document.getElementById('topic-question-count')?.value || 5),
                 label: `Topic Quiz · ${topic.title}`,
-                focusMistakes: true
+                focusMistakes: !!document.getElementById('topic-focus-mistakes')?.checked
             });
-            document.getElementById('btn-generate-quiz-secondary')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('topic-quiz-panel')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            return generationPromise;
         }
 
         function humanFileSize(size) {
@@ -1657,25 +1960,119 @@
             clearAll();
         }
 
-        async function generateQuiz() {
+        function getQuizPanelConfig(kind) {
+            if (kind === 'mock') {
+                return {
+                    kind: 'mock',
+                    mode: 'mock_exam',
+                    statusId: 'mock-quiz-status',
+                    panelId: 'mock-quiz-panel',
+                    resultsId: 'mock-quiz-results',
+                    questionCountId: 'mock-question-count',
+                    focusMistakesId: 'mock-focus-mistakes',
+                    title: 'Mock Exam'
+                };
+            }
+            if (kind === 'topic') {
+                return {
+                    kind: 'topic',
+                    mode: 'topic',
+                    statusId: 'topic-quiz-status',
+                    panelId: 'topic-quiz-panel',
+                    resultsId: 'topic-quiz-results',
+                    questionCountId: 'topic-question-count',
+                    focusMistakesId: 'topic-focus-mistakes',
+                    title: 'Focused Topic Quiz'
+                };
+            }
+            return {
+                kind: 'practice',
+                mode: 'practice',
+                statusId: 'quiz-status',
+                panelId: 'quiz-panel',
+                resultsId: 'quiz-results',
+                questionCountId: 'question-count',
+                focusMistakesId: 'focus-mistakes',
+                title: 'Practice Quiz'
+            };
+        }
+
+        function getActiveQuizForKind(kind) {
+            if (kind === 'mock') return activeMockQuiz;
+            if (kind === 'topic') return activeTopicQuiz;
+            return activeQuiz;
+        }
+
+        function setActiveQuizForKind(kind, value) {
+            if (kind === 'mock') activeMockQuiz = value;
+            else if (kind === 'topic') activeTopicQuiz = value;
+            else activeQuiz = value;
+        }
+
+        function getQuizReviewForKind(kind) {
+            if (kind === 'mock') return lastMockQuizReview;
+            if (kind === 'topic') return lastTopicQuizReview;
+            return lastQuizReview;
+        }
+
+        function setQuizReviewForKind(kind, value) {
+            if (kind === 'mock') lastMockQuizReview = value;
+            else if (kind === 'topic') lastTopicQuizReview = value;
+            else lastQuizReview = value;
+        }
+
+        async function generateQuiz(options = {}) {
+            return generateQuizForPanel({
+                kind: 'practice',
+                mode: options.mode || 'practice',
+                topicTitles: options.topicTitles,
+                questionCount: options.questionCount,
+                focusMistakes: options.focusMistakes,
+                label: options.label || 'Practice Quiz'
+            });
+        }
+
+        async function generateMockExam() {
+            return generateQuizForPanel({
+                kind: 'mock',
+                mode: 'mock_exam',
+                label: 'Mock Exam'
+            });
+        }
+
+        async function generateQuizForPanel(options = {}) {
+            const kind = options.kind === 'mock'
+                ? 'mock'
+                : (options.kind === 'topic' ? 'topic' : 'practice');
+            const panelConfig = getQuizPanelConfig(kind);
             if (!(state.topics || []).length) {
-                setStatus('quiz-status', 'Add or generate topics before creating a quiz.', 'error');
+                setStatus(panelConfig.statusId, 'Add or generate topics before creating a quiz.', 'error');
                 return;
             }
 
-            const questionCount = Number(document.getElementById('question-count').value || 8);
-            setStatus('quiz-status', 'Generating quiz...', '');
-            activeQuiz = null;
-            lastQuizReview = null;
-            renderQuizPanel();
-            renderQuizResults();
+            const topicTitles = Array.isArray(options.topicTitles) && options.topicTitles.length
+                ? options.topicTitles.slice(0, 25)
+                : topicTitlesPayload().slice(0, 25);
+            const defaultQuestionCount = kind === 'mock' ? 12 : (kind === 'topic' ? 5 : 8);
+            const questionCount = Number(options.questionCount || document.getElementById(panelConfig.questionCountId)?.value || defaultQuestionCount);
+            const focusMistakes = options.focusMistakes !== undefined
+                ? !!options.focusMistakes
+                : !!document.getElementById(panelConfig.focusMistakesId)?.checked;
+            const mode = String(options.mode || panelConfig.mode || 'practice');
+
+            setStatus(panelConfig.statusId, `Generating ${options.label || panelConfig.title}...`, '');
+            setActiveQuizForKind(kind, null);
+            setQuizReviewForKind(kind, null);
+            renderQuizPanelFor(kind);
+            renderQuizResultsFor(kind);
 
             const payload = {
                 module_title: moduleContext.module.title,
                 roadmap_title: moduleContext.roadmapId ? `Roadmap ${moduleContext.roadmapId}` : '',
-                topics: topicTitlesPayload().slice(0, 25),
+                quiz_mode: mode,
+                topics: topicTitles,
                 note_excerpts: noteExcerptsPayload(),
-                mistakes: document.getElementById('focus-mistakes')?.checked ? mistakesPayload() : [],
+                mistakes: focusMistakes ? mistakesPayload() : [],
                 question_count: questionCount
             };
 
@@ -1689,7 +2086,7 @@
                     if (response.ok && Array.isArray(response.data?.questions) && response.data.questions.length) {
                         questions = response.data.questions.map((q, index) => ({
                             id: q.id || `q-${index + 1}`,
-                            topic: q.topic || topicTitlesPayload()[index % Math.max(1, topicTitlesPayload().length)] || moduleContext.module.title,
+                            topic: q.topic || topicTitles[index % Math.max(1, topicTitles.length)] || moduleContext.module.title,
                             question: q.question || `Question ${index + 1}`,
                             options: Array.isArray(q.options) ? q.options.slice(0, 4) : [],
                             correct: Number.isFinite(Number(q.correct)) ? Number(q.correct) : Number(q.correct_index || 0),
@@ -1709,48 +2106,69 @@
             }
 
             if (!questions || !questions.length) {
-                const fallback = fallbackQuizGenerator(questionCount);
+                const fallback = fallbackQuizGenerator(questionCount, {
+                    mode,
+                    topicTitles,
+                    focusMistakes
+                });
                 questions = fallback.questions;
                 source = fallback.source;
                 note = note || fallback.note || '';
             }
 
-            activeQuiz = {
-                id: randomId('quiz'),
+            const builtQuiz = {
+                id: randomId(kind === 'mock' ? 'mock-quiz' : (kind === 'topic' ? 'topic-quiz' : 'quiz')),
                 generatedAt: new Date().toISOString(),
                 source,
                 note,
+                mode,
+                label: options.label || panelConfig.title,
+                focusMistakes,
                 questions: questions.slice(0, questionCount).map((q, idx) => ({
                     ...q,
                     id: String(q.id || `q-${idx + 1}`),
                     correct: Math.max(0, Math.min(3, Number(q.correct || 0)))
                 }))
             };
+
+            setActiveQuizForKind(kind, builtQuiz);
             state.lastGenerated.quizSource = source;
             state.lastGenerated.note = note || state.lastGenerated.note || '';
-            addActivity(`Generated a quiz (${source}) with ${activeQuiz.questions.length} questions.`);
+            addActivity(`Generated ${builtQuiz.label.toLowerCase()} (${source}) with ${builtQuiz.questions.length} questions.`);
             saveState();
             renderHero();
-            renderQuizPanel();
-            renderQuizResults();
-            setStatus('quiz-status', `Quiz ready (${source}). ${note || ''}`.trim(), 'success');
-            clearStatusLater('quiz-status', 5000);
+            renderQuizPanelFor(kind);
+            renderQuizResultsFor(kind);
+            setStatus(panelConfig.statusId, `${builtQuiz.label} ready (${source}). ${note || ''}`.trim(), 'success');
+            clearStatusLater(panelConfig.statusId, 5000);
         }
 
-        function renderQuizPanel() {
-            const panel = document.getElementById('quiz-panel');
-            if (!activeQuiz || !Array.isArray(activeQuiz.questions) || !activeQuiz.questions.length) {
+        function renderQuizPanel() { renderQuizPanelFor('practice'); }
+        function renderMockQuizPanel() { renderQuizPanelFor('mock'); }
+        function renderTopicQuizPanel() { renderQuizPanelFor('topic'); }
+
+        function renderQuizPanelFor(kind) {
+            const panelConfig = getQuizPanelConfig(kind);
+            const panel = document.getElementById(panelConfig.panelId);
+            const quiz = getActiveQuizForKind(kind);
+            if (!panel) return;
+
+            if (!quiz || !Array.isArray(quiz.questions) || !quiz.questions.length) {
                 panel.innerHTML = `
                     <div class="quiz-placeholder">
-                        Generate a fresh quiz any time. The generator uses your current topics, extracted PDF note snippets, and mistake history so each quiz becomes more personalized over time.
+                        ${kind === 'mock'
+                            ? 'Generate a full mock exam at the bottom when you want a more exam-style attempt across the module.'
+                            : kind === 'topic'
+                                ? 'Choose a topic from the list above and generate a focused quiz here. This panel is independent from the all-topics practice quiz.'
+                            : 'Generate a practice quiz covering all topics. Focused topic quizzes appear only in the Topics section and do not replace this panel.'}
                     </div>
                 `;
                 return;
             }
 
             panel.innerHTML = `
-                <form id="quiz-form" class="quiz-form">
-                    ${activeQuiz.questions.map((q, qIndex) => `
+                <form id="${kind}-quiz-form" class="quiz-form">
+                    ${quiz.questions.map((q, qIndex) => `
                         <section class="quiz-question" data-question-id="${escapeHtml(q.id)}">
                             <div class="quiz-q-top">
                                 <span class="quiz-q-index">Question ${qIndex + 1}</span>
@@ -1760,7 +2178,7 @@
                             <div class="quiz-options">
                                 ${q.options.map((option, optIndex) => `
                                     <label class="quiz-option">
-                                        <input type="radio" name="question-${qIndex}" value="${optIndex}">
+                                        <input type="radio" name="${kind}-question-${qIndex}" value="${optIndex}">
                                         <span>${escapeHtml(option)}</span>
                                     </label>
                                 `).join('')}
@@ -1768,31 +2186,38 @@
                         </section>
                     `).join('')}
                     <div class="quiz-actions">
-                        <span class="muted">Source: ${escapeHtml(activeQuiz.source)} · Generated ${new Date(activeQuiz.generatedAt).toLocaleString()}</span>
-                        <button type="submit" class="btn">Submit Quiz</button>
+                        <span class="muted">${escapeHtml(quiz.label || panelConfig.title)} · Source: ${escapeHtml(quiz.source)} · Generated ${new Date(quiz.generatedAt).toLocaleString()}</span>
+                        <button type="submit" class="btn">Submit ${escapeHtml(kind === 'mock' ? 'Mock Exam' : (kind === 'topic' ? 'Topic Quiz' : 'Quiz'))}</button>
                     </div>
                 </form>
             `;
 
-            panel.querySelector('#quiz-form').addEventListener('submit', submitActiveQuiz);
+            panel.querySelector(`#${kind}-quiz-form`).addEventListener('submit', (event) => submitQuizForKind(event, kind));
         }
 
-        function getSelectedAnswersFromForm(form) {
+        function getSelectedAnswersFromForm(form, kind, quiz) {
             const answers = [];
-            activeQuiz.questions.forEach((_, qIndex) => {
-                const selected = form.querySelector(`input[name="question-${qIndex}"]:checked`);
+            (quiz.questions || []).forEach((_, qIndex) => {
+                const selected = form.querySelector(`input[name="${kind}-question-${qIndex}"]:checked`);
                 answers.push(selected ? Number(selected.value) : -1);
             });
             return answers;
         }
 
-        function submitActiveQuiz(event) {
+        function submitActiveQuiz(event) { submitQuizForKind(event, 'practice'); }
+        function submitMockQuiz(event) { submitQuizForKind(event, 'mock'); }
+        function submitTopicQuiz(event) { submitQuizForKind(event, 'topic'); }
+
+        function submitQuizForKind(event, kind) {
             event.preventDefault();
-            if (!activeQuiz) return;
+            const quiz = getActiveQuizForKind(kind);
+            if (!quiz) return;
+
+            const panelConfig = getQuizPanelConfig(kind);
             const form = event.currentTarget;
-            const answers = getSelectedAnswersFromForm(form);
+            const answers = getSelectedAnswersFromForm(form, kind, quiz);
             if (answers.some(a => a < 0)) {
-                setStatus('quiz-status', 'Please answer all questions before submitting.', 'error');
+                setStatus(panelConfig.statusId, 'Please answer all questions before submitting.', 'error');
                 return;
             }
 
@@ -1801,7 +2226,7 @@
             const topicStatsDelta = {};
             const newMistakes = [];
 
-            activeQuiz.questions.forEach((q, index) => {
+            quiz.questions.forEach((q, index) => {
                 const answerIndex = answers[index];
                 const isCorrect = answerIndex === q.correct;
                 if (isCorrect) correctCount += 1;
@@ -1831,9 +2256,9 @@
                 });
             });
 
-            const totalQuestions = activeQuiz.questions.length;
+            const totalQuestions = quiz.questions.length;
             const score = Math.round((correctCount / Math.max(1, totalQuestions)) * 100);
-            lastQuizReview = { score, totalQuestions, correctCount, review, source: activeQuiz.source, generatedAt: activeQuiz.generatedAt };
+            setQuizReviewForKind(kind, { score, totalQuestions, correctCount, review, source: quiz.source, generatedAt: quiz.generatedAt, label: quiz.label || panelConfig.title });
 
             updateTopicStats(topicStatsDelta, score);
             mergeMistakes(newMistakes);
@@ -1841,19 +2266,23 @@
                 score,
                 totalQuestions,
                 correctCount,
-                source: activeQuiz.source,
+                source: quiz.source,
                 createdAt: new Date().toISOString(),
-                focusedOnMistakes: !!document.getElementById('focus-mistakes')?.checked
+                focusedOnMistakes: !!quiz.focusMistakes,
+                quizType: quiz.label || panelConfig.title,
+                quizMode: quiz.mode || panelConfig.mode
             });
+            persistLegacyQuizProgress(score, quiz);
 
-            addActivity(`Completed quiz: ${score}% (${correctCount}/${totalQuestions}).`);
+            addActivity(`Completed ${(quiz.label || panelConfig.title).toLowerCase()}: ${score}% (${correctCount}/${totalQuestions}).`);
             saveState();
-            renderQuizResults();
+            renderTopics();
+            renderQuizResultsFor(kind);
             renderAllSidebar();
             renderHero();
             maybeSyncRoadmapProgress(score);
-            setStatus('quiz-status', `Quiz submitted. Score: ${score}%`, score >= 70 ? 'success' : '');
-            clearStatusLater('quiz-status', 3200);
+            setStatus(panelConfig.statusId, `${quiz.label || panelConfig.title} submitted. Score: ${score}%`, score >= 70 ? 'success' : '');
+            clearStatusLater(panelConfig.statusId, 3200);
         }
 
         function updateTopicStats(deltaByTopic, score) {
@@ -1910,6 +2339,22 @@
             state.attempts = state.attempts.slice(-50);
         }
 
+        function persistLegacyQuizProgress(score, quiz) {
+            const moduleId = String(moduleContext?.module?.id || moduleIdParam || '');
+            if (!moduleId) return;
+            try {
+                localStorage.setItem(`quiz-${moduleId}`, JSON.stringify({
+                    topic: moduleContext?.module?.title || 'Module',
+                    score: Number(score || 0),
+                    quizMode: quiz?.mode || 'practice',
+                    quizType: quiz?.label || 'Quiz',
+                    completedAt: new Date().toISOString()
+                }));
+            } catch (error) {
+                console.warn('Failed to persist module progress snapshot:', error);
+            }
+        }
+
         async function maybeSyncRoadmapProgress(score) {
             if (!topicIdParam || !window.ApiService || !ApiService.isAuthenticated()) return;
             try {
@@ -1930,21 +2375,28 @@
             }
         }
 
-        function renderQuizResults() {
-            const container = document.getElementById('quiz-results');
-            if (!lastQuizReview) {
+        function renderQuizResults() { renderQuizResultsFor('practice'); }
+        function renderMockQuizResults() { renderQuizResultsFor('mock'); }
+        function renderTopicQuizResults() { renderQuizResultsFor('topic'); }
+
+        function renderQuizResultsFor(kind) {
+            const panelConfig = getQuizPanelConfig(kind);
+            const container = document.getElementById(panelConfig.resultsId);
+            const reviewPayload = getQuizReviewForKind(kind);
+            if (!container) return;
+            if (!reviewPayload) {
                 container.classList.remove('show');
                 container.innerHTML = '';
                 return;
             }
-            const scoreClass = lastQuizReview.score >= 75 ? 'good' : (lastQuizReview.score < 50 ? 'bad' : '');
-            const wrong = lastQuizReview.review.filter(item => !item.isCorrect);
+            const scoreClass = reviewPayload.score >= 75 ? 'good' : (reviewPayload.score < 50 ? 'bad' : '');
+            const wrong = reviewPayload.review.filter(item => !item.isCorrect);
             container.classList.add('show');
             container.innerHTML = `
                 <section class="score-banner ${scoreClass}">
-                    <div class="muted">Latest quiz result · ${escapeHtml(lastQuizReview.source)} · ${escapeHtml(new Date(lastQuizReview.generatedAt).toLocaleString())}</div>
-                    <div class="score">${lastQuizReview.score}%</div>
-                    <div class="muted">${lastQuizReview.correctCount}/${lastQuizReview.totalQuestions} correct. ${wrong.length ? 'Mistakes were added to your mistake journal for future quizzes.' : 'Perfect run or no mistakes to record.'}</div>
+                    <div class="muted">${escapeHtml(reviewPayload.label || panelConfig.title)} result · ${escapeHtml(reviewPayload.source)} · ${escapeHtml(new Date(reviewPayload.generatedAt).toLocaleString())}</div>
+                    <div class="score">${reviewPayload.score}%</div>
+                    <div class="muted">${reviewPayload.correctCount}/${reviewPayload.totalQuestions} correct. ${wrong.length ? 'Mistakes were added to your mistake journal for future quizzes.' : 'Perfect run or no mistakes to record.'}</div>
                 </section>
                 ${wrong.length ? `
                     <section>
@@ -1998,39 +2450,6 @@
             `;
         }
 
-        function renderMasteryList() {
-            const container = document.getElementById('mastery-list');
-            const topics = state.topics || [];
-            if (!topics.length) {
-                container.innerHTML = '<div class="empty-state">Generate topics and take quizzes to build topic-level mastery stats.</div>';
-                return;
-            }
-
-            const items = topics.map(topic => {
-                const key = topic.title.toLowerCase();
-                const stats = state.topicStats?.[key] || null;
-                const totalQuestions = Number(stats?.totalQuestions || 0);
-                const correctQuestions = Number(stats?.correctQuestions || 0);
-                const accuracy = totalQuestions ? Math.round((correctQuestions / totalQuestions) * 100) : 0;
-                return { topic, totalQuestions, correctQuestions, accuracy, attempts: Number(stats?.attempts || 0) };
-            });
-
-            container.innerHTML = items.map(({ topic, totalQuestions, correctQuestions, accuracy, attempts }) => `
-                <div class="mastery-item">
-                    <div class="mastery-title">${escapeHtml(topic.title)}</div>
-                    <div class="mastery-meta">
-                        <span>${attempts} quiz touches</span>
-                        <span>${correctQuestions}/${totalQuestions} correct</span>
-                    </div>
-                    <div class="progress-bar"><span style="width:${accuracy}%;"></span></div>
-                    <div class="mastery-meta">
-                        <span>Accuracy</span>
-                        <strong style="color:#0f172a;">${accuracy}%</strong>
-                    </div>
-                </div>
-            `).join('');
-        }
-
         function renderMistakesList() {
             const container = document.getElementById('mistakes-list');
             const mistakes = (state.mistakeBank || []).slice(0, 12);
@@ -2060,13 +2479,22 @@
                 container.innerHTML = '<div class="empty-state">No attempts yet. Generate a quiz and submit it to start tracking progress.</div>';
                 return;
             }
+            const formatAttemptType = (attempt) => {
+                if (attempt?.quizType) return String(attempt.quizType);
+                if (attempt?.quizMode === 'mock_exam') return 'Mock Exam';
+                if (attempt?.quizMode === 'topic') return 'Topic Quiz';
+                return 'Practice Quiz';
+            };
             container.innerHTML = attempts.map(a => `
                 <div class="attempt-item">
                     <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">
                         <strong style="color:#0f172a;">${Number(a.score || 0)}%</strong>
-                        <span class="tiny-chip">${escapeHtml(a.source || 'quiz')}</span>
+                        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+                            <span class="tiny-chip">${escapeHtml(formatAttemptType(a))}</span>
+                            <span class="tiny-chip">${escapeHtml(a.source || 'quiz')}</span>
+                        </div>
                     </div>
-                    <div class="muted">${Number(a.correctCount || 0)}/${Number(a.totalQuestions || 0)} correct · ${a.focusedOnMistakes ? 'Mistake-focused' : 'Standard'} quiz</div>
+                    <div class="muted">${Number(a.correctCount || 0)}/${Number(a.totalQuestions || 0)} correct · ${a.focusedOnMistakes ? 'Mistake-focused' : 'Standard'} ${a.quizMode === 'mock_exam' ? 'exam' : 'quiz'}</div>
                     <div class="muted">${escapeHtml(new Date(a.createdAt).toLocaleString())}</div>
                 </div>
             `).join('');
@@ -2099,7 +2527,6 @@
 
         function renderAllSidebar() {
             renderProgressSummary();
-            renderMasteryList();
             renderMistakesList();
             renderAttemptsList();
             renderRelatedModules();
@@ -2110,29 +2537,47 @@
             document.getElementById('btn-regenerate-topics').addEventListener('click', generateTopicsWithGemini);
             document.getElementById('btn-generate-quiz').addEventListener('click', generateQuiz);
             document.getElementById('btn-generate-quiz-secondary').addEventListener('click', generateQuiz);
+            document.getElementById('btn-generate-mock-quiz').addEventListener('click', generateMockExam);
+            document.getElementById('btn-regenerate-topic-quiz').addEventListener('click', generateCurrentTopicQuiz);
             document.getElementById('pdf-upload').addEventListener('change', handlePdfUpload);
             document.getElementById('btn-clear-notes').addEventListener('click', clearNotes);
+            document.addEventListener('click', handleGlobalClick);
         }
 
         async function init() {
             loadContext();
             loadState();
+            await loadBackendNotesIfAvailable();
             bindUI();
             renderHero();
             renderTopics();
             renderNotes();
             renderQuizPanel();
             renderQuizResults();
+            renderTopicQuizContext();
+            renderTopicQuizPanel();
+            renderTopicQuizResults();
+            renderMockQuizPanel();
+            renderMockQuizResults();
             renderAllSidebar();
 
             await ensureInitialTopics();
             renderHero();
             renderTopics();
             renderNotes();
+            renderQuizPanel();
+            renderQuizResults();
+            renderTopicQuizContext();
+            renderTopicQuizPanel();
+            renderTopicQuizResults();
+            renderMockQuizPanel();
+            renderMockQuizResults();
             renderAllSidebar();
 
             if (!ApiService.isAuthenticated()) {
                 setStatus('quiz-status', 'You can use local fallback generation without login. For backend Gemini generation, log in first.', '');
+                setStatus('topic-quiz-status', 'Focused topic quiz also works locally without login. Log in for backend Gemini generation.', '');
+                setStatus('mock-quiz-status', 'Mock exam also works locally without login. Log in for backend Gemini generation and stored PDFs.', '');
             }
         }
 
