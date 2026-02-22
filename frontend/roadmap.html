@@ -38,23 +38,23 @@
         h1 {
             text-align: center;
             color: #1abc9c;
-            margin: 20px 0 10px;
-            font-size: 36px;
+            margin: 10px 0 5px;
+            font-size: 32px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
             position: relative;
             z-index: 1;
         }
         p {
             text-align: center;
-            margin: 5px 0;
+            margin: 3px 0;
             position: relative;
             z-index: 1;
         }
         #roadmap {
             width: 95%;
             max-width: 1400px;
-            margin: 20px auto;
-            min-height: 600px;
+            margin: 10px auto;
+            min-height: 400px;
             height: auto;
             background-color: white;
             border-radius: 15px;
@@ -498,52 +498,117 @@
         }
         
         // Open My Roadmaps modal
+        let myRoadmapsEditMode = false;
+        let myRoadmapsList = [];
+
         async function openMyRoadmaps() {
             if (!ApiService.isAuthenticated()) {
                 alert('Please login to view your roadmaps');
                 return;
             }
             
-            let html = '<h2>🗺️ My Roadmaps</h2>';
-            html += '<p style="color: #666; text-align: center; padding: 10px;">Loading...</p>';
-            
             const modal = document.querySelector('.modal');
-            if (modal) {
-                modal.innerHTML = html;
-                modal.style.display = 'block';
-            }
+            if (!modal) return;
+
+            modal.innerHTML = '<h2>🗺️ My Roadmaps</h2><p style="color: #666; text-align: center; padding: 10px;">Loading...</p>';
+            modal.style.display = 'block';
+            myRoadmapsEditMode = false;
 
             const response = await ApiService.listRoadmaps();
             if (!response.ok) {
-                if (modal) {
-                    modal.innerHTML = '<h2>🗺️ My Roadmaps</h2><p style="color: #c33; text-align: center; padding: 20px;">Failed to load roadmaps.</p>' +
-                        '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
-                }
+                modal.innerHTML = '<h2>🗺️ My Roadmaps</h2><p style="color: #c33; text-align: center; padding: 20px;">Failed to load roadmaps.</p>' +
+                    '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
                 return;
             }
 
-            const roadmaps = response.data || [];
-            if (roadmaps.length === 0) {
-                html = '<h2>🗺️ My Roadmaps</h2>';
+            myRoadmapsList = response.data || [];
+            renderMyRoadmaps();
+        }
+
+        function renderMyRoadmaps() {
+            const modal = document.querySelector('.modal');
+            if (!modal) return;
+
+            const editBtnLabel = myRoadmapsEditMode ? 'Done' : 'Edit';
+            const editBtnBg = myRoadmapsEditMode ? '#16a085' : '#1abc9c';
+            let html = `<div style="display:flex; align-items:center; justify-content:space-between;">
+                <h2 style="margin:0; border-bottom:none; padding-bottom:0;">🗺️ My Roadmaps</h2>
+                <button onclick="toggleMyRoadmapsEdit()" style="padding:6px 16px; background:${editBtnBg}; color:white; border:none; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer;">${editBtnLabel}</button>
+            </div>`;
+
+            if (myRoadmapsList.length === 0) {
                 html += '<p style="color: #666; text-align: center; padding: 20px;">No roadmaps yet. Generate one from the Home page.</p>';
             } else {
-                html = '<h2>🗺️ My Roadmaps</h2>';
-                html += '<div style="display: flex; flex-direction: column; gap: 10px;">';
-                roadmaps.forEach(roadmap => {
+                html += '<div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">';
+                myRoadmapsList.forEach(roadmap => {
                     const dateText = roadmap.created_at ? new Date(roadmap.created_at).toLocaleDateString() : 'Unknown date';
-                    html += `
-                        <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #1abc9c;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapById(${roadmap.id})">
-                            <strong>${roadmap.title || 'Untitled Roadmap'}</strong><br>
-                            <small style="color: #999;">${dateText}</small>
-                        </div>
-                    `;
+                    const title = roadmap.title || 'Untitled Roadmap';
+
+                    if (myRoadmapsEditMode) {
+                        html += `
+                            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; border-left: 4px solid #1abc9c;">
+                                <input id="rename-${roadmap.id}" type="text" value="${title.replace(/"/g, '&quot;')}" style="width:100%; padding:6px 8px; border:2px solid #1abc9c; border-radius:6px; font-size:14px; font-weight:600; box-sizing:border-box; margin-bottom:8px;">
+                                <small style="color: #999;">${dateText}</small>
+                                <div style="display:flex; gap:8px; margin-top:8px;">
+                                    <button onclick="renameRoadmap(${roadmap.id})" style="flex:1; padding:7px; background:#1abc9c; color:white; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">✓ Save Name</button>
+                                    <button onclick="deleteRoadmap(${roadmap.id}, '${title.replace(/'/g, "\\'")}')" style="flex:1; padding:7px; background:#e74c3c; color:white; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">🗑 Delete</button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #1abc9c;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapById(${roadmap.id})">
+                                <strong>${title}</strong><br>
+                                <small style="color: #999;">${dateText}</small>
+                            </div>
+                        `;
+                    }
                 });
                 html += '</div>';
             }
-            
-            if (modal) {
-                modal.innerHTML = html + '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
-                modal.style.display = 'block';
+
+            html += '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
+            modal.innerHTML = html;
+        }
+
+        function toggleMyRoadmapsEdit() {
+            myRoadmapsEditMode = !myRoadmapsEditMode;
+            renderMyRoadmaps();
+        }
+
+        async function renameRoadmap(roadmapId) {
+            const input = document.getElementById(`rename-${roadmapId}`);
+            if (!input) return;
+            const newTitle = input.value.trim();
+            if (!newTitle) { alert('Name cannot be empty.'); return; }
+
+            try {
+                const response = await ApiService.request(`/api/roadmaps/${roadmapId}/`, { method: 'PATCH', body: JSON.stringify({ title: newTitle }) });
+                if (response.ok) {
+                    const rm = myRoadmapsList.find(r => r.id === roadmapId);
+                    if (rm) rm.title = newTitle;
+                    renderMyRoadmaps();
+                } else {
+                    alert('Failed to rename: ' + (response.status || 'unknown error'));
+                }
+            } catch (e) {
+                alert('Rename not available yet — backend endpoint coming soon.');
+            }
+        }
+
+        async function deleteRoadmap(roadmapId, title) {
+            if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+
+            try {
+                const response = await ApiService.request(`/api/roadmaps/${roadmapId}/`, { method: 'DELETE' });
+                if (response.ok || response.status === 204) {
+                    myRoadmapsList = myRoadmapsList.filter(r => r.id !== roadmapId);
+                    renderMyRoadmaps();
+                } else {
+                    alert('Failed to delete: ' + (response.status || 'unknown error'));
+                }
+            } catch (e) {
+                alert('Delete not available yet — backend endpoint coming soon.');
             }
         }
 
@@ -765,8 +830,8 @@
                 const graphWidth = Math.max(...xs) - Math.min(...xs);
                 const graphHeight = Math.max(...ys) - Math.min(...ys);
 
-                const targetWidth = Math.min(Math.max(Math.ceil(graphWidth + 580), 1100), 1800);
-                const targetHeight = Math.min(Math.max(Math.ceil(graphHeight + 430), 620), 2200);
+                const targetWidth = Math.min(Math.max(Math.ceil(graphWidth + 300), 900), 1800);
+                const targetHeight = Math.min(Math.max(Math.ceil(graphHeight + 120), 400), 2200);
 
                 container.style.width = '95%';
                 container.style.maxWidth = `${targetWidth}px`;
@@ -1815,7 +1880,7 @@
             // Calculate and set container height based on levels
             const nodeCount = nodesData.length;
             const numLevels = nodesByLevel ? nodesByLevel.size : Math.ceil(nodeCount / 4);
-            const estimatedHeight = Math.max(700, numLevels * V_SPACING + 400);
+            const estimatedHeight = Math.max(400, numLevels * V_SPACING + 100);
             container.style.minHeight = estimatedHeight + 'px';
             container.style.height = estimatedHeight + 'px';
 
@@ -1823,26 +1888,20 @@
             setTimeout(() => {
                 if (window.network) {
                     try {
-                        // Fit the network to the viewport and then resize container based on graph size
-                        window.network.fit({ 
-                            animation: false,
-                            padding: {
-                                top: 24,
-                                right: 64,
-                                bottom: 46,
-                                left: 64
-                            }
-                        });
+                        // First fit to get node positions settled
+                        window.network.fit({ animation: false });
 
+                        // Resize container tightly around actual graph
                         resizeRoadmapContainerToGraph(container, window.network, nodesData);
 
+                        // Final fit with minimal padding so nodes fill the container
                         window.network.fit({ 
                             animation: false,
                             padding: {
-                                top: 24,
-                                right: 64,
-                                bottom: 46,
-                                left: 64
+                                top: 15,
+                                right: 30,
+                                bottom: 15,
+                                left: 30
                             }
                         });
 
