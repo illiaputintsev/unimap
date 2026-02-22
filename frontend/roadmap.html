@@ -736,6 +736,10 @@
                             network.selectNodes([node.id]);
                             resultsBox.style.display = 'none';
                             searchInput.value = '';
+                            // Zoom back out to full view after a moment
+                            setTimeout(() => {
+                                network.fit({ animation: { duration: 600, easingFunction: 'easeInOutQuad' } });
+                            }, 2000);
                         };
                         resultsBox.appendChild(item);
                     });
