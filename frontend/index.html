@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Roadmap - Home</title>
+    <link rel="stylesheet" href="frame-styles.css">
     <style>
         * {
             margin: 0;
@@ -123,6 +124,27 @@
             color: #1abc9c;
             z-index: 1000;
             display: none;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            font-weight: 600;
+        }
+        #user-info:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 18px rgba(131, 175, 155, 0.3);
+        }
+        #profile-pic-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid #83AF9B;
+            object-fit: cover;
+            display: none;
+        }
+        #profile-pic-avatar.show {
+            display: block;
         }
         .container {
             background-color: white;
@@ -329,8 +351,13 @@
     
     <!-- Menu Dropdown -->
     <div id="menu-dropdown">
-        <a href="index.html">🏠 Home</a>
-        <a href="#" onclick="logout(); return false;">🚪 Logout</a>
+        <a href="index.html" id="menu-home">Home</a>
+        <a href="#" id="menu-my-roadmaps" onclick="openMyRoadmaps(); return false;">My Roadmaps</a>
+        <a href="#" id="menu-achievements" onclick="openAchievements(); return false;">Achievements</a>
+        <a href="progress.html" id="menu-progress">Your Progress</a>
+        <a href="login.html" id="menu-login">Login</a>
+        <a href="signup.html" id="menu-signup">Sign Up</a>
+        <a href="#" id="menu-logout" onclick="logout(); return false;">Logout</a>
     </div>
 
     <!-- Auth Buttons (visible when not logged in) -->
@@ -339,13 +366,22 @@
         <a href="signup.html" class="auth-btn signup">Sign Up</a>
     </div>
 
-    <!-- User Info (visible when logged in) -->
-    <div id="user-info">
-        👤 <span id="username">Guest</span>
+    <!-- User Info (click to go to Profile) -->
+    <a id="user-info" href="profile.html">
+        <img id="profile-pic-avatar" alt="Profile">
+        <span id="username">Guest</span>
+        <span id="user-level" style="margin-left: 8px; padding: 4px 10px; background: linear-gradient(135deg, #FC9D9A, #FE4365); color: white; border-radius: 12px; font-size: 13px; font-weight: 700;">Lvl: 1</span>
+    </a>
+
+    <!-- My Roadmaps Modal -->
+    <div id="my-roadmaps-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:30px; border:3px solid #83AF9B; border-radius:15px; box-shadow:0 15px 50px rgba(0,0,0,0.25); z-index:2000; max-width:450px; width:90%; max-height:80vh; overflow:auto;">
+        <span onclick="closeMyRoadmapsModal()" style="position:absolute; top:15px; right:20px; cursor:pointer; font-size:28px; color:#83AF9B; font-weight:bold; transition:color 0.3s;">&times;</span>
+        <div id="my-roadmaps-content"></div>
     </div>
+    <div id="my-roadmaps-overlay" onclick="closeMyRoadmapsModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:1999;"></div>
 
     <div class="container">
-        <h1>Student Roadmap Generator</h1>
+        <h1>Uni Maps</h1>
         <p class="subtitle">Select your course and university to generate a personalized learning roadmap</p>
         
         <form id="roadmap-form" onsubmit="generateRoadmap(event)">
@@ -433,15 +469,54 @@
             const user = localStorage.getItem('currentUser');
             const authButtons = document.getElementById('auth-buttons');
             const userInfo = document.getElementById('user-info');
+            const isLoggedIn = ApiService.isAuthenticated() && user;
             
-            if (ApiService.isAuthenticated() && user) {
+            // Menu items visibility based on login
+            const loggedInItems = ['menu-my-roadmaps', 'menu-achievements', 'menu-progress', 'menu-logout'];
+            const loggedOutItems = ['menu-login', 'menu-signup'];
+            
+            if (isLoggedIn) {
                 const userData = JSON.parse(user);
                 document.getElementById('username').textContent = userData.username || userData.email || 'User';
                 authButtons.style.display = 'none';
-                userInfo.style.display = 'block';
+                userInfo.style.display = 'flex';
+                
+                // Load and display profile picture if available
+                const profilePic = document.getElementById('profile-pic-avatar');
+                const profilePictureData = localStorage.getItem('profilePictureData');
+                if (profilePictureData && profilePic) {
+                    profilePic.src = profilePictureData;
+                    profilePic.classList.add('show');
+                    // Apply selected frame
+                    const selectedFrame = localStorage.getItem('selectedProfileFrame') || 'none';
+                    profilePic.classList.remove('profile-pic-none', 'profile-pic-basic', 'profile-pic-intermediary', 'profile-pic-master');
+                    if (selectedFrame !== 'none') {
+                        profilePic.classList.add('profile-pic-' + selectedFrame);
+                    } else {
+                        profilePic.classList.add('profile-pic-none');
+                    }
+                } else if (profilePic) {
+                    profilePic.classList.remove('show');
+                }
+                
+                // Update level display
+                const levelEl = document.getElementById('user-level');
+                if (levelEl) {
+                    const userLevelKey = `user-level-${userData.email}`;
+                    const currentLevel = parseInt(localStorage.getItem(userLevelKey)) || 1;
+                    levelEl.textContent = currentLevel >= 10 ? `Lvl: ${currentLevel} (MAX)` : `Lvl: ${currentLevel}`;
+                }
+                
+                // Show logged-in menu items, hide logged-out ones
+                loggedInItems.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'block'; });
+                loggedOutItems.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
             } else {
                 authButtons.style.display = 'flex';
                 userInfo.style.display = 'none';
+                
+                // Hide logged-in menu items, show logged-out ones
+                loggedInItems.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+                loggedOutItems.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'block'; });
             }
         }
 
@@ -766,6 +841,118 @@
                 alert('Error generating roadmap: ' + error.message);
                 console.error('Error:', error);
             }
+        }
+
+        // --- My Roadmaps Modal ---
+        let myRoadmapsList = [];
+
+        async function openMyRoadmaps() {
+            if (!ApiService.isAuthenticated()) {
+                alert('Please login to view your roadmaps');
+                return;
+            }
+            const modal = document.getElementById('my-roadmaps-modal');
+            const overlay = document.getElementById('my-roadmaps-overlay');
+            const content = document.getElementById('my-roadmaps-content');
+            content.innerHTML = '<h2 style="margin-top:0; color:#83AF9B; border-bottom:2px solid #83AF9B; padding-bottom:10px;">My Roadmaps</h2><p style="color:#666; text-align:center; padding:10px;">Loading...</p>';
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+            // Close the hamburger menu
+            document.getElementById('menu-dropdown').style.display = 'none';
+
+            try {
+                const response = await ApiService.listRoadmaps();
+                if (!response.ok) {
+                    content.innerHTML = '<h2 style="margin-top:0; color:#83AF9B; border-bottom:2px solid #83AF9B; padding-bottom:10px;">My Roadmaps</h2><p style="color:#c33; text-align:center; padding:20px;">Failed to load roadmaps.</p>' +
+                        '<button onclick="closeMyRoadmapsModal()" style="width:100%; margin-top:15px; padding:10px; background:#83AF9B; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600;">Close</button>';
+                    return;
+                }
+                myRoadmapsList = response.data || [];
+                renderMyRoadmaps();
+            } catch (e) {
+                content.innerHTML = '<h2 style="margin-top:0; color:#83AF9B; border-bottom:2px solid #83AF9B; padding-bottom:10px;">My Roadmaps</h2><p style="color:#c33; text-align:center; padding:20px;">Error loading roadmaps.</p>' +
+                    '<button onclick="closeMyRoadmapsModal()" style="width:100%; margin-top:15px; padding:10px; background:#83AF9B; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600;">Close</button>';
+            }
+        }
+
+        function renderMyRoadmaps() {
+            const content = document.getElementById('my-roadmaps-content');
+            let html = '<h2 style="margin-top:0; color:#83AF9B; border-bottom:2px solid #83AF9B; padding-bottom:10px;">My Roadmaps</h2>';
+
+            if (myRoadmapsList.length === 0) {
+                html += '<p style="color:#666; text-align:center; padding:20px;">No roadmaps yet. Generate one from this page!</p>';
+            } else {
+                html += '<div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">';
+                myRoadmapsList.forEach(roadmap => {
+                    const dateText = roadmap.created_at ? new Date(roadmap.created_at).toLocaleDateString() : 'Unknown date';
+                    const title = roadmap.title || 'Untitled Roadmap';
+                    html += `
+                        <div style="padding:12px; background-color:#f5f5f5; border-radius:8px; border-left:4px solid #83AF9B; cursor:pointer;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'" onclick="window.location.href='roadmap.html?roadmap_id=${roadmap.id}'">
+                            <strong>${title}</strong><br>
+                            <small style="color:#999;">${dateText}</small>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            html += '<button onclick="closeMyRoadmapsModal()" style="width:100%; margin-top:15px; padding:10px; background:#83AF9B; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600;">Close</button>';
+            content.innerHTML = html;
+        }
+
+        function closeMyRoadmapsModal() {
+            document.getElementById('my-roadmaps-modal').style.display = 'none';
+            document.getElementById('my-roadmaps-overlay').style.display = 'none';
+        }
+
+        function openAchievements() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) {
+                alert('Please login to view achievements');
+                return;
+            }
+            // Close the hamburger menu
+            document.getElementById('menu-dropdown').style.display = 'none';
+
+            const userData = JSON.parse(user);
+            const achievementsKey = `achievements-${userData.email}`;
+            const userAchievements = JSON.parse(localStorage.getItem(achievementsKey)) || [];
+
+            const achievements = [
+                { id: 'first-quiz', name: 'First Step', description: 'Complete your first quiz', icon: '\uD83C\uDFAF' },
+                { id: 'three-quizzes', name: 'Quick Learner', description: 'Complete 3 quizzes', icon: '\u26A1' },
+                { id: 'half-done', name: 'Halfway There', description: 'Complete 50% of modules', icon: '\uD83C\uDF1F' },
+                { id: 'all-modules', name: 'Roadmap Master', description: 'Complete all modules', icon: '\uD83D\uDC51' },
+                { id: 'perfect-score', name: 'Perfect', description: 'Score 100% on a quiz', icon: '\uD83D\uDCAF' },
+                { id: 'high-achiever', name: 'High Achiever', description: 'Score 95%+ on 3 quizzes', icon: '\uD83C\uDFC6' },
+                { id: 'level-5', name: 'Rising Star', description: 'Reach Level 5', icon: '\u2B50' },
+                { id: 'level-10', name: 'Legendary', description: 'Reach Level 10', icon: '\uD83D\uDC51' }
+            ];
+
+            let html = '<h2 style="margin-top:0; color:#83AF9B; border-bottom:2px solid #83AF9B; padding-bottom:10px;">Achievements</h2>';
+            html += '<p style="font-size:12px; color:#666; margin:10px 0;">You have earned ' + userAchievements.length + ' achievements</p>';
+            html += '<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">';
+
+            achievements.forEach(a => {
+                const earned = userAchievements.includes(a.id);
+                html += `
+                    <div style="padding:12px; border-radius:8px; background:${earned ? '#e8f0ed' : '#f5f5f5'}; border:2px solid ${earned ? '#83AF9B' : '#ddd'}; text-align:center; opacity:${earned ? '1' : '0.6'};">
+                        <div style="font-size:24px; margin-bottom:5px;">${a.icon}</div>
+                        <strong style="font-size:12px; display:block; color:#83AF9B;">${a.name}</strong>
+                        <small style="color:#666; display:block; margin-top:5px;">${a.description}</small>
+                        ${earned ? '<small style="color:#83AF9B; display:block; margin-top:5px;">&#10004; Earned</small>' : '<small style="color:#999;">Locked</small>'}
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            html += '<button onclick="closeMyRoadmapsModal()" style="width:100%; margin-top:15px; padding:10px; background:#83AF9B; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600;">Close</button>';
+
+            const modal = document.getElementById('my-roadmaps-modal');
+            const overlay = document.getElementById('my-roadmaps-overlay');
+            document.getElementById('my-roadmaps-content').innerHTML = html;
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
         }
 
         // Initialize
