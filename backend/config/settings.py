@@ -52,6 +52,19 @@ if DEBUG and not ALLOWED_HOSTS:
 CSRF_TRUSTED_ORIGINS = _env_csv("CSRF_TRUSTED_ORIGINS", default="")
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CORS_ALLOWED_ORIGINS = _env_csv(
+    "CORS_ALLOWED_ORIGINS",
+    default=(
+        "http://localhost:3000,"
+        "http://127.0.0.1:3000,"
+        "http://localhost:5173,"
+        "http://127.0.0.1:5173,"
+        "http://localhost:5500,"
+        "http://127.0.0.1:5500"
+    ),
+)
+CORS_ALLOW_CREDENTIALS = _env_bool("CORS_ALLOW_CREDENTIALS", default=True)
+CORS_ALLOW_ALL_ORIGINS = _env_bool("CORS_ALLOW_ALL_ORIGINS", default=False)
 
 
 # Application definition
@@ -63,6 +76,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "corsheaders",
     "rest_framework",
     "accounts",
     "courses",
@@ -82,6 +96,7 @@ DISCOVER_UNI_CATALOG_URL = os.environ.get("DISCOVER_UNI_CATALOG_URL", "")
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
