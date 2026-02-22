@@ -89,13 +89,17 @@ class ApiService {
    */
   static async _makeRequest(endpoint, options = {}) {
     const url = this._buildUrl(endpoint);
+    const isFormData = typeof FormData !== 'undefined' && options.formData instanceof FormData;
     const config = {
       method: options.method || 'GET',
       headers: {
-        'Content-Type': 'application/json',
         ...options.headers
       }
     };
+
+    if (!isFormData) {
+      config.headers['Content-Type'] = config.headers['Content-Type'] || 'application/json';
+    }
 
     // Add authorization header if token exists
     const token = this.getAccessToken();
@@ -104,7 +108,10 @@ class ApiService {
     }
 
     // Add body for POST, PATCH, PUT
-    if (options.body) {
+    if (isFormData) {
+      config.body = options.formData;
+      delete config.headers['Content-Type']; // Let browser set multipart boundary
+    } else if (options.body) {
       config.body = JSON.stringify(options.body);
     }
 
@@ -290,6 +297,17 @@ class ApiService {
   }
 
   /**
+   * Delete roadmap
+   * DELETE /api/roadmaps/{roadmap_id}/
+   */
+  static async deleteRoadmap(roadmapId) {
+    const response = await this.request(`api/roadmaps/${roadmapId}/`, {
+      method: 'DELETE'
+    });
+    return response;
+  }
+
+  /**
    * Update topic progress
    * PATCH /api/roadmaps/topics/{topic_id}/progress/
    */
@@ -357,6 +375,63 @@ class ApiService {
       { method: 'PATCH', body: { mastery_percent: masteryPercent } }
     );
     return response;
+  }
+
+  // ==================== QUIZ / MODULE WORKSPACE ENDPOINTS ====================
+
+  /**
+   * Generate personalized module topics (Gemini-backed with backend fallback)
+   * POST /api/quizzes/module-topics/generate/
+   */
+  static async generateModuleTopics(payload) {
+    return this.request('api/quizzes/module-topics/generate/', {
+      method: 'POST',
+      body: payload || {}
+    });
+  }
+
+  /**
+   * Generate personalized module quiz (Gemini-backed with backend fallback)
+   * POST /api/quizzes/module-quiz/generate/
+   */
+  static async generateModuleQuiz(payload) {
+    return this.request('api/quizzes/module-quiz/generate/', {
+      method: 'POST',
+      body: payload || {}
+    });
+  }
+
+  /**
+   * List stored module notes (PDF uploads)
+   * GET /api/quizzes/module-notes/?module_id=...&roadmap_id=...
+   */
+  static async listModuleNotes({ moduleId, roadmapId } = {}) {
+    const params = new URLSearchParams();
+    if (moduleId !== undefined && moduleId !== null) params.set('module_id', String(moduleId));
+    if (roadmapId !== undefined && roadmapId !== null && roadmapId !== '') params.set('roadmap_id', String(roadmapId));
+    const qs = params.toString();
+    return this.request(`api/quizzes/module-notes/${qs ? `?${qs}` : ''}`);
+  }
+
+  /**
+   * Upload a module note PDF + extracted text metadata
+   * POST /api/quizzes/module-notes/
+   */
+  static async uploadModuleNote(formData) {
+    return this.request('api/quizzes/module-notes/', {
+      method: 'POST',
+      formData
+    });
+  }
+
+  /**
+   * Delete stored module note
+   * DELETE /api/quizzes/module-notes/{id}/
+   */
+  static async deleteModuleNote(noteId) {
+    return this.request(`api/quizzes/module-notes/${noteId}/`, {
+      method: 'DELETE'
+    });
   }
 
   // ==================== HELPER METHODS ====================

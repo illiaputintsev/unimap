@@ -1,0 +1,1385 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root {
+    --bg: #f5f8ff;
+    --bg-soft: #eef4ff;
+    --ink: #111827;
+    --ink-soft: #475569;
+    --line: rgba(15, 23, 42, 0.1);
+    --line-strong: rgba(15, 23, 42, 0.18);
+    --card: rgba(255, 255, 255, 0.82);
+    --card-solid: #ffffff;
+    --shadow: 0 22px 60px rgba(15, 23, 42, 0.14);
+    --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+    --radius-xl: 28px;
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --accent: #0ea5a3;
+    --accent-2: #2563eb;
+    --accent-3: #fb923c;
+    --accent-deep: #0f766e;
+    --success: #16a34a;
+    --danger: #ef4444;
+}
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+    color: var(--ink);
+}
+
+body {
+    font-family: 'Manrope', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    background:
+        radial-gradient(circle at 10% 10%, rgba(14, 165, 163, 0.12), transparent 45%),
+        radial-gradient(circle at 90% 10%, rgba(37, 99, 235, 0.12), transparent 42%),
+        radial-gradient(circle at 80% 80%, rgba(251, 146, 60, 0.10), transparent 45%),
+        linear-gradient(180deg, #f8fbff 0%, #f1f6ff 42%, #eef6fb 100%) !important;
+    color: var(--ink) !important;
+}
+
+body::selection,
+body *::selection {
+    background: rgba(37, 99, 235, 0.16);
+    color: var(--ink);
+}
+
+h1,
+h2,
+h3,
+#quiz-title,
+.profile-header h1,
+.header-section h1 {
+    font-family: 'Space Grotesk', 'Manrope', sans-serif !important;
+    letter-spacing: -0.02em;
+    color: var(--ink) !important;
+}
+
+p,
+label,
+span,
+div,
+li,
+a,
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+}
+
+a {
+    color: var(--accent-2);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border: 1px solid rgba(148, 163, 184, 0.28) !important;
+    border-radius: 14px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    color: var(--ink);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+    border-color: rgba(37, 99, 235, 0.45) !important;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12) !important;
+    transform: translateY(-1px);
+}
+
+button,
+.primary-btn,
+.upload-button,
+.save-button,
+.btn-next,
+.btn-finish,
+.finish-button,
+.confirm-btn,
+.no-data a,
+.back-button {
+    border-radius: 14px !important;
+    border: 1px solid transparent;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+}
+
+button:hover,
+.primary-btn:hover,
+.upload-button:hover,
+.save-button:hover,
+.btn-next:hover,
+.btn-finish:hover,
+.finish-button:hover,
+.confirm-btn:hover,
+.no-data a:hover,
+.back-button:hover {
+    transform: translateY(-2px);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.18);
+    outline-offset: 2px;
+}
+
+/* Ambient page texture */
+body[class^="page-"],
+body[class*=" page-"] {
+    position: relative;
+}
+
+body[class^="page-"]::after,
+body[class*=" page-"]::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: radial-gradient(circle at center, black 35%, transparent 88%);
+    z-index: 0;
+}
+
+/* Shared top menus / pills */
+#menu-btn,
+.menu-button,
+.back-button {
+    backdrop-filter: blur(14px);
+    background: rgba(255, 255, 255, 0.84) !important;
+    border: 1px solid rgba(148, 163, 184, 0.25) !important;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12) !important;
+    color: var(--ink) !important;
+}
+
+#menu-btn span {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
+    height: 2px !important;
+}
+
+.menu-button span {
+    background: var(--ink) !important;
+    height: 2px !important;
+    width: 20px !important;
+}
+
+#menu-dropdown,
+#quiz-menu-dropdown {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.86) !important;
+    border: 1px solid rgba(148, 163, 184, 0.2) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16) !important;
+}
+
+#menu-dropdown a,
+#quiz-menu-dropdown a,
+#menu-dropdown .menu-section {
+    border-bottom-color: rgba(148, 163, 184, 0.12) !important;
+}
+
+#menu-dropdown a:hover,
+#quiz-menu-dropdown a:hover {
+    background: rgba(37, 99, 235, 0.08) !important;
+    color: var(--ink) !important;
+}
+
+#menu-dropdown .menu-section,
+.menu-section {
+    color: #64748b !important;
+    background: rgba(241, 245, 249, 0.7) !important;
+    letter-spacing: 0.08em;
+}
+
+#user-info,
+.auth-buttons .auth-btn,
+#progress-container,
+#level-container {
+    backdrop-filter: blur(12px);
+}
+
+/* HOME PAGE */
+.page-home {
+    padding: 28px 20px 140px !important;
+}
+
+.page-home .road {
+    height: 84px !important;
+    background:
+        linear-gradient(180deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.92)) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: inset 0 20px 30px rgba(255, 255, 255, 0.02), 0 -20px 50px rgba(15, 23, 42, 0.18);
+    opacity: 0.92;
+}
+
+.page-home .road::before {
+    height: 4px !important;
+    background: repeating-linear-gradient(
+        to right,
+        rgba(255,255,255,0.92) 0px,
+        rgba(255,255,255,0.92) 28px,
+        transparent 28px,
+        transparent 68px
+    ) !important;
+}
+
+.page-home .scenery {
+    opacity: 0.38 !important;
+    filter: grayscale(0.15);
+    font-size: 32px !important;
+    bottom: 70px !important;
+}
+
+.page-home .walking-student {
+    font-size: 42px !important;
+    opacity: 0.65;
+    bottom: 18px !important;
+    filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.25)) saturate(0.95);
+}
+
+.page-home #menu-btn {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 14px !important;
+}
+
+.page-home #menu-dropdown {
+    top: 72px !important;
+    left: 18px !important;
+    min-width: 210px !important;
+}
+
+.page-home .auth-buttons,
+.page-home #user-info {
+    top: 18px !important;
+    right: 18px !important;
+}
+
+.page-home .auth-btn {
+    border-radius: 999px !important;
+    padding: 10px 18px !important;
+    border: 1px solid rgba(148, 163, 184, 0.22) !important;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    background: rgba(255,255,255,0.84);
+    color: var(--ink) !important;
+}
+
+.page-home .auth-btn.login {
+    background: rgba(255,255,255,0.86) !important;
+    color: var(--ink) !important;
+}
+
+.page-home .auth-btn.signup {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+
+.page-home .auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+}
+
+.page-home #user-info {
+    background: rgba(255,255,255,0.88) !important;
+    border: 1px solid rgba(148, 163, 184, 0.24) !important;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1) !important;
+    color: var(--ink) !important;
+}
+
+.page-home .container {
+    max-width: 760px !important;
+    margin: 88px auto 40px !important;
+    padding: 34px clamp(18px, 4vw, 38px) 30px !important;
+    border-radius: 28px !important;
+    border: 1px solid rgba(255,255,255,0.55);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78)) !important;
+    box-shadow: var(--shadow) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-home .container::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 7px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+}
+
+.page-home .container h1 {
+    margin-top: 4px !important;
+    margin-bottom: 10px !important;
+    font-size: clamp(2rem, 4vw, 2.6rem) !important;
+    line-height: 1.02;
+    text-align: left !important;
+}
+
+.page-home .container .subtitle {
+    text-align: left !important;
+    font-size: 15px !important;
+    line-height: 1.55;
+    color: #475569 !important;
+    margin-bottom: 24px !important;
+    max-width: 58ch;
+}
+
+.page-home .form-group {
+    margin-bottom: 18px !important;
+}
+
+.page-home label {
+    color: #334155 !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.page-home input[type="text"],
+.page-home select {
+    height: 52px;
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+}
+
+.page-home .form-group > p[style] {
+    color: #64748b !important;
+    margin-top: 8px !important;
+}
+
+.page-home .info-box {
+    border-left: none !important;
+    border: 1px solid rgba(37, 99, 235, 0.16) !important;
+    background: linear-gradient(180deg, rgba(239, 246, 255, 0.88), rgba(243, 248, 255, 0.82)) !important;
+    border-radius: 16px !important;
+    color: #334155 !important;
+    padding: 14px 16px !important;
+    margin-top: 18px !important;
+}
+
+.page-home .primary-btn {
+    margin-top: 22px !important;
+    height: 54px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    box-shadow: 0 14px 28px rgba(14, 165, 163, 0.24);
+}
+
+.page-home .primary-btn:hover {
+    box-shadow: 0 18px 34px rgba(37, 99, 235, 0.2) !important;
+}
+
+.page-home .loading {
+    color: var(--ink) !important;
+    background: rgba(255,255,255,0.72);
+    border: 1px dashed rgba(148, 163, 184, 0.26);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.page-home #draft-modules-section {
+    margin-top: 14px !important;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.9)) !important;
+    border: 1px solid rgba(148, 163, 184, 0.22) !important;
+    border-radius: 16px !important;
+    padding: 16px !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+}
+
+.page-home #draft-modules-section > div:first-child {
+    margin-bottom: 10px !important;
+}
+
+.page-home #draft-modules-section > div:first-child > div {
+    color: var(--ink) !important;
+    font-weight: 800 !important;
+}
+
+.page-home #draft-modules-status {
+    color: #475569 !important;
+}
+
+.page-home #draft-modules-list {
+    color: #1f2937 !important;
+}
+
+.page-home #draft-modules-list li {
+    padding-left: 4px;
+    margin: 3px 0;
+}
+
+.page-home #add-module-btn,
+.page-home #edit-module-btn {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.16);
+}
+
+.page-home #delete-module-btn {
+    background: linear-gradient(135deg, #fb7185 0%, #ef4444 100%) !important;
+    border-radius: 10px !important;
+}
+
+/* AUTH PAGES */
+.page-login,
+.page-signup {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 24px !important;
+}
+
+.page-login::before,
+.page-signup::before {
+    content: '';
+    position: fixed;
+    width: min(48vw, 640px);
+    height: min(48vw, 640px);
+    right: -10%;
+    top: -14%;
+    background: radial-gradient(circle, rgba(14,165,163,0.18), rgba(14,165,163,0) 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.page-login .login-container,
+.page-signup .signup-container {
+    width: min(100%, 560px) !important;
+    border-radius: 28px !important;
+    border: 1px solid rgba(255,255,255,0.55);
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.84)) !important;
+    box-shadow: var(--shadow) !important;
+    padding: 30px clamp(18px, 5vw, 34px) 28px !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-login .login-container::before,
+.page-signup .signup-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 14% 6%, rgba(14, 165, 163, 0.1), transparent 36%),
+        radial-gradient(circle at 90% 0%, rgba(37, 99, 235, 0.08), transparent 38%);
+    pointer-events: none;
+}
+
+.page-login .login-container > *,
+.page-signup .signup-container > * {
+    position: relative;
+    z-index: 1;
+}
+
+.page-login h1,
+.page-signup h1 {
+    text-align: left !important;
+    font-size: clamp(2rem, 5vw, 2.4rem) !important;
+    margin-bottom: 8px !important;
+}
+
+.page-login p.subtitle,
+.page-signup p.subtitle {
+    text-align: left !important;
+    color: #475569 !important;
+    margin-bottom: 22px !important;
+    font-size: 15px !important;
+}
+
+.page-login .form-group,
+.page-signup .form-group {
+    margin-bottom: 16px !important;
+}
+
+.page-login label,
+.page-signup label {
+    color: #334155 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.page-login input,
+.page-signup input {
+    padding: 13px 14px !important;
+    font-size: 15px !important;
+}
+
+.page-login .forgot-password,
+.page-login .signup-link,
+.page-login .back-home,
+.page-signup .login-link,
+.page-signup .back-home,
+.page-signup .password-hint {
+    color: #64748b !important;
+}
+
+.page-login .forgot-password a,
+.page-login .signup-link a,
+.page-login .back-home a,
+.page-signup .login-link a,
+.page-signup .back-home a,
+.page-signup .checkbox-group a {
+    color: var(--accent-2) !important;
+    font-weight: 700;
+}
+
+.page-login .primary-btn,
+.page-signup .primary-btn {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    box-shadow: 0 14px 28px rgba(37, 99, 235, 0.18) !important;
+}
+
+.page-login .error-message,
+.page-signup .error-message {
+    border-left: 0 !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    background: rgba(254, 242, 242, 0.92) !important;
+    border-radius: 14px !important;
+    color: #991b1b !important;
+}
+
+.page-signup .success-message {
+    border-left: 0 !important;
+    border: 1px solid rgba(22, 163, 74, 0.22) !important;
+    background: rgba(240, 253, 244, 0.92) !important;
+    border-radius: 14px !important;
+    color: #166534 !important;
+}
+
+.page-signup .checkbox-group {
+    align-items: flex-start !important;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(248,250,252,0.78);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.page-signup .checkbox-group input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: var(--accent-2);
+}
+
+/* PROGRESS PAGE */
+.page-progress {
+    padding: 24px 18px 40px !important;
+}
+
+.page-progress .back-button {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 26px !important;
+    background: rgba(255, 255, 255, 0.86) !important;
+    color: var(--ink) !important;
+    border: 1px solid rgba(148, 163, 184, 0.24) !important;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08) !important;
+}
+
+.page-progress .header-section {
+    margin-bottom: 26px !important;
+}
+
+.page-progress .header-section h1 {
+    font-size: clamp(2rem, 5vw, 2.6rem) !important;
+    margin-bottom: 8px !important;
+}
+
+.page-progress .header-section p {
+    color: #64748b !important;
+}
+
+.page-progress .container {
+    max-width: 1220px !important;
+}
+
+.page-progress .stats-grid {
+    gap: 16px !important;
+}
+
+.page-progress .stat-card {
+    border-left: 0 !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    border-radius: 20px !important;
+    background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.82)) !important;
+    box-shadow: var(--shadow-soft) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-progress .stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.page-progress .stat-card h3 {
+    color: #64748b !important;
+    font-size: 12px !important;
+    letter-spacing: 0.08em;
+}
+
+.page-progress .stat-card .value {
+    color: var(--ink) !important;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.3rem) !important;
+}
+
+.page-progress .stat-card .unit {
+    color: #94a3b8 !important;
+}
+
+.page-progress .charts-section {
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)) !important;
+    gap: 20px !important;
+}
+
+.page-progress .chart-container,
+.page-progress .no-data {
+    border-radius: 22px !important;
+    border: 1px solid rgba(148, 163, 184, 0.16) !important;
+    background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.84)) !important;
+    box-shadow: var(--shadow-soft) !important;
+}
+
+.page-progress .chart-container {
+    padding: 22px 22px 18px !important;
+}
+
+.page-progress .chart-container h3 {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2) !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 14px !important;
+    color: var(--ink) !important;
+    font-size: 18px !important;
+}
+
+.page-progress .chart-wrapper {
+    height: 330px !important;
+}
+
+.page-progress .chart-wrapper canvas {
+    border-radius: 14px;
+}
+
+.page-progress .no-data a {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    box-shadow: 0 12px 26px rgba(37, 99, 235, 0.16) !important;
+}
+
+/* PROFILE PAGE */
+.page-profile {
+    padding: 22px 16px 32px !important;
+}
+
+.page-profile .back-button {
+    top: 16px !important;
+    left: 16px !important;
+    border-radius: 999px !important;
+    padding: 10px 16px !important;
+    background: rgba(255,255,255,0.86) !important;
+    color: var(--ink) !important;
+    border: 1px solid rgba(148, 163, 184, 0.22) !important;
+}
+
+.page-profile .profile-container {
+    max-width: 760px !important;
+    margin: 72px auto 20px !important;
+    padding: 28px clamp(18px, 5vw, 32px) !important;
+    border-radius: 28px !important;
+    border: 1px solid rgba(255,255,255,0.55);
+    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.84)) !important;
+    box-shadow: var(--shadow) !important;
+}
+
+.page-profile .profile-header {
+    margin-bottom: 26px !important;
+}
+
+.page-profile .profile-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.3rem) !important;
+    margin-bottom: 6px !important;
+}
+
+.page-profile .profile-picture {
+    width: 176px !important;
+    height: 176px !important;
+    border: 3px solid rgba(255,255,255,0.9) !important;
+    background: linear-gradient(180deg, rgba(248,250,252,0.9), rgba(226,232,240,0.9)) !important;
+    box-shadow:
+        0 18px 40px rgba(15, 23, 42, 0.12),
+        0 0 0 8px rgba(14, 165, 163, 0.08),
+        0 0 0 1px rgba(14, 165, 163, 0.16);
+    font-size: 72px !important;
+}
+
+.page-profile .upload-button,
+.page-profile .save-button {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.16) !important;
+}
+
+.page-profile .cancel-button {
+    background: rgba(241, 245, 249, 0.92) !important;
+    color: #334155 !important;
+    border: 1px solid rgba(148, 163, 184, 0.2) !important;
+}
+
+.page-profile .success-message {
+    border: 1px solid rgba(22, 163, 74, 0.25) !important;
+    background: rgba(240, 253, 244, 0.92) !important;
+    color: #166534 !important;
+    border-radius: 14px !important;
+}
+
+.page-profile .frame-section {
+    margin: 22px 0 !important;
+    padding: 18px !important;
+    background: linear-gradient(180deg, rgba(248,250,252,0.9), rgba(241,245,249,0.85)) !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    border-radius: 20px !important;
+}
+
+.page-profile .frame-title {
+    color: var(--ink) !important;
+    font-size: 16px !important;
+    margin-bottom: 16px !important;
+}
+
+.page-profile .frames-grid {
+    gap: 14px !important;
+}
+
+.page-profile .frame-option {
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    border-radius: 16px !important;
+    background: rgba(255,255,255,0.86) !important;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06) !important;
+}
+
+.page-profile .frame-option:hover:not(.locked) {
+    border-color: rgba(37, 99, 235, 0.24) !important;
+    box-shadow: 0 14px 28px rgba(37, 99, 235, 0.12) !important;
+    transform: translateY(-4px) !important;
+}
+
+.page-profile .frame-preview {
+    width: 100% !important;
+    background: linear-gradient(180deg, rgba(248,250,252,0.9), rgba(241,245,249,0.9)) !important;
+    border-radius: 12px !important;
+}
+
+.page-profile .frame-label {
+    color: #0f172a !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(6px);
+    border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.page-profile .lock-badge {
+    background: rgba(15, 23, 42, 0.84) !important;
+    color: #fff !important;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2) !important;
+}
+
+.page-profile .frame-info {
+    border-top: 1px solid rgba(148, 163, 184, 0.16);
+    padding-top: 12px;
+    color: #475569 !important;
+}
+
+.page-profile .button-group {
+    gap: 12px !important;
+}
+
+.page-profile .button-group button {
+    height: 50px;
+}
+
+/* Modernize actual avatar frame borders used across pages */
+.profile-pic-none {
+    border: 3px solid rgba(14, 165, 163, 0.65) !important;
+    box-shadow: 0 0 0 5px rgba(14, 165, 163, 0.08) !important;
+}
+
+.profile-pic-basic {
+    border: 4px solid #94a3b8 !important;
+    box-shadow:
+        0 0 0 2px rgba(255,255,255,0.92),
+        0 0 0 8px rgba(148, 163, 184, 0.34),
+        0 16px 22px rgba(15, 23, 42, 0.12) !important;
+}
+
+.profile-pic-intermediary {
+    border: 4px solid #fb923c !important;
+    box-shadow:
+        0 0 0 2px rgba(255,255,255,0.92),
+        0 0 0 8px rgba(251, 146, 60, 0.24),
+        0 0 28px rgba(251, 146, 60, 0.28) !important;
+}
+
+.profile-pic-master {
+    border: 4px solid #f59e0b !important;
+    box-shadow:
+        0 0 0 2px rgba(255,255,255,0.96),
+        0 0 0 8px rgba(245, 158, 11, 0.22),
+        0 0 32px rgba(245, 158, 11, 0.36) !important;
+}
+
+/* QUIZ PAGE */
+.page-quiz {
+    padding: 22px 16px 32px !important;
+}
+
+.page-quiz .back-button,
+.page-quiz .menu-button {
+    top: 16px !important;
+    left: 16px !important;
+    border-radius: 14px !important;
+}
+
+.page-quiz .menu-button {
+    background: rgba(255,255,255,0.92) !important;
+}
+
+.page-quiz #quiz-menu-dropdown {
+    top: 68px !important;
+    left: 16px !important;
+    min-width: 180px !important;
+    padding: 6px !important;
+}
+
+.page-quiz #quiz-menu-dropdown a {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.page-quiz .quiz-container {
+    max-width: 860px !important;
+    border-radius: 28px !important;
+    border: 1px solid rgba(255,255,255,0.55);
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.86)) !important;
+    box-shadow: var(--shadow) !important;
+    overflow: hidden;
+}
+
+.page-quiz .quiz-header {
+    background:
+        radial-gradient(circle at 12% 16%, rgba(255,255,255,0.18), transparent 45%),
+        linear-gradient(135deg, #0f766e 0%, #0ea5a3 42%, #2563eb 100%) !important;
+    padding: 28px 26px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+}
+
+.page-quiz .quiz-header h1 {
+    color: #fff !important;
+    font-size: clamp(1.7rem, 4vw, 2.2rem) !important;
+    margin-bottom: 8px !important;
+}
+
+.page-quiz .quiz-header p {
+    color: rgba(255,255,255,0.88) !important;
+    font-size: 14px !important;
+}
+
+.page-quiz .quiz-content {
+    padding: 22px clamp(16px, 4vw, 28px) 26px !important;
+}
+
+.page-quiz .progress-bar {
+    height: 8px !important;
+    border-radius: 999px !important;
+    background: rgba(226, 232, 240, 0.9) !important;
+    margin-bottom: 18px !important;
+}
+
+.page-quiz .progress-fill {
+    border-radius: 999px !important;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.22);
+}
+
+.page-quiz .question {
+    background: rgba(248,250,252,0.7);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 18px !important;
+}
+
+.page-quiz .question-number {
+    color: #2563eb !important;
+    font-size: 12px !important;
+    letter-spacing: 0.08em;
+}
+
+.page-quiz .question-text {
+    font-size: 20px !important;
+    line-height: 1.3;
+    color: var(--ink) !important;
+}
+
+.page-quiz .options {
+    gap: 10px !important;
+}
+
+.page-quiz .option {
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    border-radius: 14px !important;
+    background: rgba(255,255,255,0.9) !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+    padding: 14px !important;
+}
+
+.page-quiz .option:hover {
+    border-color: rgba(37, 99, 235, 0.25) !important;
+    background: rgba(239, 246, 255, 0.88) !important;
+    transform: translateY(-1px);
+}
+
+.page-quiz .option.selected {
+    border-color: rgba(14, 165, 163, 0.42) !important;
+    background: linear-gradient(180deg, rgba(240,253,250,0.95), rgba(236,253,245,0.92)) !important;
+    box-shadow: 0 10px 20px rgba(14, 165, 163, 0.08);
+}
+
+.page-quiz .option label {
+    gap: 10px;
+    align-items: flex-start !important;
+    line-height: 1.45;
+}
+
+.page-quiz .quiz-footer {
+    border-top: 1px solid rgba(148, 163, 184, 0.16) !important;
+    padding-top: 18px !important;
+    margin-top: 12px !important;
+}
+
+.page-quiz .progress {
+    color: #64748b !important;
+    font-weight: 700 !important;
+}
+
+.page-quiz .btn-next,
+.page-quiz .btn-finish,
+.page-quiz .finish-button,
+.page-quiz .confirm-btn {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+}
+
+.page-quiz .btn-prev {
+    background: rgba(241, 245, 249, 0.9) !important;
+    color: #334155 !important;
+    border: 1px solid rgba(148, 163, 184, 0.22) !important;
+}
+
+.page-quiz .results-container {
+    padding: 30px 16px 12px !important;
+}
+
+.page-quiz .score-circle {
+    width: 160px !important;
+    height: 160px !important;
+    background:
+        radial-gradient(circle at 22% 18%, rgba(255,255,255,0.2), transparent 38%),
+        linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    box-shadow: 0 18px 36px rgba(37, 99, 235, 0.2);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.page-quiz .feedback-message,
+.page-quiz .explanation-box,
+.page-quiz .wrong-answers-section,
+.page-quiz .related-topics-section {
+    border-radius: 16px !important;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+}
+
+.page-quiz .feedback-correct {
+    background: rgba(240, 253, 244, 0.94) !important;
+    color: #166534 !important;
+    border-color: rgba(22, 163, 74, 0.2) !important;
+}
+
+.page-quiz .feedback-incorrect {
+    background: rgba(254, 242, 242, 0.94) !important;
+    color: #991b1b !important;
+    border-color: rgba(239, 68, 68, 0.18) !important;
+}
+
+.page-quiz .explanation-box {
+    background: rgba(248,250,252,0.92) !important;
+}
+
+.page-quiz .wrong-answers-section,
+.page-quiz .related-topics-section {
+    background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(248,250,252,0.92)) !important;
+}
+
+.page-quiz .wrong-answer-item,
+.page-quiz .topic-card {
+    border-radius: 14px !important;
+    border: 1px solid rgba(148, 163, 184, 0.14) !important;
+    background: rgba(255,255,255,0.9) !important;
+}
+
+.page-quiz .topic-card:hover {
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.1) !important;
+    border-color: rgba(37, 99, 235, 0.2) !important;
+    transform: translateY(-3px) !important;
+}
+
+/* ROADMAP PAGE */
+.page-roadmap {
+    padding-bottom: 40px;
+    background:
+        radial-gradient(circle at 8% 12%, rgba(14,165,163,0.14), transparent 40%),
+        radial-gradient(circle at 92% 4%, rgba(37,99,235,0.14), transparent 38%),
+        radial-gradient(circle at 86% 84%, rgba(251,146,60,0.12), transparent 40%),
+        linear-gradient(180deg, #f8fbff 0%, #f3f8ff 48%, #eef5fd 100%) !important;
+}
+
+.page-roadmap::before {
+    background:
+        radial-gradient(circle at 15% 20%, rgba(255,255,255,0.65), transparent 35%),
+        repeating-linear-gradient(
+            45deg,
+            rgba(255,255,255,0.08),
+            rgba(255,255,255,0.08) 8px,
+            transparent 8px,
+            transparent 18px
+        ) !important;
+    opacity: 0.95;
+}
+
+.page-roadmap h1 {
+    margin: 24px auto 4px !important;
+    font-size: clamp(2rem, 5vw, 2.8rem) !important;
+    color: var(--ink) !important;
+    text-shadow: none !important;
+}
+
+.page-roadmap p,
+.page-roadmap .course-info {
+    color: #64748b !important;
+}
+
+.page-roadmap #logo {
+    width: 156px !important;
+    opacity: 0.92;
+    filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.08));
+    transition: transform 0.2s ease, opacity 0.2s ease !important;
+}
+
+.page-roadmap #logo:hover {
+    width: 156px !important;
+    transform: translateY(-2px) scale(1.02);
+    opacity: 1;
+}
+
+.page-roadmap #menu-btn {
+    top: 16px !important;
+    left: 16px !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 14px !important;
+    background: rgba(255,255,255,0.88) !important;
+}
+
+.page-roadmap #menu-dropdown {
+    top: 72px !important;
+    left: 16px !important;
+    min-width: 270px !important;
+    max-height: 460px !important;
+    padding-bottom: 6px;
+}
+
+.page-roadmap #menu-dropdown a,
+.page-roadmap #menu-dropdown .menu-section {
+    padding: 12px 14px !important;
+}
+
+.page-roadmap #module-input-container {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12) !important;
+    padding: 12px 14px !important;
+}
+
+.page-roadmap #module-input-container input {
+    padding: 10px 12px !important;
+    border-radius: 10px !important;
+    background: rgba(255,255,255,0.95) !important;
+}
+
+.page-roadmap #module-input-container button {
+    border-radius: 10px !important;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.15);
+}
+
+.page-roadmap #user-info {
+    top: 74px !important;
+    left: 16px !important;
+    border-radius: 999px !important;
+    background: rgba(255,255,255,0.88) !important;
+    border: 1px solid rgba(148, 163, 184, 0.2) !important;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08) !important;
+    color: var(--ink) !important;
+}
+
+.page-roadmap #profile-pic-avatar {
+    border-color: rgba(37, 99, 235, 0.3) !important;
+}
+
+.page-roadmap #roadmap {
+    width: min(95%, 1420px) !important;
+    margin: 18px auto 42px !important;
+    min-height: 0 !important;
+    border-radius: 26px !important;
+    border: 1px solid rgba(148, 163, 184, 0.16) !important;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.86)) !important;
+    box-shadow: var(--shadow) !important;
+    overflow: hidden;
+}
+
+.page-roadmap #roadmap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 14% 10%, rgba(14,165,163,0.08), transparent 35%),
+        radial-gradient(circle at 90% 12%, rgba(37,99,235,0.08), transparent 40%);
+}
+
+.page-roadmap .vis-network canvas {
+    border-radius: 26px !important;
+}
+
+.page-roadmap .modal {
+    right: 18px !important;
+    width: min(380px, calc(100vw - 32px)) !important;
+    padding: 20px 18px 18px !important;
+    border-radius: 22px !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    background: rgba(255,255,255,0.9) !important;
+    backdrop-filter: blur(18px);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.2) !important;
+}
+
+.page-roadmap .modal h2 {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
+    color: var(--ink) !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 12px !important;
+}
+
+.page-roadmap .modal p {
+    text-align: left !important;
+    color: #475569 !important;
+    line-height: 1.45;
+}
+
+.page-roadmap .modal-close {
+    color: #64748b !important;
+}
+
+.page-roadmap .modal-close:hover {
+    color: var(--ink) !important;
+}
+
+.page-roadmap #quiz-button {
+    width: 100%;
+    margin-top: 14px !important;
+    padding: 12px 14px !important;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+}
+
+.page-roadmap #quiz-score {
+    color: #64748b !important;
+}
+
+.page-roadmap #progress-container,
+.page-roadmap #level-container {
+    background: rgba(255,255,255,0.88) !important;
+    border: 1px solid rgba(148, 163, 184, 0.2) !important;
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1) !important;
+}
+
+.page-roadmap #progress-container:hover,
+.page-roadmap #level-container:hover {
+    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.14) !important;
+}
+
+.page-roadmap .progress-icon,
+.page-roadmap .level-icon {
+    color: var(--ink) !important;
+}
+
+.page-roadmap .progress-content .progress-title,
+.page-roadmap #level-number {
+    color: var(--ink) !important;
+    font-weight: 800 !important;
+}
+
+.page-roadmap #progress-bar,
+.page-roadmap #xp-bar {
+    background: rgba(226, 232, 240, 0.95) !important;
+    border-radius: 999px !important;
+    overflow: hidden;
+}
+
+.page-roadmap #progress-fill,
+.page-roadmap #xp-fill {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
+}
+
+.page-roadmap #progress-text,
+.page-roadmap #xp-text {
+    color: #64748b !important;
+}
+
+.page-roadmap #level-badge {
+    background: linear-gradient(135deg, #f59e0b, #fb923c) !important;
+    color: #fff !important;
+    box-shadow: 0 10px 20px rgba(251, 146, 60, 0.24);
+}
+
+/* MOBILE + MOTION */
+@media (max-width: 900px) {
+    .page-home .container h1 {
+        text-align: center !important;
+    }
+
+    .page-home .container .subtitle {
+        text-align: center !important;
+    }
+
+    .page-home .auth-buttons {
+        gap: 8px !important;
+    }
+
+    .page-home .auth-btn {
+        padding: 9px 14px !important;
+    }
+
+    .page-progress .charts-section {
+        grid-template-columns: 1fr !important;
+    }
+
+    .page-roadmap #roadmap {
+        min-height: 560px !important;
+        width: calc(100% - 14px) !important;
+    }
+}
+
+@media (max-width: 640px) {
+    body[class^="page-"]::after,
+    body[class*=" page-"]::after {
+        background-size: 28px 28px;
+        opacity: 0.55;
+    }
+
+    .page-home {
+        padding-top: 18px !important;
+        padding-bottom: 110px !important;
+    }
+
+    .page-home .container {
+        margin-top: 78px !important;
+        border-radius: 22px !important;
+    }
+
+    .page-home .walking-student,
+    .page-home .scenery {
+        opacity: 0.35 !important;
+    }
+
+    .page-login .login-container,
+    .page-signup .signup-container,
+    .page-profile .profile-container,
+    .page-quiz .quiz-container {
+        border-radius: 22px !important;
+    }
+
+    .page-quiz .quiz-header {
+        padding: 24px 18px !important;
+    }
+
+    .page-quiz .quiz-footer {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 12px;
+    }
+
+    .page-quiz .button-group {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .page-quiz .button-group button,
+    .page-quiz .finish-button {
+        width: 100%;
+    }
+
+    .page-profile .frames-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .page-roadmap #menu-dropdown {
+        min-width: calc(100vw - 32px) !important;
+        max-width: calc(100vw - 32px) !important;
+    }
+
+    .page-roadmap #user-info {
+        max-width: calc(100vw - 32px);
+        padding-right: 14px !important;
+    }
+
+    .page-roadmap #logo {
+        width: 118px !important;
+        top: 8px !important;
+        right: 10px !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

@@ -78,6 +78,7 @@ class ModuleLearningAIService:
         *,
         module_title,
         roadmap_title="",
+        quiz_mode="practice",
         topics=None,
         note_excerpts=None,
         mistakes=None,
@@ -93,6 +94,7 @@ class ModuleLearningAIService:
                 questions = self._generate_quiz_with_gemini(
                     module_title=module_title,
                     roadmap_title=roadmap_title,
+                    quiz_mode=quiz_mode,
                     topics=topics,
                     note_excerpts=note_excerpts,
                     mistakes=mistakes,
@@ -107,6 +109,7 @@ class ModuleLearningAIService:
             except Exception as exc:  # broad fallback by design
                 fallback_questions = self._fallback_quiz(
                     module_title=module_title,
+                    quiz_mode=quiz_mode,
                     topics=topics,
                     note_excerpts=note_excerpts,
                     mistakes=mistakes,
@@ -122,6 +125,7 @@ class ModuleLearningAIService:
         return {
             "questions": self._fallback_quiz(
                 module_title=module_title,
+                quiz_mode=quiz_mode,
                 topics=topics,
                 note_excerpts=note_excerpts,
                 mistakes=mistakes,
@@ -152,15 +156,21 @@ class ModuleLearningAIService:
             raise RuntimeError("Gemini returned no usable topics")
         return topics
 
-    def _generate_quiz_with_gemini(self, *, module_title, roadmap_title, topics, note_excerpts, mistakes, question_count):
+    def _generate_quiz_with_gemini(self, *, module_title, roadmap_title, quiz_mode, topics, note_excerpts, mistakes, question_count):
+        mode_instruction = {
+            "mock_exam": "Create an exam-style mixed quiz covering the full module with balanced topic coverage and slightly harder questions.",
+            "topic": "Create a focused quiz only for the provided topic(s) with direct mastery checks and quick feedback.",
+            "practice": "Create a practice quiz covering all provided topics with extra focus on prior mistakes and spaced repetition.",
+        }.get(quiz_mode, "Create a practice quiz.")
         prompt = (
             "Generate a personalized quiz for one university module using the user's topics, notes and past mistakes. "
             "Return strict JSON only with shape: "
             '{"questions":[{"topic":"string","question":"string","options":["a","b","c","d"],'
             '"correct_index":0,"explanation":"string"}]}. '
             f"Generate exactly {question_count} questions with 4 options each and one correct answer. "
-            "Use varied difficulty, but focus more on repeated mistakes. "
+            "Use varied difficulty, but focus more on repeated mistakes when relevant. "
             "Questions must test understanding, not pure memorization. "
+            f"Quiz mode: {quiz_mode}. {mode_instruction} "
             f"Module title: {module_title}. "
             f"Roadmap/course context: {roadmap_title or 'not provided'}. "
             f"Topics: {topics[:20]}. "
@@ -371,7 +381,7 @@ class ModuleLearningAIService:
                 break
         return out
 
-    def _fallback_quiz(self, *, module_title, topics, note_excerpts, mistakes, question_count):
+    def _fallback_quiz(self, *, module_title, quiz_mode, topics, note_excerpts, mistakes, question_count):
         rng = random.Random()
         topic_pool = topics[:] if topics else [f"{module_title} Fundamentals"]
         mistake_topics = [m.get("topic") for m in mistakes if m.get("topic")]
@@ -381,12 +391,21 @@ class ModuleLearningAIService:
 
         note_keywords = self._keywords_from_notes(note_excerpts)[:8]
         fallback_keywords = note_keywords or ["definitions", "examples", "trade-offs", "applications"]
+        if quiz_mode == "mock_exam":
+            fallback_keywords = (note_keywords or ["integration", "evaluation", "design", "analysis", "applications"])[:8]
+        elif quiz_mode == "topic":
+            fallback_keywords = (note_keywords or ["core concept", "common error", "application", "comparison"])[:6]
 
         questions = []
         for index in range(question_count):
             topic = prioritized[index % len(prioritized)]
             keyword = fallback_keywords[index % len(fallback_keywords)]
-            correct_answer = f"Focus on {topic} by practicing with examples and explaining the concept in your own words."
+            if quiz_mode == "mock_exam":
+                correct_answer = f"Integrate {topic} with related concepts, justify trade-offs, and test yourself with exam-style scenarios around {keyword}."
+            elif quiz_mode == "topic":
+                correct_answer = f"Practice {topic} with targeted examples, explain the reasoning, and correct common errors linked to {keyword}."
+            else:
+                correct_answer = f"Focus on {topic} by practicing with examples and explaining the concept in your own words."
             distractors = [
                 f"Memorize isolated facts about {keyword} without practice.",
                 f"Skip {topic} and move directly to advanced material.",
@@ -397,8 +416,8 @@ class ModuleLearningAIService:
             correct_index = options.index(correct_answer)
 
             question_text = (
-                f"For the module '{module_title}', what is the best study approach for the topic '{topic}' "
-                f"when reviewing notes about {keyword}?"
+                f"For the module '{module_title}', what is the best approach for the topic '{topic}' "
+                f"when reviewing notes about {keyword} in {quiz_mode.replace('_', ' ')} mode?"
             )
             explanation = (
                 "Active practice plus explanation improves retention and helps you correct recurring mistakes. "
@@ -435,4 +454,3 @@ class ModuleLearningAIService:
             counts[lower] = counts.get(lower, 0) + 1
         ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
         return [word.replace("-", " ").title() for word, _count in ranked[:12]]
-

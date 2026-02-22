@@ -1,0 +1,2142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Workspace - Student Roadmap</title>
+    <link rel="stylesheet" href="theme.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        :root {
+            --module-line: rgba(148, 163, 184, 0.2);
+            --module-soft: rgba(248, 250, 252, 0.9);
+            --module-card: rgba(255, 255, 255, 0.9);
+            --module-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        }
+
+        body.page-module {
+            padding: 20px 16px 28px;
+            min-height: 100vh;
+        }
+
+        .module-shell {
+            max-width: 1320px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(0, 1.85fr) minmax(300px, 0.95fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .module-main,
+        .module-side {
+            display: grid;
+            gap: 18px;
+        }
+
+        .module-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.88));
+            border: 1px solid var(--module-line);
+            border-radius: 22px;
+            box-shadow: var(--module-shadow);
+            overflow: hidden;
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+            background: linear-gradient(180deg, rgba(248,250,252,0.8), rgba(255,255,255,0.35));
+        }
+
+        .card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+            font-size: 1.02rem;
+            margin: 0;
+        }
+
+        .muted {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255,255,255,0.85);
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .chip.success { color: #166534; background: rgba(240,253,244,0.92); border-color: rgba(22,163,74,0.18); }
+        .chip.warn { color: #92400e; background: rgba(255,251,235,0.92); border-color: rgba(245,158,11,0.18); }
+        .chip.info { color: #1d4ed8; background: rgba(239,246,255,0.92); border-color: rgba(37,99,235,0.18); }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .toolbar .spacer {
+            flex: 1;
+            min-width: 10px;
+        }
+
+        .btn,
+        .btn-secondary,
+        .btn-danger,
+        .btn-ghost {
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 1.1;
+            transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
+        }
+
+        .btn {
+            color: white;
+            background: linear-gradient(135deg, #0ea5a3 0%, #2563eb 100%);
+            box-shadow: 0 10px 22px rgba(37,99,235,0.16);
+        }
+
+        .btn:hover,
+        .btn-secondary:hover,
+        .btn-danger:hover,
+        .btn-ghost:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            color: #0f172a;
+            background: rgba(255,255,255,0.9);
+            border-color: rgba(148,163,184,0.2);
+            box-shadow: 0 8px 18px rgba(15,23,42,0.06);
+        }
+
+        .btn-danger {
+            color: white;
+            background: linear-gradient(135deg, #fb7185 0%, #ef4444 100%);
+            box-shadow: 0 10px 18px rgba(239,68,68,0.15);
+        }
+
+        .btn-ghost {
+            color: #475569;
+            background: rgba(241,245,249,0.85);
+            border-color: rgba(148,163,184,0.16);
+        }
+
+        .btn:disabled,
+        .btn-secondary:disabled,
+        .btn-danger:disabled,
+        .btn-ghost:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hero {
+            padding: 16px;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 7% 6%, rgba(14,165,163,0.11), transparent 40%),
+                radial-gradient(circle at 88% 0%, rgba(37,99,235,0.11), transparent 42%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 12px;
+        }
+
+        .hero-top {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: #0f172a;
+            font-weight: 700;
+            border: 1px solid rgba(148,163,184,0.2);
+            border-radius: 999px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.88);
+            box-shadow: 0 10px 20px rgba(15,23,42,0.06);
+        }
+
+        .hero-title {
+            margin: 0;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+            font-size: clamp(1.55rem, 3.4vw, 2.35rem);
+            line-height: 1.05;
+        }
+
+        .hero-subtitle {
+            margin: 0;
+            color: #475569;
+            line-height: 1.55;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .stat-tile {
+            border: 1px solid rgba(148,163,184,0.16);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.82);
+            padding: 12px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            font-weight: 700;
+        }
+
+        .stat-value {
+            margin-top: 6px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 1.35rem;
+            letter-spacing: -0.02em;
+        }
+
+        .stat-sub {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .topic-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .topic-row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            align-items: start;
+            border: 1px solid rgba(148,163,184,0.14);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.82);
+            padding: 10px;
+        }
+
+        .topic-index {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 12px;
+            color: #1d4ed8;
+            background: rgba(239,246,255,0.9);
+            border: 1px solid rgba(37,99,235,0.14);
+            margin-top: 5px;
+        }
+
+        .topic-fields {
+            display: grid;
+            gap: 6px;
+        }
+
+        .topic-fields input,
+        .topic-fields textarea {
+            width: 100%;
+        }
+
+        .topic-row .topic-fields input {
+            height: 40px;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        .topic-fields textarea {
+            min-height: 54px;
+            resize: vertical;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .topic-topline {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .topic-actions-inline {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .topic-actions-inline button {
+            min-width: 0;
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+
+        .topic-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .topic-detail-box {
+            display: none;
+            margin-top: 2px;
+        }
+
+        .topic-row.expanded .topic-detail-box {
+            display: block;
+        }
+
+        .tiny-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.14);
+            color: #475569;
+            background: rgba(248,250,252,0.9);
+        }
+
+        .upload-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .upload-row input[type=file] {
+            display: none;
+        }
+
+        .drop-note {
+            border: 1px dashed rgba(148,163,184,0.25);
+            border-radius: 14px;
+            background: rgba(248,250,252,0.78);
+            padding: 12px;
+            color: #475569;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .notes-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .note-item {
+            border: 1px solid rgba(148,163,184,0.14);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.84);
+            padding: 12px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .note-top {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .note-name {
+            font-weight: 700;
+            color: #0f172a;
+            word-break: break-word;
+        }
+
+        .note-excerpt {
+            font-size: 12px;
+            line-height: 1.45;
+            color: #475569;
+            background: rgba(248,250,252,0.92);
+            border-radius: 10px;
+            border: 1px solid rgba(148,163,184,0.12);
+            padding: 10px;
+            max-height: 110px;
+            overflow: auto;
+            white-space: pre-wrap;
+        }
+
+        .quiz-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .quiz-controls select {
+            min-width: 90px;
+            height: 40px;
+            padding: 0 10px;
+        }
+
+        .quiz-panel {
+            display: grid;
+            gap: 14px;
+        }
+
+        .quiz-placeholder {
+            border: 1px dashed rgba(148,163,184,0.22);
+            border-radius: 14px;
+            background: rgba(248,250,252,0.76);
+            padding: 16px;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .quiz-form {
+            display: grid;
+            gap: 12px;
+        }
+
+        .quiz-question {
+            border: 1px solid rgba(148,163,184,0.14);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.88);
+            padding: 12px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .quiz-q-top {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .quiz-q-index {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .quiz-q-topic {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1d4ed8;
+            background: rgba(239,246,255,0.92);
+            border-radius: 999px;
+            border: 1px solid rgba(37,99,235,0.14);
+            padding: 3px 8px;
+        }
+
+        .quiz-q-text {
+            color: #0f172a;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 8px;
+        }
+
+        .quiz-option {
+            border: 1px solid rgba(148,163,184,0.16);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            cursor: pointer;
+        }
+
+        .quiz-option input {
+            margin-top: 2px;
+            accent-color: #2563eb;
+        }
+
+        .quiz-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid rgba(148,163,184,0.14);
+            padding-top: 10px;
+        }
+
+        .quiz-results {
+            display: none;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .quiz-results.show {
+            display: grid;
+        }
+
+        .score-banner {
+            border-radius: 16px;
+            padding: 14px;
+            border: 1px solid rgba(148,163,184,0.14);
+            background: linear-gradient(180deg, rgba(239,246,255,0.95), rgba(255,255,255,0.92));
+            display: grid;
+            gap: 6px;
+        }
+
+        .score-banner.good {
+            background: linear-gradient(180deg, rgba(240,253,244,0.95), rgba(255,255,255,0.92));
+            border-color: rgba(22,163,74,0.18);
+        }
+
+        .score-banner.bad {
+            background: linear-gradient(180deg, rgba(254,242,242,0.95), rgba(255,255,255,0.92));
+            border-color: rgba(239,68,68,0.18);
+        }
+
+        .score-banner .score {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.03em;
+        }
+
+        .review-list,
+        .mistakes-list,
+        .mastery-list,
+        .attempts-list,
+        .related-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .review-item,
+        .mistake-item,
+        .attempt-item,
+        .related-item {
+            border: 1px solid rgba(148,163,184,0.14);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.84);
+            padding: 12px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .review-item .wrong,
+        .mistake-item .wrong {
+            color: #991b1b;
+            font-weight: 600;
+        }
+
+        .review-item .right,
+        .mistake-item .right {
+            color: #166534;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(226,232,240,0.9);
+            overflow: hidden;
+        }
+
+        .progress-bar > span {
+            display: block;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #0ea5a3 0%, #2563eb 100%);
+        }
+
+        .mastery-item {
+            border: 1px solid rgba(148,163,184,0.12);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.82);
+            padding: 10px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .mastery-title {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 13px;
+            line-height: 1.35;
+        }
+
+        .mastery-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            border: 1px dashed rgba(148,163,184,0.2);
+            border-radius: 14px;
+            background: rgba(248,250,252,0.75);
+            padding: 14px;
+            color: #64748b;
+            line-height: 1.45;
+        }
+
+        .status-line {
+            min-height: 18px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .status-line.error { color: #b91c1c; }
+        .status-line.success { color: #166534; }
+
+        .inline-link {
+            color: #2563eb;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .side-stack-title {
+            margin: 0;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .98rem;
+            letter-spacing: -.02em;
+            color: #0f172a;
+        }
+
+        @media (max-width: 1100px) {
+            .module-shell {
+                grid-template-columns: 1fr;
+            }
+            .module-side {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 720px) {
+            body.page-module {
+                padding: 14px 10px 20px;
+            }
+            .card-body,
+            .card-header,
+            .hero {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .topic-row {
+                grid-template-columns: 1fr;
+            }
+            .topic-index {
+                margin-top: 0;
+            }
+            .topic-topline {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+            }
+            .topic-actions-inline {
+                justify-content: flex-start;
+            }
+            .quiz-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body class="page-module">
+    <div class="module-shell">
+        <main class="module-main">
+            <section class="module-card hero">
+                <div class="hero-content">
+                    <div class="hero-top">
+                        <a id="back-link" class="back-link" href="roadmap.html">← Back to Roadmap</a>
+                        <div class="toolbar">
+                            <a id="legacy-quiz-link" class="btn-secondary" href="quiz.html" style="text-decoration:none; display:inline-flex; align-items:center;">Open Legacy Quiz</a>
+                            <button id="btn-generate-quiz" class="btn" type="button">Start Practice Quiz</button>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 id="module-title" class="hero-title">Module Workspace</h1>
+                        <p id="module-subtitle" class="hero-subtitle">Personalized topics, notes, quizzes, and progress tracking for this module.</p>
+                        <div id="hero-chip-row" class="pill-row"></div>
+                    </div>
+                    <div class="stats-grid" id="top-stats"></div>
+                </div>
+            </section>
+
+            <section class="module-card">
+                <div class="card-header">
+                    <h2 class="card-title">Topics</h2>
+                    <div class="toolbar">
+                        <button id="btn-add-topic" class="btn-secondary" type="button">+ Add Topic</button>
+                        <button id="btn-regenerate-topics" class="btn" type="button">Generate new</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="muted">Topics are generated for this module and stored per user. You can edit names, add your own topics, or remove any topic before generating quizzes.</p>
+                    <div id="topics-status" class="status-line"></div>
+                    <div id="topic-list" class="topic-list"></div>
+                </div>
+            </section>
+
+            <section class="module-card">
+                <div class="card-header">
+                    <h2 class="card-title">Notes (PDF Upload → Quiz Context)</h2>
+                    <div class="toolbar">
+                        <label class="btn-secondary" for="pdf-upload" style="display:inline-flex;align-items:center;cursor:pointer;">Upload PDFs</label>
+                        <input id="pdf-upload" type="file" accept="application/pdf" multiple>
+                        <button id="btn-clear-notes" class="btn-ghost" type="button">Clear Notes</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="drop-note">
+                        Upload lecture notes or your own PDFs. The app extracts text snippets in the browser and uses them to generate better personalized quiz questions. When you are logged in, the PDF file and extracted snippet are uploaded to the backend and stored using Django file storage (local media by default, cloud-storage-ready if configured).
+                    </div>
+                    <div id="notes-status" class="status-line" style="margin-top:10px;"></div>
+                    <div id="notes-list" class="notes-list"></div>
+                </div>
+            </section>
+
+            <section class="module-card">
+                <div class="card-header">
+                    <h2 class="card-title">Practice Quiz (All Topics)</h2>
+                    <div class="quiz-controls">
+                        <label class="muted" for="question-count" style="font-weight:700;">Questions</label>
+                        <select id="question-count">
+                            <option value="6">6</option>
+                            <option value="8" selected>8</option>
+                            <option value="10">10</option>
+                            <option value="12">12</option>
+                        </select>
+                        <label class="muted" style="display:flex;align-items:center;gap:6px;">
+                            <input type="checkbox" id="focus-mistakes" checked>
+                            Focus on past mistakes
+                        </label>
+                        <div class="spacer"></div>
+                        <button id="btn-generate-quiz-secondary" class="btn" type="button">Generate Practice Quiz</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="quiz-status" class="status-line"></div>
+                    <div id="quiz-panel" class="quiz-panel"></div>
+                    <div id="quiz-results" class="quiz-results"></div>
+                </div>
+            </section>
+
+            <section class="module-card">
+                <div class="card-header">
+                    <h2 class="card-title">Mock Exam (Main)</h2>
+                    <div class="quiz-controls">
+                        <label class="muted" for="mock-question-count" style="font-weight:700;">Questions</label>
+                        <select id="mock-question-count">
+                            <option value="10">10</option>
+                            <option value="12" selected>12</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                        </select>
+                        <label class="muted" style="display:flex;align-items:center;gap:6px;">
+                            <input type="checkbox" id="mock-focus-mistakes">
+                            Include weak spots
+                        </label>
+                        <div class="spacer"></div>
+                        <button id="btn-generate-mock-quiz" class="btn" type="button">Generate Mock Exam</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="mock-quiz-status" class="status-line"></div>
+                    <div id="mock-quiz-panel" class="quiz-panel"></div>
+                    <div id="mock-quiz-results" class="quiz-results"></div>
+                </div>
+            </section>
+        </main>
+
+        <aside class="module-side">
+            <section class="module-card">
+                <div class="card-header"><h2 class="side-stack-title">Progress Snapshot</h2></div>
+                <div class="card-body">
+                    <div id="progress-summary"></div>
+                </div>
+            </section>
+
+            <section class="module-card">
+                <div class="card-header"><h2 class="side-stack-title">Topic Mastery</h2></div>
+                <div class="card-body">
+                    <div id="mastery-list" class="mastery-list"></div>
+                </div>
+            </section>
+
+            <section class="module-card">
+                <div class="card-header"><h2 class="side-stack-title">Mistake Journal</h2></div>
+                <div class="card-body">
+                    <div id="mistakes-list" class="mistakes-list"></div>
+                </div>
+            </section>
+
+            <section class="module-card">
+                <div class="card-header"><h2 class="side-stack-title">Recent Attempts</h2></div>
+                <div class="card-body">
+                    <div id="attempts-list" class="attempts-list"></div>
+                </div>
+            </section>
+
+            <section class="module-card">
+                <div class="card-header"><h2 class="side-stack-title">Related Modules</h2></div>
+                <div class="card-body">
+                    <div id="related-list" class="related-list"></div>
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <script src="api-service.js"></script>
+    <script>
+        (function setupPdfJs() {
+            if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+        })();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const moduleIdParam = String(urlParams.get('moduleId') || 'module-1');
+        const moduleNameParam = urlParams.get('module') || 'Module';
+        const roadmapIdParam = urlParams.get('roadmap_id');
+        const topicIdParam = urlParams.get('topicId');
+        const contextKey = `modulePageContext:${roadmapIdParam ? String(roadmapIdParam) : 'local'}:${moduleIdParam}`;
+
+        let moduleContext = null;
+        let state = null;
+        let activeQuiz = null;
+        let lastQuizReview = null;
+        let activeMockQuiz = null;
+        let lastMockQuizReview = null;
+        let autoSaveTimeout = null;
+        const expandedTopicIds = new Set();
+
+        function safeParse(json, fallback) {
+            try {
+                return JSON.parse(json);
+            } catch {
+                return fallback;
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function slugify(value) {
+            return String(value || '')
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '') || `item-${Date.now()}`;
+        }
+
+        function randomId(prefix) {
+            return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        }
+
+        function getCurrentUserIdentity() {
+            const user = safeParse(localStorage.getItem('currentUser'), null) || {};
+            return user.email || user.username || 'guest';
+        }
+
+        function workspaceStorageKey() {
+            return `moduleWorkspace:v1:${getCurrentUserIdentity()}:${roadmapIdParam || 'local'}:${moduleIdParam}`;
+        }
+
+        function normalizeTopic(topic, index) {
+            const title = (typeof topic === 'string' ? topic : topic?.title || '').trim();
+            if (!title) return null;
+            return {
+                id: String(topic?.id || slugify(title) || `topic-${index + 1}`),
+                title,
+                why: String(topic?.why || topic?.why_it_matters || topic?.description || '').trim(),
+                source: String(topic?.source || 'custom'),
+                createdAt: topic?.createdAt || new Date().toISOString()
+            };
+        }
+
+        function normalizeNote(note) {
+            const isBackendNote = note && (note.backendId || note.file_name || note.fileName || note.file_url || note.fileUrl);
+            const backendId = isBackendNote ? String(note.backendId || note.id) : '';
+            return {
+                id: isBackendNote ? `backend-${backendId}` : String(note.id || randomId('note')),
+                backendId: backendId || '',
+                storage: isBackendNote ? 'backend' : String(note.storage || 'local'),
+                fileUrl: String(note.fileUrl || note.file_url || ''),
+                name: String(note.name || note.file_name || note.fileName || 'Untitled note'),
+                size: Number(note.size || note.file_size || 0),
+                uploadedAt: String(note.uploadedAt || note.created_at || new Date().toISOString()),
+                pagesParsed: Number(note.pagesParsed || note.pages_parsed || 0),
+                charCount: Number(note.charCount || note.char_count || 0),
+                textExcerpt: String(note.textExcerpt || note.extracted_text_excerpt || '').slice(0, 7000),
+                parseError: note.parseError ? String(note.parseError) : ''
+            };
+        }
+
+        async function loadBackendNotesIfAvailable() {
+            if (!window.ApiService || typeof ApiService.listModuleNotes !== 'function' || !ApiService.isAuthenticated()) {
+                return;
+            }
+
+            try {
+                const response = await ApiService.listModuleNotes({
+                    moduleId: moduleContext?.module?.id || moduleIdParam,
+                    roadmapId: moduleContext?.roadmapId || ''
+                });
+                if (!response.ok) {
+                    console.warn('Failed to load backend notes:', response);
+                    return;
+                }
+
+                const remoteNotes = Array.isArray(response.data) ? response.data.map(normalizeNote) : [];
+                const localOnly = (state.notes || []).filter(note => !note.backendId);
+                state.notes = [...remoteNotes, ...localOnly].slice(0, 12);
+                saveState();
+            } catch (error) {
+                console.warn('Backend notes load error:', error);
+            }
+        }
+
+        function defaultState() {
+            return {
+                version: 1,
+                moduleId: moduleIdParam,
+                roadmapId: roadmapIdParam || null,
+                topics: [],
+                notes: [],
+                attempts: [],
+                mistakeBank: [],
+                topicStats: {},
+                activity: [],
+                lastGenerated: {
+                    topicsSource: '',
+                    quizSource: '',
+                    note: ''
+                }
+            };
+        }
+
+        function mergeUniqueTopics(baseTopics, newTopics, maxCount) {
+            const seen = new Set();
+            const merged = [];
+            [...(baseTopics || []), ...(newTopics || [])].forEach((topic, idx) => {
+                const normalized = normalizeTopic(topic, idx);
+                if (!normalized) return;
+                const key = normalized.title.toLowerCase();
+                if (seen.has(key)) return;
+                seen.add(key);
+                merged.push(normalized);
+            });
+            return typeof maxCount === 'number' ? merged.slice(0, maxCount) : merged;
+        }
+
+        function queueSave() {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(saveState, 180);
+        }
+
+        function saveState() {
+            if (!state) return;
+            try {
+                localStorage.setItem(workspaceStorageKey(), JSON.stringify(state));
+            } catch (error) {
+                console.error('Failed to save module workspace:', error);
+                setStatus('topics-status', 'Local storage is full. Consider clearing some notes.', 'error');
+            }
+        }
+
+        function addActivity(message) {
+            if (!state) return;
+            state.activity = Array.isArray(state.activity) ? state.activity : [];
+            state.activity.unshift({ message: String(message), at: new Date().toISOString() });
+            state.activity = state.activity.slice(0, 30);
+            queueSave();
+        }
+
+        function setStatus(id, message, type) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = message || '';
+            el.className = `status-line${type ? ' ' + type : ''}`;
+        }
+
+        function clearStatusLater(id, delay = 2500) {
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '';
+            }, delay);
+        }
+
+        function loadContext() {
+            const stored = safeParse(localStorage.getItem(contextKey), null);
+            const moduleFromStored = stored && stored.module ? stored.module : null;
+            const fallbackTitle = moduleNameParam || moduleFromStored?.title || 'Module';
+
+            moduleContext = {
+                roadmapId: roadmapIdParam || stored?.roadmapId || null,
+                module: {
+                    id: String(moduleFromStored?.id || moduleIdParam),
+                    title: String(moduleFromStored?.title || fallbackTitle),
+                    description: String(moduleFromStored?.description || ''),
+                    topics: Array.isArray(moduleFromStored?.topics) ? moduleFromStored.topics : [],
+                    related_modules: Array.isArray(moduleFromStored?.related_modules) ? moduleFromStored.related_modules : [],
+                    cluster_index: moduleFromStored?.cluster_index ?? null,
+                    cluster_label: moduleFromStored?.cluster_label ?? null,
+                    year: moduleFromStored?.year ?? null
+                }
+            };
+        }
+
+        function loadState() {
+            const raw = safeParse(localStorage.getItem(workspaceStorageKey()), null);
+            state = defaultState();
+            if (!raw || typeof raw !== 'object') return;
+
+            state.topics = (Array.isArray(raw.topics) ? raw.topics : []).map(normalizeTopic).filter(Boolean).slice(0, 40);
+            state.notes = (Array.isArray(raw.notes) ? raw.notes : []).map(normalizeNote).slice(0, 12);
+            state.attempts = Array.isArray(raw.attempts) ? raw.attempts.slice(-50) : [];
+            state.mistakeBank = Array.isArray(raw.mistakeBank) ? raw.mistakeBank.slice(0, 120) : [];
+            state.topicStats = raw.topicStats && typeof raw.topicStats === 'object' ? raw.topicStats : {};
+            state.activity = Array.isArray(raw.activity) ? raw.activity.slice(0, 30) : [];
+            state.lastGenerated = raw.lastGenerated && typeof raw.lastGenerated === 'object'
+                ? { ...state.lastGenerated, ...raw.lastGenerated }
+                : state.lastGenerated;
+        }
+
+        function seedTopicsFromContext() {
+            if (!state) return;
+            if (state.topics.length > 0) return;
+            const seeded = (moduleContext?.module?.topics || [])
+                .map((t, idx) => normalizeTopic({
+                    id: t.id || `roadmap-${idx + 1}`,
+                    title: t.title,
+                    why: t.description || '',
+                    source: 'roadmap'
+                }, idx))
+                .filter(Boolean);
+            if (seeded.length > 0) {
+                state.topics = mergeUniqueTopics([], seeded, 10);
+                addActivity('Seeded topics from roadmap module data.');
+                saveState();
+            }
+        }
+
+        function noteExcerptsPayload() {
+            return (state.notes || []).slice(0, 8).map(note => ({
+                name: note.name,
+                excerpt: String(note.textExcerpt || '').slice(0, 2800)
+            }));
+        }
+
+        function mistakesPayload() {
+            return (state.mistakeBank || [])
+                .slice()
+                .sort((a, b) => (b.count || 0) - (a.count || 0))
+                .slice(0, 15)
+                .map(item => ({
+                    topic: item.topic || '',
+                    question: item.question || '',
+                    count: Number(item.count || 1),
+                    last_user_answer: item.lastUserAnswer || '',
+                    correct_answer: item.correctAnswer || ''
+                }));
+        }
+
+        function topicTitlesPayload() {
+            return (state.topics || []).map(t => t.title).filter(Boolean);
+        }
+
+        function fallbackTopicGenerator(targetCount = 10) {
+            const base = topicTitlesPayload();
+            const noteText = noteExcerptsPayload().map(n => n.excerpt).join(' ');
+            const words = (noteText.match(/[A-Za-z][A-Za-z\-]{4,}/g) || [])
+                .map(w => w.toLowerCase())
+                .filter(w => !['which','there','their','about','these','those','notes','module','topic','using','study','learning','understanding','because','through'].includes(w));
+            const counts = {};
+            words.forEach(w => { counts[w] = (counts[w] || 0) + 1; });
+            const keywords = Object.entries(counts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8)
+                .map(([w]) => w.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+
+            const templates = [
+                'Core Concepts and Terminology',
+                'Key Principles and Mental Models',
+                'Problem-Solving Workflow',
+                'Worked Examples and Practice',
+                'Common Errors and Misconceptions',
+                'Real-World Applications',
+                'Evaluation and Trade-offs',
+                'Exam and Quiz Preparation',
+                'Advanced Scenarios',
+                'Revision Checklist'
+            ];
+            const keywordTopics = keywords.map(k => `${moduleContext.module.title}: ${k}`);
+            const generated = [...base, ...keywordTopics, ...templates.map(t => `${moduleContext.module.title}: ${t}`)]
+                .map((title, idx) => normalizeTopic({ title, source: 'fallback', why: 'Local fallback topic generation based on your notes and module context.' }, idx))
+                .filter(Boolean);
+            return mergeUniqueTopics([], generated, targetCount);
+        }
+
+        function shuffleArray(arr) {
+            const clone = [...arr];
+            for (let i = clone.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [clone[i], clone[j]] = [clone[j], clone[i]];
+            }
+            return clone;
+        }
+
+        function fallbackQuizGenerator(questionCount, options = {}) {
+            const topics = Array.isArray(options.topicTitles) && options.topicTitles.length
+                ? options.topicTitles
+                : topicTitlesPayload();
+            const pool = topics.length ? topics : [moduleContext.module.title];
+            const noteKeywords = noteExcerptsPayload()
+                .map(n => n.excerpt)
+                .join(' ')
+                .match(/[A-Za-z][A-Za-z\-]{4,}/g);
+            const keywords = (noteKeywords || []).slice(0, 40).map(x => x.replace(/\s+/g, ' '));
+            const mode = String(options.mode || 'practice');
+            const prioritizeMistakes = options.focusMistakes !== undefined
+                ? !!options.focusMistakes
+                : !!document.getElementById('focus-mistakes')?.checked;
+            const prioritizedMistakes = prioritizeMistakes
+                ? mistakesPayload().map(m => m.topic).filter(Boolean)
+                : [];
+            const orderedTopics = [...prioritizedMistakes, ...pool.filter(t => !prioritizedMistakes.includes(t))];
+            const questions = [];
+
+            for (let i = 0; i < questionCount; i++) {
+                const topic = orderedTopics[i % orderedTopics.length] || moduleContext.module.title;
+                const keyword = keywords[i % Math.max(1, keywords?.length || 1)] || 'your notes';
+                const correctAnswer = mode === 'mock_exam'
+                    ? `Integrate ${topic} with other concepts, justify trade-offs, and practice exam-style reasoning using ${keyword}.`
+                    : mode === 'topic'
+                        ? `Practice ${topic} with targeted examples, explain reasoning, and review common mistakes linked to ${keyword}.`
+                        : `Actively explain ${topic}, practice examples, and compare it with related concepts from ${keyword}.`;
+                const distractors = [
+                    `Memorize definitions about ${topic} once and skip practice.`,
+                    `Study only advanced cases and ignore the basics of ${topic}.`,
+                    `Read the note passively without checking mistakes or testing understanding.`
+                ];
+                const options = shuffleArray([correctAnswer, ...distractors]);
+                const correct = options.indexOf(correctAnswer);
+                questions.push({
+                    id: `fallback-${i + 1}`,
+                    topic,
+                    question: mode === 'mock_exam'
+                        ? `In a mock-exam setting, what best helps you answer a question on '${topic}' using your notes and understanding?`
+                        : mode === 'topic'
+                            ? `For the topic '${topic}', what study strategy best improves mastery before a topic quiz?`
+                            : `Which approach best helps you master '${topic}' in this module using your current notes?`,
+                    options,
+                    correct,
+                    explanation: 'The strongest improvement comes from active recall, practice, and reviewing mistakes instead of passive reading.'
+                });
+            }
+
+            return {
+                questions,
+                source: 'fallback-local',
+                note: 'Using local fallback quiz generation (backend Gemini endpoint unavailable or not authenticated).'
+            };
+        }
+
+        async function generateTopicsWithGemini() {
+            setStatus('topics-status', 'Generating topics...', '');
+            const existing = state.topics || [];
+
+            const payload = {
+                module_title: moduleContext.module.title,
+                roadmap_title: moduleContext.roadmapId ? `Roadmap ${moduleContext.roadmapId}` : '',
+                existing_topics: existing.map(t => ({ title: t.title, why_it_matters: t.why })),
+                note_excerpts: noteExcerptsPayload(),
+                count: 10
+            };
+
+            let generated = null;
+            let source = 'fallback-local';
+            let note = '';
+
+            try {
+                if (window.ApiService && typeof ApiService.generateModuleTopics === 'function' && ApiService.isAuthenticated()) {
+                    const response = await ApiService.generateModuleTopics(payload);
+                    if (response.ok && Array.isArray(response.data?.topics) && response.data.topics.length) {
+                        generated = response.data.topics.map((t, idx) => normalizeTopic({ ...t, source: response.data.source || 'gemini' }, idx)).filter(Boolean);
+                        source = response.data.source || 'gemini';
+                        note = response.data.note || '';
+                    } else {
+                        note = (response && !response.ok) ? ApiService.getErrorMessage(response) : 'Topic generation response was empty.';
+                    }
+                } else {
+                    note = 'Not authenticated or backend endpoint unavailable; using local topic generator.';
+                }
+            } catch (error) {
+                note = error.message || 'Topic generation failed.';
+            }
+
+            if (!generated || generated.length === 0) {
+                generated = fallbackTopicGenerator(10);
+            }
+
+            state.topics = mergeUniqueTopics(existing, generated, 10);
+            state.lastGenerated.topicsSource = source;
+            state.lastGenerated.note = note || '';
+            addActivity(`Generated/refreshed topics (${source}).`);
+            saveState();
+            renderTopics();
+            renderAllSidebar();
+            renderHero();
+            setStatus('topics-status', `Topics ready (${source}). ${note || ''}`.trim(), source.includes('fallback') ? 'success' : 'success');
+            clearStatusLater('topics-status', 4500);
+        }
+
+        async function ensureInitialTopics() {
+            seedTopicsFromContext();
+            if ((state.topics || []).length >= 10) return;
+            if ((state.topics || []).length === 0) {
+                await generateTopicsWithGemini();
+                return;
+            }
+            const toppedUp = mergeUniqueTopics(state.topics, fallbackTopicGenerator(10), 10);
+            if (toppedUp.length !== state.topics.length) {
+                state.topics = toppedUp;
+                saveState();
+                renderTopics();
+            }
+        }
+
+        function renderHero() {
+            document.getElementById('module-title').textContent = moduleContext.module.title;
+            const subtitleParts = [];
+            if (moduleContext.module.description) subtitleParts.push(moduleContext.module.description);
+            subtitleParts.push('Edit topics, upload PDF notes, generate personalized quizzes, and track mistakes/progress over time.');
+            document.getElementById('module-subtitle').textContent = subtitleParts.join(' ');
+
+            const backLink = document.getElementById('back-link');
+            backLink.href = moduleContext.roadmapId ? `roadmap.html?roadmap_id=${encodeURIComponent(moduleContext.roadmapId)}` : 'roadmap.html';
+
+            const legacyQuizLink = document.getElementById('legacy-quiz-link');
+            const quizParams = new URLSearchParams();
+            quizParams.set('moduleId', moduleContext.module.id);
+            quizParams.set('topic', moduleContext.module.title);
+            if (topicIdParam) quizParams.set('topicId', topicIdParam);
+            if (moduleContext.roadmapId) quizParams.set('roadmap_id', moduleContext.roadmapId);
+            legacyQuizLink.href = `quiz.html?${quizParams.toString()}`;
+
+            const chipRow = document.getElementById('hero-chip-row');
+            const chips = [];
+            chips.push(`<span class="chip info">👤 ${escapeHtml(getCurrentUserIdentity())}</span>`);
+            chips.push(`<span class="chip">🧩 Module ID: ${escapeHtml(moduleContext.module.id)}</span>`);
+            if (moduleContext.roadmapId) chips.push(`<span class="chip">🗺️ Roadmap ${escapeHtml(moduleContext.roadmapId)}</span>`);
+            if (state.lastGenerated.topicsSource) chips.push(`<span class="chip success">Topics: ${escapeHtml(state.lastGenerated.topicsSource)}</span>`);
+            if (state.lastGenerated.quizSource) chips.push(`<span class="chip warn">Quiz: ${escapeHtml(state.lastGenerated.quizSource)}</span>`);
+            chipRow.innerHTML = chips.join('');
+
+            renderTopStats();
+        }
+
+        function computeProgressSummary() {
+            const attempts = Array.isArray(state.attempts) ? state.attempts : [];
+            const count = attempts.length;
+            const scores = attempts.map(a => Number(a.score || 0));
+            const avg = count ? Math.round(scores.reduce((s, v) => s + v, 0) / count) : 0;
+            const best = count ? Math.max(...scores) : 0;
+            const last = count ? scores[scores.length - 1] : 0;
+            const trend = count >= 2 ? (scores[scores.length - 1] - scores[scores.length - 2]) : 0;
+            const topicCount = (state.topics || []).length;
+            const notesCount = (state.notes || []).length;
+            const mistakesCount = (state.mistakeBank || []).reduce((sum, m) => sum + Number(m.count || 0), 0);
+            return { count, avg, best, last, trend, topicCount, notesCount, mistakesCount };
+        }
+
+        function renderTopStats() {
+            const s = computeProgressSummary();
+            const stats = [
+                { label: 'Attempts', value: s.count, sub: s.count ? 'Quiz sessions tracked' : 'No quizzes yet' },
+                { label: 'Average', value: `${s.avg}%`, sub: s.count ? 'Across all attempts' : 'Generate your first quiz' },
+                { label: 'Best', value: `${s.best}%`, sub: s.count ? `Last ${s.last}%${s.trend ? ` · ${s.trend > 0 ? '+' : ''}${s.trend}% trend` : ''}` : 'No score yet' },
+                { label: 'Notes', value: s.notesCount, sub: `${s.topicCount} topics · ${s.mistakesCount} mistake hits` }
+            ];
+            document.getElementById('top-stats').innerHTML = stats.map(stat => `
+                <div class="stat-tile">
+                    <div class="stat-label">${escapeHtml(stat.label)}</div>
+                    <div class="stat-value">${escapeHtml(stat.value)}</div>
+                    <div class="stat-sub">${escapeHtml(stat.sub)}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderTopics() {
+            const list = document.getElementById('topic-list');
+            const topics = state.topics || [];
+            if (!topics.length) {
+                list.innerHTML = '<div class="empty-state">No topics yet. Click <strong>Generate / Refresh with Gemini</strong> to create a personalized list.</div>';
+                return;
+            }
+
+            list.innerHTML = topics.map((topic, index) => {
+                const statsKey = topic.title.toLowerCase();
+                const stats = state.topicStats?.[statsKey] || {};
+                const accuracy = stats.totalQuestions ? Math.round((stats.correctQuestions || 0) / stats.totalQuestions * 100) : 0;
+                const isExpanded = expandedTopicIds.has(String(topic.id));
+                return `
+                    <div class="topic-row ${isExpanded ? 'expanded' : ''}" data-topic-id="${escapeHtml(topic.id)}">
+                        <div class="topic-index">${index + 1}</div>
+                        <div class="topic-fields">
+                            <div class="topic-topline">
+                                <input type="text" value="${escapeHtml(topic.title)}" data-role="title" placeholder="Topic name">
+                                <div class="topic-actions-inline">
+                                    <button class="btn-secondary" type="button" data-action="topic-quiz">Topic Quiz</button>
+                                    <button class="btn-ghost" type="button" data-action="toggle-details">${isExpanded ? 'Hide details' : 'Details'}</button>
+                                    <button class="btn-ghost" type="button" data-action="duplicate">Copy</button>
+                                    <button class="btn-danger" type="button" data-action="remove">Remove</button>
+                                </div>
+                            </div>
+                            <div class="topic-meta">
+                                <span class="tiny-chip">${escapeHtml(topic.source || 'custom')}</span>
+                                <span class="tiny-chip">Accuracy: ${accuracy}%</span>
+                                <span class="tiny-chip">Questions: ${Number(stats.totalQuestions || 0)}</span>
+                            </div>
+                            <div class="topic-detail-box">
+                                <textarea data-role="why" placeholder="Why this matters / custom notes for this topic (optional)">${escapeHtml(topic.why || '')}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            list.querySelectorAll('.topic-row').forEach(row => {
+                const topicId = row.dataset.topicId;
+                row.querySelector('[data-role="title"]').addEventListener('input', (e) => updateTopicField(topicId, 'title', e.target.value));
+                const whyField = row.querySelector('[data-role="why"]');
+                if (whyField) {
+                    whyField.addEventListener('input', (e) => updateTopicField(topicId, 'why', e.target.value));
+                }
+                row.querySelector('[data-action="remove"]').addEventListener('click', () => removeTopic(topicId));
+                row.querySelector('[data-action="duplicate"]').addEventListener('click', () => duplicateTopic(topicId));
+                row.querySelector('[data-action="toggle-details"]').addEventListener('click', () => toggleTopicDetails(topicId));
+                row.querySelector('[data-action="topic-quiz"]').addEventListener('click', () => generateTopicQuiz(topicId));
+            });
+        }
+
+        function toggleTopicDetails(topicId) {
+            const key = String(topicId);
+            if (expandedTopicIds.has(key)) expandedTopicIds.delete(key);
+            else expandedTopicIds.add(key);
+            renderTopics();
+        }
+
+        function updateTopicField(topicId, field, value) {
+            const topic = (state.topics || []).find(t => String(t.id) === String(topicId));
+            if (!topic) return;
+            topic[field] = String(value || '').trimStart();
+            if (!topic.source || topic.source === 'gemini' || topic.source === 'fallback' || topic.source === 'roadmap') {
+                topic.source = 'custom';
+            }
+            queueSave();
+            renderAllSidebar();
+            renderHero();
+        }
+
+        function removeTopic(topicId) {
+            state.topics = (state.topics || []).filter(t => String(t.id) !== String(topicId));
+            addActivity('Removed a topic.');
+            saveState();
+            renderTopics();
+            renderAllSidebar();
+            renderHero();
+        }
+
+        function duplicateTopic(topicId) {
+            const topic = (state.topics || []).find(t => String(t.id) === String(topicId));
+            if (!topic) return;
+            const copy = normalizeTopic({
+                ...topic,
+                id: randomId('topic'),
+                title: `${topic.title} (Copy)`,
+                source: 'custom'
+            }, 0);
+            state.topics.push(copy);
+            state.topics = state.topics.slice(0, 40);
+            addActivity('Duplicated a topic.');
+            saveState();
+            renderTopics();
+            renderAllSidebar();
+            renderHero();
+        }
+
+        function addBlankTopic() {
+            state.topics.push({
+                id: randomId('topic'),
+                title: `${moduleContext.module.title}: New Topic`,
+                why: '',
+                source: 'custom',
+                createdAt: new Date().toISOString()
+            });
+            addActivity('Added a custom topic.');
+            saveState();
+            renderTopics();
+            renderAllSidebar();
+            renderHero();
+        }
+
+        function generateTopicQuiz(topicId) {
+            const topic = (state.topics || []).find(t => String(t.id) === String(topicId));
+            if (!topic) return;
+            generateQuiz({
+                mode: 'topic',
+                topicTitles: [topic.title],
+                questionCount: 5,
+                statusId: 'quiz-status',
+                panelType: 'practice',
+                label: `Topic Quiz · ${topic.title}`,
+                focusMistakes: true
+            });
+            document.getElementById('btn-generate-quiz-secondary')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function humanFileSize(size) {
+            if (!size) return '0 B';
+            const units = ['B','KB','MB','GB'];
+            let i = 0;
+            let value = Number(size);
+            while (value >= 1024 && i < units.length - 1) {
+                value /= 1024;
+                i += 1;
+            }
+            return `${value.toFixed(value >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
+        }
+
+        async function extractPdfText(file) {
+            const buffer = await file.arrayBuffer();
+            if (!window.pdfjsLib) {
+                throw new Error('PDF parser not loaded');
+            }
+            const loadingTask = window.pdfjsLib.getDocument({ data: buffer });
+            const pdf = await loadingTask.promise;
+            const maxPages = Math.min(pdf.numPages, 6);
+            const chunks = [];
+            for (let pageNumber = 1; pageNumber <= maxPages; pageNumber += 1) {
+                const page = await pdf.getPage(pageNumber);
+                const content = await page.getTextContent();
+                const pageText = content.items.map(item => item.str).join(' ');
+                chunks.push(pageText.replace(/\s+/g, ' ').trim());
+                if (chunks.join(' ').length > 7000) break;
+            }
+            const text = chunks.join('\n').slice(0, 7000);
+            return {
+                text,
+                pagesParsed: maxPages,
+                charCount: text.length
+            };
+        }
+
+        async function handlePdfUpload(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) return;
+            setStatus('notes-status', `Processing ${files.length} file(s)...`, '');
+
+            for (const file of files) {
+                const note = {
+                    id: randomId('note'),
+                    name: file.name,
+                    size: file.size,
+                    uploadedAt: new Date().toISOString(),
+                    pagesParsed: 0,
+                    charCount: 0,
+                    textExcerpt: '',
+                    parseError: ''
+                };
+
+                try {
+                    const parsed = await extractPdfText(file);
+                    note.textExcerpt = parsed.text || '';
+                    note.pagesParsed = parsed.pagesParsed || 0;
+                    note.charCount = parsed.charCount || note.textExcerpt.length;
+                    if (!note.textExcerpt) {
+                        note.parseError = 'No extractable text found (scanned PDF or image-only pages).';
+                    }
+                } catch (error) {
+                    console.error('PDF parse error:', error);
+                    note.parseError = error.message || 'Failed to parse PDF';
+                }
+
+                let storedNote = normalizeNote(note);
+                if (ApiService.isAuthenticated() && typeof ApiService.uploadModuleNote === 'function') {
+                    try {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        formData.append('module_id', String(moduleContext.module.id));
+                        formData.append('module_title', String(moduleContext.module.title || ''));
+                        if (moduleContext.roadmapId) {
+                            formData.append('roadmap_id', String(moduleContext.roadmapId));
+                        }
+                        formData.append('pages_parsed', String(note.pagesParsed || 0));
+                        formData.append('char_count', String(note.charCount || 0));
+                        formData.append('extracted_text_excerpt', String(note.textExcerpt || '').slice(0, 7000));
+
+                        const uploadResponse = await ApiService.uploadModuleNote(formData);
+                        if (uploadResponse.ok && uploadResponse.data) {
+                            storedNote = normalizeNote(uploadResponse.data);
+                        } else {
+                            note.parseError = note.parseError || `Stored locally only: ${ApiService.getErrorMessage(uploadResponse)}`;
+                            storedNote = normalizeNote(note);
+                        }
+                    } catch (uploadError) {
+                        console.warn('Backend note upload failed, keeping local copy:', uploadError);
+                        note.parseError = note.parseError || `Stored locally only: ${uploadError.message || 'upload failed'}`;
+                        storedNote = normalizeNote(note);
+                    }
+                }
+
+                state.notes.unshift(storedNote);
+                state.notes = state.notes.slice(0, 12);
+            }
+
+            addActivity(`Uploaded ${files.length} PDF note${files.length > 1 ? 's' : ''}.`);
+            saveState();
+            renderNotes();
+            renderAllSidebar();
+            renderHero();
+            const storedModes = new Set((state.notes || []).slice(0, files.length + 2).map(n => n.storage));
+            const noteMsg = storedModes.has('backend')
+                ? 'Notes processed and saved to backend storage (with local cache for UI).'
+                : 'Notes processed and saved locally in this browser.';
+            setStatus('notes-status', `${noteMsg} New quizzes will use these excerpts.`, 'success');
+            clearStatusLater('notes-status', 3500);
+            event.target.value = '';
+        }
+
+        function renderNotes() {
+            const container = document.getElementById('notes-list');
+            const notes = state.notes || [];
+            if (!notes.length) {
+                container.innerHTML = '<div class="empty-state">No notes uploaded yet. Add one or more PDFs to improve topic and quiz generation.</div>';
+                return;
+            }
+
+            container.innerHTML = notes.map(note => `
+                <div class="note-item" data-note-id="${escapeHtml(note.id)}">
+                    <div class="note-top">
+                        <div>
+                            <div class="note-name">📄 ${escapeHtml(note.name)}</div>
+                            <div class="muted">${escapeHtml(humanFileSize(note.size))} · ${escapeHtml(String(note.pagesParsed || 0))} pages parsed · ${escapeHtml(String(note.charCount || 0))} chars · ${escapeHtml(note.storage === 'backend' ? 'Stored in backend' : 'Local only')}</div>
+                        </div>
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            ${note.fileUrl ? `<a class="btn-ghost" href="${escapeHtml(note.fileUrl)}" target="_blank" rel="noopener" style="text-decoration:none; display:inline-flex; align-items:center;">Open</a>` : ''}
+                            <button type="button" class="btn-ghost" data-action="remove-note">Remove</button>
+                        </div>
+                    </div>
+                    ${note.parseError ? `<div class="tiny-chip" style="width:max-content;color:#991b1b;background:rgba(254,242,242,.92);border-color:rgba(239,68,68,.18);">${escapeHtml(note.parseError)}</div>` : ''}
+                    <div class="note-excerpt">${escapeHtml(note.textExcerpt || 'No text extracted.')}</div>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('[data-action="remove-note"]').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const noteId = e.target.closest('.note-item')?.dataset.noteId;
+                    if (!noteId) return;
+                    const note = state.notes.find(n => String(n.id) === String(noteId));
+                    if (note && note.backendId && ApiService.isAuthenticated() && typeof ApiService.deleteModuleNote === 'function') {
+                        try {
+                            const resp = await ApiService.deleteModuleNote(note.backendId);
+                            if (!resp.ok && resp.status !== 204) {
+                                throw new Error(ApiService.getErrorMessage(resp));
+                            }
+                        } catch (error) {
+                            alert(error.message || 'Failed to delete note from backend.');
+                            return;
+                        }
+                    }
+                    state.notes = state.notes.filter(n => String(n.id) !== String(noteId));
+                    addActivity('Removed a note.');
+                    saveState();
+                    renderNotes();
+                    renderAllSidebar();
+                    renderHero();
+                });
+            });
+        }
+
+        function clearNotes() {
+            if (!(state.notes || []).length) return;
+            if (!confirm('Remove all extracted note snippets for this module?')) return;
+            const backendNoteIds = (state.notes || []).filter(n => n.backendId).map(n => n.backendId);
+            const clearAll = async () => {
+                for (const backendId of backendNoteIds) {
+                    if (!ApiService.isAuthenticated() || typeof ApiService.deleteModuleNote !== 'function') break;
+                    try {
+                        const resp = await ApiService.deleteModuleNote(backendId);
+                        if (!resp.ok && resp.status !== 204) {
+                            console.warn('Failed to delete backend note during clear:', resp);
+                        }
+                    } catch (error) {
+                        console.warn('Backend note clear error:', error);
+                    }
+                }
+                state.notes = [];
+                addActivity('Cleared all notes.');
+                saveState();
+                renderNotes();
+                renderAllSidebar();
+                renderHero();
+            };
+            clearAll();
+        }
+
+        async function generateQuiz() {
+            if (!(state.topics || []).length) {
+                setStatus('quiz-status', 'Add or generate topics before creating a quiz.', 'error');
+                return;
+            }
+
+            const questionCount = Number(document.getElementById('question-count').value || 8);
+            setStatus('quiz-status', 'Generating quiz...', '');
+            activeQuiz = null;
+            lastQuizReview = null;
+            renderQuizPanel();
+            renderQuizResults();
+
+            const payload = {
+                module_title: moduleContext.module.title,
+                roadmap_title: moduleContext.roadmapId ? `Roadmap ${moduleContext.roadmapId}` : '',
+                topics: topicTitlesPayload().slice(0, 25),
+                note_excerpts: noteExcerptsPayload(),
+                mistakes: document.getElementById('focus-mistakes')?.checked ? mistakesPayload() : [],
+                question_count: questionCount
+            };
+
+            let source = 'fallback-local';
+            let note = '';
+            let questions = null;
+
+            try {
+                if (window.ApiService && typeof ApiService.generateModuleQuiz === 'function' && ApiService.isAuthenticated()) {
+                    const response = await ApiService.generateModuleQuiz(payload);
+                    if (response.ok && Array.isArray(response.data?.questions) && response.data.questions.length) {
+                        questions = response.data.questions.map((q, index) => ({
+                            id: q.id || `q-${index + 1}`,
+                            topic: q.topic || topicTitlesPayload()[index % Math.max(1, topicTitlesPayload().length)] || moduleContext.module.title,
+                            question: q.question || `Question ${index + 1}`,
+                            options: Array.isArray(q.options) ? q.options.slice(0, 4) : [],
+                            correct: Number.isFinite(Number(q.correct)) ? Number(q.correct) : Number(q.correct_index || 0),
+                            explanation: q.explanation || 'Review this topic again and compare each option carefully.'
+                        })).filter(q => q.question && Array.isArray(q.options) && q.options.length >= 4);
+                        source = response.data.source || 'gemini';
+                        note = response.data.note || '';
+                    } else {
+                        note = (response && !response.ok) ? ApiService.getErrorMessage(response) : 'Quiz response was empty.';
+                    }
+                } else {
+                    note = 'Not authenticated or backend endpoint unavailable; using local quiz generator.';
+                }
+            } catch (error) {
+                console.error('Quiz generation error:', error);
+                note = error.message || 'Quiz generation failed.';
+            }
+
+            if (!questions || !questions.length) {
+                const fallback = fallbackQuizGenerator(questionCount);
+                questions = fallback.questions;
+                source = fallback.source;
+                note = note || fallback.note || '';
+            }
+
+            activeQuiz = {
+                id: randomId('quiz'),
+                generatedAt: new Date().toISOString(),
+                source,
+                note,
+                questions: questions.slice(0, questionCount).map((q, idx) => ({
+                    ...q,
+                    id: String(q.id || `q-${idx + 1}`),
+                    correct: Math.max(0, Math.min(3, Number(q.correct || 0)))
+                }))
+            };
+            state.lastGenerated.quizSource = source;
+            state.lastGenerated.note = note || state.lastGenerated.note || '';
+            addActivity(`Generated a quiz (${source}) with ${activeQuiz.questions.length} questions.`);
+            saveState();
+            renderHero();
+            renderQuizPanel();
+            renderQuizResults();
+            setStatus('quiz-status', `Quiz ready (${source}). ${note || ''}`.trim(), 'success');
+            clearStatusLater('quiz-status', 5000);
+        }
+
+        function renderQuizPanel() {
+            const panel = document.getElementById('quiz-panel');
+            if (!activeQuiz || !Array.isArray(activeQuiz.questions) || !activeQuiz.questions.length) {
+                panel.innerHTML = `
+                    <div class="quiz-placeholder">
+                        Generate a fresh quiz any time. The generator uses your current topics, extracted PDF note snippets, and mistake history so each quiz becomes more personalized over time.
+                    </div>
+                `;
+                return;
+            }
+
+            panel.innerHTML = `
+                <form id="quiz-form" class="quiz-form">
+                    ${activeQuiz.questions.map((q, qIndex) => `
+                        <section class="quiz-question" data-question-id="${escapeHtml(q.id)}">
+                            <div class="quiz-q-top">
+                                <span class="quiz-q-index">Question ${qIndex + 1}</span>
+                                <span class="quiz-q-topic">${escapeHtml(q.topic || 'Topic')}</span>
+                            </div>
+                            <div class="quiz-q-text">${escapeHtml(q.question)}</div>
+                            <div class="quiz-options">
+                                ${q.options.map((option, optIndex) => `
+                                    <label class="quiz-option">
+                                        <input type="radio" name="question-${qIndex}" value="${optIndex}">
+                                        <span>${escapeHtml(option)}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </section>
+                    `).join('')}
+                    <div class="quiz-actions">
+                        <span class="muted">Source: ${escapeHtml(activeQuiz.source)} · Generated ${new Date(activeQuiz.generatedAt).toLocaleString()}</span>
+                        <button type="submit" class="btn">Submit Quiz</button>
+                    </div>
+                </form>
+            `;
+
+            panel.querySelector('#quiz-form').addEventListener('submit', submitActiveQuiz);
+        }
+
+        function getSelectedAnswersFromForm(form) {
+            const answers = [];
+            activeQuiz.questions.forEach((_, qIndex) => {
+                const selected = form.querySelector(`input[name="question-${qIndex}"]:checked`);
+                answers.push(selected ? Number(selected.value) : -1);
+            });
+            return answers;
+        }
+
+        function submitActiveQuiz(event) {
+            event.preventDefault();
+            if (!activeQuiz) return;
+            const form = event.currentTarget;
+            const answers = getSelectedAnswersFromForm(form);
+            if (answers.some(a => a < 0)) {
+                setStatus('quiz-status', 'Please answer all questions before submitting.', 'error');
+                return;
+            }
+
+            let correctCount = 0;
+            const review = [];
+            const topicStatsDelta = {};
+            const newMistakes = [];
+
+            activeQuiz.questions.forEach((q, index) => {
+                const answerIndex = answers[index];
+                const isCorrect = answerIndex === q.correct;
+                if (isCorrect) correctCount += 1;
+                const topicKey = String(q.topic || moduleContext.module.title).toLowerCase();
+                topicStatsDelta[topicKey] = topicStatsDelta[topicKey] || { topicTitle: q.topic || moduleContext.module.title, totalQuestions: 0, correctQuestions: 0 };
+                topicStatsDelta[topicKey].totalQuestions += 1;
+                if (isCorrect) topicStatsDelta[topicKey].correctQuestions += 1;
+
+                if (!isCorrect) {
+                    newMistakes.push({
+                        topic: q.topic || moduleContext.module.title,
+                        question: q.question,
+                        correctAnswer: q.options[q.correct],
+                        lastUserAnswer: q.options[answerIndex] || '',
+                        explanation: q.explanation || ''
+                    });
+                }
+
+                review.push({
+                    index,
+                    topic: q.topic || moduleContext.module.title,
+                    question: q.question,
+                    isCorrect,
+                    userAnswer: q.options[answerIndex] || '',
+                    correctAnswer: q.options[q.correct] || '',
+                    explanation: q.explanation || ''
+                });
+            });
+
+            const totalQuestions = activeQuiz.questions.length;
+            const score = Math.round((correctCount / Math.max(1, totalQuestions)) * 100);
+            lastQuizReview = { score, totalQuestions, correctCount, review, source: activeQuiz.source, generatedAt: activeQuiz.generatedAt };
+
+            updateTopicStats(topicStatsDelta, score);
+            mergeMistakes(newMistakes);
+            recordAttempt({
+                score,
+                totalQuestions,
+                correctCount,
+                source: activeQuiz.source,
+                createdAt: new Date().toISOString(),
+                focusedOnMistakes: !!document.getElementById('focus-mistakes')?.checked
+            });
+
+            addActivity(`Completed quiz: ${score}% (${correctCount}/${totalQuestions}).`);
+            saveState();
+            renderQuizResults();
+            renderAllSidebar();
+            renderHero();
+            maybeSyncRoadmapProgress(score);
+            setStatus('quiz-status', `Quiz submitted. Score: ${score}%`, score >= 70 ? 'success' : '');
+            clearStatusLater('quiz-status', 3200);
+        }
+
+        function updateTopicStats(deltaByTopic, score) {
+            state.topicStats = state.topicStats || {};
+            Object.entries(deltaByTopic || {}).forEach(([key, delta]) => {
+                const current = state.topicStats[key] || {
+                    topicTitle: delta.topicTitle,
+                    attempts: 0,
+                    totalQuestions: 0,
+                    correctQuestions: 0,
+                    lastScore: 0
+                };
+                current.topicTitle = delta.topicTitle || current.topicTitle;
+                current.attempts = Number(current.attempts || 0) + 1;
+                current.totalQuestions = Number(current.totalQuestions || 0) + Number(delta.totalQuestions || 0);
+                current.correctQuestions = Number(current.correctQuestions || 0) + Number(delta.correctQuestions || 0);
+                current.lastScore = score;
+                current.updatedAt = new Date().toISOString();
+                state.topicStats[key] = current;
+            });
+        }
+
+        function mergeMistakes(newMistakes) {
+            state.mistakeBank = Array.isArray(state.mistakeBank) ? state.mistakeBank : [];
+            newMistakes.forEach(m => {
+                const key = `${(m.topic || '').toLowerCase()}|${(m.question || '').toLowerCase()}`;
+                const existing = state.mistakeBank.find(item => item.key === key);
+                if (existing) {
+                    existing.count = Number(existing.count || 0) + 1;
+                    existing.lastAt = new Date().toISOString();
+                    existing.lastUserAnswer = m.lastUserAnswer || existing.lastUserAnswer || '';
+                    existing.correctAnswer = m.correctAnswer || existing.correctAnswer || '';
+                    existing.explanation = m.explanation || existing.explanation || '';
+                } else {
+                    state.mistakeBank.push({
+                        key,
+                        topic: m.topic,
+                        question: m.question,
+                        correctAnswer: m.correctAnswer,
+                        lastUserAnswer: m.lastUserAnswer,
+                        explanation: m.explanation,
+                        count: 1,
+                        lastAt: new Date().toISOString()
+                    });
+                }
+            });
+             state.mistakeBank.sort((a, b) => (b.count || 0) - (a.count || 0) || String(b.lastAt || '').localeCompare(String(a.lastAt || '')));
+             state.mistakeBank = state.mistakeBank.slice(0, 120);
+         }
+
+        function recordAttempt(attempt) {
+            state.attempts = Array.isArray(state.attempts) ? state.attempts : [];
+            state.attempts.push({ id: randomId('attempt'), ...attempt });
+            state.attempts = state.attempts.slice(-50);
+        }
+
+        async function maybeSyncRoadmapProgress(score) {
+            if (!topicIdParam || !window.ApiService || !ApiService.isAuthenticated()) return;
+            try {
+                let response;
+                if (roadmapIdParam && typeof ApiService.updateRoadmapGraphTopicProgress === 'function') {
+                    response = await ApiService.updateRoadmapGraphTopicProgress(roadmapIdParam, topicIdParam, score);
+                    if (!response.ok && typeof ApiService.updateTopicProgress === 'function') {
+                        response = await ApiService.updateTopicProgress(topicIdParam, score);
+                    }
+                } else if (typeof ApiService.updateTopicProgress === 'function') {
+                    response = await ApiService.updateTopicProgress(topicIdParam, score);
+                }
+                if (response && !response.ok) {
+                    console.warn('Module progress sync failed:', response);
+                }
+            } catch (error) {
+                console.warn('Module progress sync error:', error);
+            }
+        }
+
+        function renderQuizResults() {
+            const container = document.getElementById('quiz-results');
+            if (!lastQuizReview) {
+                container.classList.remove('show');
+                container.innerHTML = '';
+                return;
+            }
+            const scoreClass = lastQuizReview.score >= 75 ? 'good' : (lastQuizReview.score < 50 ? 'bad' : '');
+            const wrong = lastQuizReview.review.filter(item => !item.isCorrect);
+            container.classList.add('show');
+            container.innerHTML = `
+                <section class="score-banner ${scoreClass}">
+                    <div class="muted">Latest quiz result · ${escapeHtml(lastQuizReview.source)} · ${escapeHtml(new Date(lastQuizReview.generatedAt).toLocaleString())}</div>
+                    <div class="score">${lastQuizReview.score}%</div>
+                    <div class="muted">${lastQuizReview.correctCount}/${lastQuizReview.totalQuestions} correct. ${wrong.length ? 'Mistakes were added to your mistake journal for future quizzes.' : 'Perfect run or no mistakes to record.'}</div>
+                </section>
+                ${wrong.length ? `
+                    <section>
+                        <div class="card-title" style="margin-bottom:8px;">Review Mistakes</div>
+                        <div class="review-list">
+                            ${wrong.map(item => `
+                                <div class="review-item">
+                                    <div class="tiny-chip" style="width:max-content;">${escapeHtml(item.topic)}</div>
+                                    <div style="font-weight:700;color:#0f172a;line-height:1.35;">${escapeHtml(item.question)}</div>
+                                    <div class="wrong">Your answer: ${escapeHtml(item.userAnswer || 'No answer')}</div>
+                                    <div class="right">Correct answer: ${escapeHtml(item.correctAnswer)}</div>
+                                    ${item.explanation ? `<div class="muted" style="line-height:1.45;">${escapeHtml(item.explanation)}</div>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </section>
+                ` : '<div class="empty-state">No mistakes in this attempt. Generate another quiz for spaced practice.</div>'}
+            `;
+        }
+
+        function renderProgressSummary() {
+            const container = document.getElementById('progress-summary');
+            const s = computeProgressSummary();
+            const attempts = state.attempts || [];
+            const recentScores = attempts.slice(-5).map(a => Number(a.score || 0));
+            const recentAverage = recentScores.length ? Math.round(recentScores.reduce((sum, v) => sum + v, 0) / recentScores.length) : 0;
+            const topicsWithStats = Object.keys(state.topicStats || {}).length;
+            const masteryCoverage = Math.min(100, Math.round((topicsWithStats / Math.max(1, (state.topics || []).length || 1)) * 100));
+
+            container.innerHTML = `
+                <div class="review-item">
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
+                        <div>
+                            <div class="muted">Mastery Coverage</div>
+                            <div style="font-family:'Space Grotesk',sans-serif;font-size:1.35rem;font-weight:700;color:#0f172a;">${masteryCoverage}%</div>
+                        </div>
+                        <div class="tiny-chip">${topicsWithStats}/${(state.topics || []).length || 0} topics practiced</div>
+                    </div>
+                    <div class="progress-bar"><span style="width:${masteryCoverage}%;"></span></div>
+                </div>
+                <div class="review-item">
+                    <div class="muted">Attempts</div>
+                    <div style="font-family:'Space Grotesk',sans-serif;font-size:1.15rem;font-weight:700;color:#0f172a;">${s.count}</div>
+                    <div class="muted">Average ${s.avg}% · Recent 5 average ${recentAverage}% · Best ${s.best}%</div>
+                </div>
+                <div class="review-item">
+                    <div class="muted">Mistake Focus</div>
+                    <div style="font-family:'Space Grotesk',sans-serif;font-size:1.15rem;font-weight:700;color:#0f172a;">${s.mistakesCount} total mistake hits</div>
+                    <div class="muted">Repeated mistakes will be passed into Gemini/local quiz generation to keep training weak spots.</div>
+                </div>
+            `;
+        }
+
+        function renderMasteryList() {
+            const container = document.getElementById('mastery-list');
+            const topics = state.topics || [];
+            if (!topics.length) {
+                container.innerHTML = '<div class="empty-state">Generate topics and take quizzes to build topic-level mastery stats.</div>';
+                return;
+            }
+
+            const items = topics.map(topic => {
+                const key = topic.title.toLowerCase();
+                const stats = state.topicStats?.[key] || null;
+                const totalQuestions = Number(stats?.totalQuestions || 0);
+                const correctQuestions = Number(stats?.correctQuestions || 0);
+                const accuracy = totalQuestions ? Math.round((correctQuestions / totalQuestions) * 100) : 0;
+                return { topic, totalQuestions, correctQuestions, accuracy, attempts: Number(stats?.attempts || 0) };
+            });
+
+            container.innerHTML = items.map(({ topic, totalQuestions, correctQuestions, accuracy, attempts }) => `
+                <div class="mastery-item">
+                    <div class="mastery-title">${escapeHtml(topic.title)}</div>
+                    <div class="mastery-meta">
+                        <span>${attempts} quiz touches</span>
+                        <span>${correctQuestions}/${totalQuestions} correct</span>
+                    </div>
+                    <div class="progress-bar"><span style="width:${accuracy}%;"></span></div>
+                    <div class="mastery-meta">
+                        <span>Accuracy</span>
+                        <strong style="color:#0f172a;">${accuracy}%</strong>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMistakesList() {
+            const container = document.getElementById('mistakes-list');
+            const mistakes = (state.mistakeBank || []).slice(0, 12);
+            if (!mistakes.length) {
+                container.innerHTML = '<div class="empty-state">No mistakes recorded yet. After you submit quizzes, missed questions will appear here and influence future quiz generation.</div>';
+                return;
+            }
+            container.innerHTML = mistakes.map(item => `
+                <div class="mistake-item">
+                    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">
+                        <span class="tiny-chip">${escapeHtml(item.topic || 'Topic')}</span>
+                        <span class="tiny-chip">Missed ${Number(item.count || 1)}x</span>
+                    </div>
+                    <div style="font-weight:700;color:#0f172a;line-height:1.35;">${escapeHtml(item.question || 'Question')}</div>
+                    <div class="wrong">Last answer: ${escapeHtml(item.lastUserAnswer || '—')}</div>
+                    <div class="right">Correct: ${escapeHtml(item.correctAnswer || '—')}</div>
+                    ${item.explanation ? `<div class="muted">${escapeHtml(item.explanation)}</div>` : ''}
+                    <div class="muted">Updated ${escapeHtml(new Date(item.lastAt).toLocaleString())}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderAttemptsList() {
+            const container = document.getElementById('attempts-list');
+            const attempts = (state.attempts || []).slice().reverse().slice(0, 10);
+            if (!attempts.length) {
+                container.innerHTML = '<div class="empty-state">No attempts yet. Generate a quiz and submit it to start tracking progress.</div>';
+                return;
+            }
+            container.innerHTML = attempts.map(a => `
+                <div class="attempt-item">
+                    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">
+                        <strong style="color:#0f172a;">${Number(a.score || 0)}%</strong>
+                        <span class="tiny-chip">${escapeHtml(a.source || 'quiz')}</span>
+                    </div>
+                    <div class="muted">${Number(a.correctCount || 0)}/${Number(a.totalQuestions || 0)} correct · ${a.focusedOnMistakes ? 'Mistake-focused' : 'Standard'} quiz</div>
+                    <div class="muted">${escapeHtml(new Date(a.createdAt).toLocaleString())}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderRelatedModules() {
+            const container = document.getElementById('related-list');
+            const related = Array.isArray(moduleContext.module.related_modules) ? moduleContext.module.related_modules.slice(0, 8) : [];
+            if (!related.length) {
+                container.innerHTML = '<div class="empty-state">No related modules were provided for this module in the current roadmap context.</div>';
+                return;
+            }
+            container.innerHTML = related.map(item => {
+                const title = item.module_title || item.title || item.name || 'Related module';
+                const label = item.relationship_label || (item.direction === 'incoming' ? 'Depends on' : 'Related to');
+                const influence = Number.isFinite(Number(item.influence_percent)) ? `${Number(item.influence_percent).toFixed(0)}% influence` : '';
+                const reason = item.reason || item.rationale || '';
+                return `
+                    <div class="related-item">
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+                            <span class="tiny-chip">${escapeHtml(label)}</span>
+                            <strong style="color:#0f172a;">${escapeHtml(title)}</strong>
+                            ${influence ? `<span class="muted">${escapeHtml(influence)}</span>` : ''}
+                        </div>
+                        ${reason ? `<div class="muted">${escapeHtml(reason)}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAllSidebar() {
+            renderProgressSummary();
+            renderMasteryList();
+            renderMistakesList();
+            renderAttemptsList();
+            renderRelatedModules();
+        }
+
+        function bindUI() {
+            document.getElementById('btn-add-topic').addEventListener('click', addBlankTopic);
+            document.getElementById('btn-regenerate-topics').addEventListener('click', generateTopicsWithGemini);
+            document.getElementById('btn-generate-quiz').addEventListener('click', generateQuiz);
+            document.getElementById('btn-generate-quiz-secondary').addEventListener('click', generateQuiz);
+            document.getElementById('pdf-upload').addEventListener('change', handlePdfUpload);
+            document.getElementById('btn-clear-notes').addEventListener('click', clearNotes);
+        }
+
+        async function init() {
+            loadContext();
+            loadState();
+            bindUI();
+            renderHero();
+            renderTopics();
+            renderNotes();
+            renderQuizPanel();
+            renderQuizResults();
+            renderAllSidebar();
+
+            await ensureInitialTopics();
+            renderHero();
+            renderTopics();
+            renderNotes();
+            renderAllSidebar();
+
+            if (!ApiService.isAuthenticated()) {
+                setStatus('quiz-status', 'You can use local fallback generation without login. For backend Gemini generation, log in first.', '');
+            }
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

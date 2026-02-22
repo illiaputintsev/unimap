@@ -186,6 +186,32 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
+MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", BASE_DIR / "media"))
+
+# Optional cloud media storage (e.g. Google Cloud Storage).
+# Enable by setting USE_CLOUD_MEDIA=1 and configuring a bucket + credentials in env.
+USE_CLOUD_MEDIA = _env_bool("USE_CLOUD_MEDIA", default=False)
+GS_BUCKET_NAME = os.environ.get("GS_BUCKET_NAME", "")
+GS_PROJECT_ID = os.environ.get("GS_PROJECT_ID", "")
+GS_CREDENTIALS_FILE = os.environ.get("GS_CREDENTIALS_FILE", "")
+
+if USE_CLOUD_MEDIA and GS_BUCKET_NAME:
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+            "OPTIONS": {
+                "bucket_name": GS_BUCKET_NAME,
+                "project_id": GS_PROJECT_ID or None,
+                "credentials_file": GS_CREDENTIALS_FILE or None,
+                "default_acl": None,
+                "querystring_auth": False,
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
