@@ -111,35 +111,7 @@
                 max-height: 70vh;
             }
             
-            #progress-container {
-                top: 250px;
-                right: 10px;
-                width: 40px;
-                height: 40px;
-                padding: 0;
-            }
-            
-            #progress-text {
-                font-size: 11px;
-            }
-            
-            #level-container {
-                top: 305px;
-                right: 10px;
-                width: 40px;
-                height: 40px;
-                padding: 0;
-            }
-            
-            #level-badge {
-                width: 40px;
-                height: 40px;
-                font-size: 24px;
-            }
-            
-            #xp-text {
-                font-size: 10px;
-            }
+
         }
         #logo {
             width: 200px;      
@@ -278,179 +250,8 @@
         #profile-pic-avatar.show {
             display: block;
         }
-        .course-info {
-            text-align: center;
-            font-size: 15px;
-            color: #555;
-            margin: 8px 0;
-            font-weight: 500;
-            position: relative;
-            z-index: 1;
-        }
-        /* Progress Bar - Collapsible Icon */
-        #progress-container {
-            position: fixed;
-            top: 250px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: white;
-            padding: 0;
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(26, 188, 156, 0.2);
-            z-index: 999;
-            border: 2px solid #c8f7f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 20px;
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-        #progress-container:hover {
-            width: 250px;
-            border-radius: 10px;
-            height: auto;
-            padding: 15px;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: flex-start;
-        }
-        #progress-container:hover .progress-icon {
-            display: none;
-        }
-        #progress-container:hover .progress-content {
-            display: block;
-        }
-        .progress-icon {
-            display: block;
-        }
-        .progress-content {
-            display: none;
-            width: 100%;
-        }
-        .progress-content .progress-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: #666;
-            margin-bottom: 8px;
-        }
-        #progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-        #progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #1abc9c 0%, #16a085 100%);
-            width: 0%;
-            transition: width 0.4s ease;
-            border-radius: 10px;
-        }
-        #progress-text {
-            font-size: 12px;
-            color: #1abc9c;
-            font-weight: 600;
-            text-align: center;
-            margin-top: 8px;
-        }
-        
-        /* Level/XP Display - Collapsible Icon */
-        #level-container {
-            position: fixed;
-            top: 305px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #fff8f0 0%, #fff0e8 100%);
-            padding: 0;
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(26, 188, 156, 0.2);
-            z-index: 999;
-            border: 2px solid #ffd9b3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 20px;
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-        #level-container:hover {
-            width: 250px;
-            border-radius: 10px;
-            height: auto;
-            padding: 15px;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: flex-start;
-        }
-        #level-container:hover .level-icon {
-            display: none;
-        }
-        #level-container:hover .level-content {
-            display: block;
-        }
-        .level-icon {
-            display: block;
-        }
-        .level-content {
-            display: none;
-            width: 100%;
-        }
-        #level-display {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-            color: #d97845;
-        }
-        #level-badge {
-            font-size: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
-            border-radius: 50%;
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
-        }
-        #level-info {
-            flex: 1;
-        }
-        #level-number {
-            font-size: 16px;
-            color: #d97845;
-        }
-        #xp-bar {
-            width: 100%;
-            height: 6px;
-            background: #f0e0d0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 6px;
-        }
-        #xp-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ffa500 0%, #ff8c00 100%);
-            width: 0%;
-            transition: width 0.4s ease;
-            border-radius: 10px;
-        }
-        #xp-text {
-            font-size: 11px;
-            color: #d97845;
-            font-weight: 600;
-            text-align: center;
-            margin-top: 4px;
-        }
+
+
         
         /* Node Hover Animation */
         .vis-network canvas {
@@ -517,7 +318,8 @@
             <button onclick="addModuleToRoadmap()">Add Module</button>
         </div>
         
-        <div class="menu-section">⚙️ Navigation</div>        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">🗺️ My Roadmaps</a>
+        <div class="menu-section">⚙️ Navigation</div>        <a href="profile.html">⚙️ Profile</a>
+        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">🗺️ My Roadmaps</a>
         <a href="#" onclick="openAchievements(); return false;">🏆 Achievements</a>
         <a href="progress.html">📊 Your Progress</a>
         <a href="index.html">🏠 Home</a>
@@ -530,40 +332,18 @@
     <div id="user-info">
         <img id="profile-pic-avatar" alt="Profile">
         <span id="username">Guest</span>
-        <a href="profile.html" style="margin-left: 15px; padding: 8px 15px; background-color: #1abc9c; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.backgroundColor='#16a085'" onmouseout="this.style.backgroundColor='#1abc9c'">⚙️ Profile</a>
+        <span id="user-level" style="margin-left: 8px; padding: 4px 10px; background: linear-gradient(135deg, #ffa500, #ff8c00); color: white; border-radius: 12px; font-size: 13px; font-weight: 700;">Lvl: 1</span>
     </div>
 
-    <!-- Progress Container -->
-    <div id="progress-container">
-        <div class="progress-icon">📈</div>
-        <div class="progress-content">
-            <div class="progress-title">📈 Progress</div>
-            <div id="progress-bar">
-                <div id="progress-fill"></div>
-            </div>
-            <div id="progress-text">0/0 Modules</div>
-        </div>
-    </div>
-    
-    <!-- Level/XP Container -->
-    <div id="level-container">
-        <div class="level-icon">⭐</div>
-        <div class="level-content">
-            <div id="level-display">
-                <div id="level-badge">⭐</div>
-                <div id="level-info">
-                    <div id="level-number">Level 1</div>
-                    <div id="xp-bar">
-                        <div id="xp-fill"></div>
-                    </div>
-                    <div id="xp-text">0 / 200 XP</div>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <h1>Student Roadmap</h1>
-    <p class="course-info" id="university-display"></p>
+    <div id="header-progress-bar" style="display:flex; align-items:center; justify-content:center; gap:10px; margin:8px auto; max-width:260px;">
+        <div style="position:relative; width:180px; height:28px; border:2.5px solid #1abc9c; border-radius:7px; background:#e8f8f5; overflow:hidden;">
+            <div id="header-progress-fill" style="height:100%; width:0%; background:linear-gradient(90deg,#1abc9c 0%,#16a085 100%); border-radius:4px; transition:width 0.5s ease;"></div>
+            <span id="header-progress-text" style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#16a085;">0%</span>
+        </div>
+    </div>
     <p id="input-display"></p>
     <img id="logo" src="assets\Gemini_Generated_Image_9eplpw9eplpw9epl__1_-removebg-preview.png" alt="Logo" style="position: fixed; top: 5px; right: 5px; cursor: default; z-index: 10;">
     <div id="roadmap"></div>
@@ -621,7 +401,6 @@
                 'manchester': 'University of Manchester',
                 'kcl': "King's College London"
             };
-            document.getElementById('university-display').textContent = `📚 ${universityDisplayMap[universityName] || universityName}`;
         }
         
         // Check login status
@@ -776,24 +555,7 @@
         // Initialize login status
         checkLoginStatus();
         
-        // Dynamic spacing for progress and level icons
-        const progressContainer = document.getElementById('progress-container');
-        const levelContainer = document.getElementById('level-container');
-        
-        // Initial positions
-        const progressInitialTop = 250;
-        const levelInitialTop = 305;
-        
-        progressContainer.addEventListener('mouseenter', function() {
-            // Move level container down when progress expands
-            levelContainer.style.transition = 'top 0.3s ease';
-            levelContainer.style.top = (levelInitialTop + 50) + 'px'; // Move down by 50px when progress expands
-        });
-        
-        progressContainer.addEventListener('mouseleave', function() {
-            // Move level container back
-            levelContainer.style.top = levelInitialTop + 'px';
-        });
+
         
         // Draggable logo
         const logo = document.getElementById('logo');
@@ -902,9 +664,9 @@
             const titleText = roadmap.title || (roadmap.course && roadmap.course.title) || 'Student Roadmap';
             document.getElementById('input-display').textContent = `Tailored Roadmap for: ${titleText}`;
             if (roadmap.course && roadmap.course.university) {
-                document.getElementById('university-display').textContent = `📚 ${roadmap.course.university}`;
+                // University info available
             } else if (roadmap.manual_course_title) {
-                document.getElementById('university-display').textContent = `📚 ${roadmap.manual_course_title}`;
+                // Manual course title available
             }
 
             createNetwork(nodesData, edgesData);
@@ -2293,15 +2055,15 @@
         // Update progress bar based on completed modules
         function updateProgressBar() {
             const totalModules = Array.isArray(window.nodesData) ? window.nodesData.length : 0;
-            const progressFill = document.getElementById('progress-fill');
-            const progressText = document.getElementById('progress-text');
+            const progressFill = document.getElementById('header-progress-fill');
+            const progressText = document.getElementById('header-progress-text');
 
             if (totalModules === 0) {
                 if (progressFill) {
                     progressFill.style.width = '0%';
                 }
                 if (progressText) {
-                    progressText.textContent = '0/0 Modules';
+                    progressText.textContent = '0%';
                 }
                 return;
             }
@@ -2314,13 +2076,13 @@
                 }
             });
             
-            const progressPercent = (completedModules / totalModules) * 100;
+            const progressPercent = Math.round((completedModules / totalModules) * 100);
             
             if (progressFill) {
                 progressFill.style.width = progressPercent + '%';
             }
             if (progressText) {
-                progressText.textContent = `${completedModules}/${totalModules} Modules`;
+                progressText.textContent = `${progressPercent}%`;
             }
         }
 
@@ -2510,32 +2272,14 @@
             
             const userData = JSON.parse(user);
             const userLevelKey = `user-level-${userData.email}`;
-            const userXPKey = `user-xp-${userData.email}`;
             
             const currentLevel = parseInt(localStorage.getItem(userLevelKey)) || 1;
-            const currentXP = parseInt(localStorage.getItem(userXPKey)) || 0;
             
-            const levelNumber = document.getElementById('level-number');
-            const xpBar = document.getElementById('xp-fill');
-            const xpText = document.getElementById('xp-text');
-            
-            if (currentLevel >= levelThresholds.length) {
-                // Max level reached
-                if (levelNumber) levelNumber.textContent = `Level ${currentLevel} (MAX)`;
-                if (xpBar) xpBar.style.width = '100%';
-                if (xpText) xpText.textContent = `${currentXP} XP (Max Level)`;
-                return;
+            // Update inline level badge next to username
+            const userLevelEl = document.getElementById('user-level');
+            if (userLevelEl) {
+                userLevelEl.textContent = currentLevel >= levelThresholds.length ? `Lvl: ${currentLevel} (MAX)` : `Lvl: ${currentLevel}`;
             }
-            
-            const currentLevelXP = levelThresholds[currentLevel - 1];
-            const nextLevelXP = levelThresholds[currentLevel];
-            const xpInCurrentLevel = currentXP - currentLevelXP;
-            const xpNeededForLevel = nextLevelXP - currentLevelXP;
-            const progressPercent = (xpInCurrentLevel / xpNeededForLevel) * 100;
-            
-            if (levelNumber) levelNumber.textContent = `Level ${currentLevel}`;
-            if (xpBar) xpBar.style.width = Math.min(progressPercent, 100) + '%';
-            if (xpText) xpText.textContent = `${xpInCurrentLevel} / ${xpNeededForLevel} XP`;
         }
 
         function showLevelUpNotification(level) {
@@ -2883,7 +2627,8 @@
                         const roadmapTitle = (fullRoadmap && fullRoadmap.title) || graphData.roadmap_title || 'Roadmap';
                         const progressValue = graphData.overall_progress_percent || (fullRoadmap && fullRoadmap.overall_progress_percent) || 0;
                         document.getElementById('input-display').textContent = `Tailored Roadmap for: ${roadmapTitle}`;
-                        document.getElementById('university-display').textContent = `📚 Progress: ${progressValue}%`;
+                        document.getElementById('header-progress-fill').style.width = `${progressValue}%`;
+                        document.getElementById('header-progress-text').textContent = `${progressValue}%`;
                         createNetwork(nodesData, edgesData);
                         return;
                     }
