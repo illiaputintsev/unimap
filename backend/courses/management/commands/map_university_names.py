@@ -357,7 +357,12 @@ class Command(BaseCommand):
             default="KISCOURSE.csv",
             help="KISCOURSE CSV path used to weight INSTITUTION mapping by (PUBUKPRN, UKPRN).",
         )
-        parser.add_argument("--limit", type=int, default=300, help="Max universities to process for heuristic mode.")
+        parser.add_argument(
+            "--limit",
+            type=int,
+            default=None,
+            help="Max universities to process for heuristic mode. Default: all matching universities.",
+        )
         parser.add_argument("--timeout", type=int, default=15, help="HTTP timeout.")
         parser.add_argument("--insecure", action="store_true", help="Disable SSL verification for HTTP fetches.")
         parser.add_argument(
@@ -412,7 +417,7 @@ class Command(BaseCommand):
         processed = 0
 
         for university in base_qs.iterator(chunk_size=100):
-            if processed >= limit:
+            if limit and processed >= limit:
                 break
             processed += 1
 

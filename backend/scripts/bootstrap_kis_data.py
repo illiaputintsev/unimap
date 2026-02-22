@@ -47,7 +47,12 @@ def main():
         default="",
         help="Optional explicit name column for INSTITUTION.csv (e.g. INSTNAME)",
     )
-    parser.add_argument("--map-limit", type=int, default=400, help="Max universities to map")
+    parser.add_argument(
+        "--map-limit",
+        type=int,
+        default=None,
+        help="Max universities to map (default: all matching universities).",
+    )
     parser.add_argument("--map-all", action="store_true", help="Map all universities, not only placeholders")
 
     parser.add_argument("--skip-scrape", action="store_true", help="Skip module scraping step")
