@@ -343,6 +343,84 @@ def _build_cluster_metadata(nodes, edges):
     return module_cluster_map, cluster_payload
 
 
+def _module_relationship_label(edge_type, direction):
+    if edge_type == "prerequisite":
+        return "Unlocks" if direction == "outgoing" else "Depends on"
+    if edge_type == "career":
+        return "Supports" if direction == "outgoing" else "Supported by"
+    if edge_type == "contains":
+        return "Contains" if direction == "outgoing" else "Part of"
+    return "Related to"
+
+
+def _build_module_relationship_map(nodes, edges):
+    module_nodes = [node for node in nodes if node.type == "module"]
+    if not module_nodes:
+        return {}
+
+    module_by_id = {node.id: node for node in module_nodes}
+    module_order_map = {
+        node.id: (node.order if node.order is not None else math.inf)
+        for node in module_nodes
+    }
+    relationship_map = {module.id: [] for module in module_nodes}
+
+    for edge in edges:
+        source_id = edge.source_id
+        target_id = edge.target_id
+        if source_id == target_id:
+            continue
+        if source_id not in module_by_id or target_id not in module_by_id:
+            continue
+
+        influence_percent = round(_safe_float(getattr(edge, "influence", 0.0), 0.0) * 100, 1)
+        rationale = (edge.rationale or "").strip()
+
+        for owner_id, other_id, direction in (
+            (source_id, target_id, "outgoing"),
+            (target_id, source_id, "incoming"),
+        ):
+            other_module = module_by_id[other_id]
+            relationship_label = _module_relationship_label(edge.edge_type, direction)
+            relationship_map[owner_id].append(
+                {
+                    "module_id": other_module.id,
+                    "module_title": other_module.title,
+                    "direction": direction,
+                    "edge_type": edge.edge_type,
+                    "relationship_label": relationship_label,
+                    "influence_percent": influence_percent,
+                    "rationale": rationale,
+                    "reason": rationale or f"{relationship_label} {other_module.title.lower()}.",
+                }
+            )
+
+    for module_id, related_items in relationship_map.items():
+        deduped = {}
+        for item in related_items:
+            dedupe_key = (
+                item["module_id"],
+                item["direction"],
+                item["edge_type"],
+                (item["rationale"] or "").strip().lower(),
+            )
+            current = deduped.get(dedupe_key)
+            if current is None or item["influence_percent"] > current["influence_percent"]:
+                deduped[dedupe_key] = item
+
+        relationship_map[module_id] = sorted(
+            deduped.values(),
+            key=lambda item: (
+                0 if item["direction"] == "incoming" else 1,
+                module_order_map.get(item["module_id"], math.inf),
+                str(item["module_title"]).lower(),
+                str(item["edge_type"]).lower(),
+            ),
+        )
+
+    return relationship_map
+
+
 def _build_progress_maps(roadmap, user):
     nodes = list(roadmap.nodes.all().order_by("order", "id"))
     progress_map = {
@@ -371,6 +449,7 @@ def _serialize_roadmap_graph(roadmap, user):
     nodes, progress_map, topics_by_module, module_progress_map = _build_progress_maps(roadmap, user)
     edges = list(roadmap.edges.select_related("source", "target").all())
     module_cluster_map, clusters_payload = _build_cluster_metadata(nodes, edges)
+    module_relationship_map = _build_module_relationship_map(nodes, edges)
 
     if module_progress_map:
         overall_progress = sum(module_progress_map.values()) / len(module_progress_map)
@@ -391,6 +470,7 @@ def _serialize_roadmap_graph(roadmap, user):
         if node.type == "module":
             payload["progress_percent"] = round(module_progress_map.get(node.id, 0.0) * 100, 1)
             payload["topics_count"] = len(topics_by_module.get(node.id, []))
+            payload["related_modules"] = module_relationship_map.get(node.id, [])
             cluster_meta = module_cluster_map.get(node.id)
         else:
             payload["mastery_percent"] = round(progress_map.get(node.id, 0.0) * 100, 1)
@@ -452,6 +532,7 @@ def _serialize_roadmap(roadmap, user):
     nodes, progress_map, topics_by_module, module_progress_map = _build_progress_maps(roadmap, user)
     edges = list(roadmap.edges.select_related("source", "target").all())
     module_cluster_map, clusters_payload = _build_cluster_metadata(nodes, edges)
+    module_relationship_map = _build_module_relationship_map(nodes, edges)
 
     module_payload = []
 
@@ -485,6 +566,7 @@ def _serialize_roadmap(roadmap, user):
                 "cluster_id": cluster_meta["id"] if cluster_meta else None,
                 "cluster_label": cluster_meta["label"] if cluster_meta else None,
                 "cluster_index": cluster_meta["index"] if cluster_meta else None,
+                "related_modules": module_relationship_map.get(module.id, []),
                 "topics": topic_payload,
             }
         )

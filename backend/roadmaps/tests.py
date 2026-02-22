@@ -39,6 +39,8 @@ class RoadmapAPITests(APITestCase):
         self.assertGreater(len(response.data["clusters"]), 0)
         self.assertIn("cluster_id", first_module)
         self.assertTrue(first_module["cluster_id"])
+        self.assertIn("related_modules", first_module)
+        self.assertIsInstance(first_module["related_modules"], list)
 
         edge_types = {edge["edge_type"] for edge in response.data["edges"]}
         self.assertIn("contains", edge_types)
@@ -123,6 +125,13 @@ class RoadmapAPITests(APITestCase):
         self.assertTrue(module_node["cluster_id"])
         self.assertIn("cluster_label", module_node)
         self.assertIn("cluster_index", module_node)
+        self.assertIn("related_modules", module_node)
+        self.assertIsInstance(module_node["related_modules"], list)
+        if module_node["related_modules"]:
+            first_relation = module_node["related_modules"][0]
+            self.assertIn("module_id", first_relation)
+            self.assertIn("relationship_label", first_relation)
+            self.assertIn("reason", first_relation)
 
     def test_get_roadmap_graph_summary_returns_counts(self):
         generate_response = self.client.post(

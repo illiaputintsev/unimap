@@ -868,7 +868,10 @@
                     id: moduleId, 
                     label: module.title,
                     year: year,
-                    order: module.order || index
+                    order: module.order || index,
+                    clusterId: module.cluster_id || module.clusterId || null,
+                    clusterLabel: module.cluster_label || module.clusterLabel || null,
+                    clusterIndex: module.cluster_index || module.clusterIndex || null
                 });
                 
                 // Store topics for modal display
@@ -880,11 +883,18 @@
             // Use ONLY explicit edges from the roadmap matrix (relationships between modules)
             if (Array.isArray(roadmap.edges)) {
                 const nodeIds = new Set(nodesData.map(n => String(n.id)));
+                const normalizeRoadmapEdge = (edge) => {
+                    if (!edge || typeof edge !== 'object') return null;
+                    const from = edge.source ?? edge.from ?? edge.source_id ?? edge.sourceId;
+                    const to = edge.target ?? edge.to ?? edge.target_id ?? edge.targetId;
+                    if (from === undefined || from === null || to === undefined || to === null) return null;
+                    return { from: String(from), to: String(to) };
+                };
                 roadmap.edges.forEach(edge => {
-                    const from = String(edge.source);
-                    const to = String(edge.target);
-                    if (nodeIds.has(from) && nodeIds.has(to)) {
-                        edgesData.push({ from, to });
+                    const normalized = normalizeRoadmapEdge(edge);
+                    if (!normalized) return;
+                    if (nodeIds.has(normalized.from) && nodeIds.has(normalized.to)) {
+                        edgesData.push(normalized);
                     }
                 });
             }
@@ -993,8 +1003,8 @@
                 const graphWidth = Math.max(...xs) - Math.min(...xs);
                 const graphHeight = Math.max(...ys) - Math.min(...ys);
 
-                const targetWidth = Math.min(Math.max(Math.ceil(graphWidth + 700), 1200), 1900);
-                const targetHeight = Math.min(Math.max(Math.ceil(graphHeight + 700), 700), 2800);
+                const targetWidth = Math.min(Math.max(Math.ceil(graphWidth + 580), 1100), 1800);
+                const targetHeight = Math.min(Math.max(Math.ceil(graphHeight + 430), 620), 2200);
 
                 container.style.width = '95%';
                 container.style.maxWidth = `${targetWidth}px`;
@@ -1006,6 +1016,491 @@
             } catch (error) {
                 console.error('Error resizing roadmap container:', error);
             }
+        }
+
+        function buildUndirectedNeighborMap(normalizedNodes, adjacencyEdges) {
+            const neighborMap = new Map();
+
+            normalizedNodes.forEach(node => {
+                neighborMap.set(node.id, new Map());
+            });
+
+            adjacencyEdges.forEach(edge => {
+                if (!neighborMap.has(edge.from) || !neighborMap.has(edge.to)) return;
+                if (edge.from === edge.to) return;
+
+                const fromNeighbors = neighborMap.get(edge.from);
+                const toNeighbors = neighborMap.get(edge.to);
+
+                fromNeighbors.set(edge.to, (fromNeighbors.get(edge.to) || 0) + 1);
+                toNeighbors.set(edge.from, (toNeighbors.get(edge.from) || 0) + 1);
+            });
+
+            return neighborMap;
+        }
+
+        function shortestDistancesWithinCluster(seedId, clusterNodeSet, neighborMap) {
+            const distances = new Map([[seedId, 0]]);
+            const queue = [seedId];
+
+            while (queue.length > 0) {
+                const current = queue.shift();
+                const currentDistance = distances.get(current);
+                const neighbors = neighborMap.get(current);
+                if (!neighbors) continue;
+
+                neighbors.forEach((_, neighborId) => {
+                    if (!clusterNodeSet.has(neighborId)) return;
+                    if (distances.has(neighborId)) return;
+                    distances.set(neighborId, currentDistance + 1);
+                    queue.push(neighborId);
+                });
+            }
+
+            return distances;
+        }
+
+        function splitClusterByConnectivity(nodeIds, neighborMap, nodeById, parts = 2) {
+            if (!Array.isArray(nodeIds) || nodeIds.length < Math.max(4, parts * 2) || parts < 2) {
+                return [nodeIds];
+            }
+
+            const clusterNodeSet = new Set(nodeIds);
+            const degree = new Map(
+                nodeIds.map(id => [
+                    id,
+                    Array.from((neighborMap.get(id) || new Map()).keys()).filter(neighborId => clusterNodeSet.has(neighborId)).length
+                ])
+            );
+            const scoreByNode = (id) => {
+                const node = nodeById.get(id) || {};
+                const order = Number.isFinite(node.order) ? node.order : Number.MAX_SAFE_INTEGER;
+                return { degree: degree.get(id) || 0, order };
+            };
+            const compareNodePriority = (a, b) => {
+                const scoreA = scoreByNode(a);
+                const scoreB = scoreByNode(b);
+                if (scoreA.degree !== scoreB.degree) return scoreB.degree - scoreA.degree;
+                return scoreA.order - scoreB.order;
+            };
+
+            const sortedByPriority = nodeIds.slice().sort(compareNodePriority);
+            const seeds = [sortedByPriority[0]];
+
+            while (seeds.length < parts) {
+                const seedDistanceMaps = seeds.map(seed => shortestDistancesWithinCluster(seed, clusterNodeSet, neighborMap));
+                let bestCandidate = null;
+                let bestDistance = -1;
+
+                nodeIds.forEach(candidateId => {
+                    if (seeds.includes(candidateId)) return;
+                    let minDistanceToSeeds = Infinity;
+                    seedDistanceMaps.forEach(distanceMap => {
+                        const distance = distanceMap.has(candidateId) ? distanceMap.get(candidateId) : Infinity;
+                        minDistanceToSeeds = Math.min(minDistanceToSeeds, distance);
+                    });
+
+                    if (minDistanceToSeeds > bestDistance) {
+                        bestCandidate = candidateId;
+                        bestDistance = minDistanceToSeeds;
+                        return;
+                    }
+                    if (minDistanceToSeeds === bestDistance && bestCandidate) {
+                        if (compareNodePriority(candidateId, bestCandidate) < 0) {
+                            bestCandidate = candidateId;
+                        }
+                    }
+                });
+
+                if (!bestCandidate || seeds.includes(bestCandidate)) {
+                    break;
+                }
+                seeds.push(bestCandidate);
+            }
+
+            if (seeds.length < 2) {
+                return [nodeIds];
+            }
+
+            const distancesBySeed = new Map(
+                seeds.map(seed => [seed, shortestDistancesWithinCluster(seed, clusterNodeSet, neighborMap)])
+            );
+            const assignedBySeed = new Map(seeds.map(seed => [seed, []]));
+            const assignmentLoad = new Map(seeds.map(seed => [seed, 0]));
+
+            const nodesByAssignmentOrder = nodeIds
+                .slice()
+                .sort((a, b) => {
+                    const degreeA = degree.get(a) || 0;
+                    const degreeB = degree.get(b) || 0;
+                    if (degreeA !== degreeB) return degreeB - degreeA;
+                    const orderA = Number.isFinite((nodeById.get(a) || {}).order) ? (nodeById.get(a) || {}).order : Number.MAX_SAFE_INTEGER;
+                    const orderB = Number.isFinite((nodeById.get(b) || {}).order) ? (nodeById.get(b) || {}).order : Number.MAX_SAFE_INTEGER;
+                    return orderA - orderB;
+                });
+
+            nodesByAssignmentOrder.forEach(nodeId => {
+                let bestSeed = seeds[0];
+                let bestDistance = Infinity;
+                let bestLoad = assignmentLoad.get(bestSeed) || 0;
+
+                seeds.forEach(seed => {
+                    const distanceMap = distancesBySeed.get(seed);
+                    const distance = distanceMap.has(nodeId) ? distanceMap.get(nodeId) : Infinity;
+                    const load = assignmentLoad.get(seed) || 0;
+                    if (distance < bestDistance) {
+                        bestSeed = seed;
+                        bestDistance = distance;
+                        bestLoad = load;
+                        return;
+                    }
+                    if (distance === bestDistance && load < bestLoad) {
+                        bestSeed = seed;
+                        bestLoad = load;
+                    }
+                });
+
+                assignedBySeed.get(bestSeed).push(nodeId);
+                assignmentLoad.set(bestSeed, (assignmentLoad.get(bestSeed) || 0) + 1);
+            });
+
+            const groups = Array.from(assignedBySeed.values()).filter(group => group.length > 0);
+            if (groups.length < 2) {
+                const ordered = nodeIds
+                    .slice()
+                    .sort((a, b) => {
+                        const orderA = Number.isFinite((nodeById.get(a) || {}).order) ? (nodeById.get(a) || {}).order : Number.MAX_SAFE_INTEGER;
+                        const orderB = Number.isFinite((nodeById.get(b) || {}).order) ? (nodeById.get(b) || {}).order : Number.MAX_SAFE_INTEGER;
+                        return orderA - orderB;
+                    });
+                const midpoint = Math.ceil(ordered.length / 2);
+                return [ordered.slice(0, midpoint), ordered.slice(midpoint)].filter(group => group.length > 0);
+            }
+
+            groups.forEach(group => {
+                group.sort((a, b) => {
+                    const orderA = Number.isFinite((nodeById.get(a) || {}).order) ? (nodeById.get(a) || {}).order : Number.MAX_SAFE_INTEGER;
+                    const orderB = Number.isFinite((nodeById.get(b) || {}).order) ? (nodeById.get(b) || {}).order : Number.MAX_SAFE_INTEGER;
+                    if (orderA !== orderB) return orderA - orderB;
+                    return String((nodeById.get(a) || {}).label || a).localeCompare(String((nodeById.get(b) || {}).label || b));
+                });
+            });
+
+            return groups;
+        }
+
+        function enforceClusterCount(initialClusters, neighborMap, nodeById, totalNodes) {
+            const clusters = initialClusters.map(cluster => cluster.slice());
+            const targetClusterCount = Math.max(
+                1,
+                Math.min(8, Math.round(Math.sqrt(Math.max(totalNodes, 1) / 1.8)))
+            );
+
+            while (clusters.length < targetClusterCount) {
+                let splitIndex = -1;
+                let splitSize = 0;
+                clusters.forEach((cluster, index) => {
+                    if (cluster.length > splitSize) {
+                        splitIndex = index;
+                        splitSize = cluster.length;
+                    }
+                });
+
+                if (splitIndex < 0 || splitSize < 5) {
+                    break;
+                }
+
+                const clusterToSplit = clusters[splitIndex];
+                const splitResult = splitClusterByConnectivity(clusterToSplit, neighborMap, nodeById, 2)
+                    .filter(group => group.length > 0);
+
+                if (splitResult.length < 2) {
+                    break;
+                }
+
+                const smallestGroupSize = Math.min(...splitResult.map(group => group.length));
+                if (smallestGroupSize < 2) {
+                    break;
+                }
+
+                clusters.splice(splitIndex, 1, ...splitResult);
+            }
+
+            return clusters;
+        }
+
+        function detectConnectivityClusters(normalizedNodes, adjacencyEdges) {
+            const neighborMap = buildUndirectedNeighborMap(normalizedNodes, adjacencyEdges);
+            const nodeById = new Map(normalizedNodes.map(node => [node.id, node]));
+
+            const hintClusters = new Map();
+            normalizedNodes.forEach(node => {
+                const hintId = node.clusterId
+                    || node.cluster_id
+                    || (node.clusterIndex !== undefined ? `hint-index-${node.clusterIndex}` : null)
+                    || (node.cluster_index !== undefined ? `hint-index-${node.cluster_index}` : null)
+                    || null;
+                if (!hintId) return;
+                if (!hintClusters.has(hintId)) {
+                    hintClusters.set(hintId, []);
+                }
+                hintClusters.get(hintId).push(node.id);
+            });
+
+            if (hintClusters.size >= 2) {
+                const sortedHintGroups = Array.from(hintClusters.values())
+                    .map(group => group.slice())
+                    .filter(group => group.length > 0)
+                    .map(group => group.sort((a, b) => {
+                        const nodeA = nodeById.get(a) || {};
+                        const nodeB = nodeById.get(b) || {};
+                        const orderA = Number.isFinite(nodeA.order) ? nodeA.order : Number.MAX_SAFE_INTEGER;
+                        const orderB = Number.isFinite(nodeB.order) ? nodeB.order : Number.MAX_SAFE_INTEGER;
+                        if (orderA !== orderB) return orderA - orderB;
+                        return String(nodeA.label || a).localeCompare(String(nodeB.label || b));
+                    }))
+                    .sort((groupA, groupB) => {
+                        if (groupA.length !== groupB.length) return groupB.length - groupA.length;
+                        const avgOrder = (group) => {
+                            const total = group.reduce((sum, id) => {
+                                const node = nodeById.get(id) || {};
+                                const order = Number.isFinite(node.order) ? node.order : 0;
+                                return sum + order;
+                            }, 0);
+                            return total / Math.max(group.length, 1);
+                        };
+                        return avgOrder(groupA) - avgOrder(groupB);
+                    });
+
+                const clusters = new Map();
+                const nodeToCluster = new Map();
+                sortedHintGroups.forEach((group, index) => {
+                    const clusterId = `cluster-${index + 1}`;
+                    clusters.set(clusterId, group);
+                    group.forEach(nodeId => nodeToCluster.set(nodeId, clusterId));
+                });
+
+                return {
+                    neighborMap,
+                    clusters,
+                    nodeToCluster,
+                    orderedClusterIds: Array.from(clusters.keys())
+                };
+            }
+
+            const labels = new Map(normalizedNodes.map(node => [node.id, node.id]));
+
+            const orderedNodeIds = normalizedNodes
+                .slice()
+                .sort((a, b) => {
+                    const degreeA = neighborMap.get(a.id).size;
+                    const degreeB = neighborMap.get(b.id).size;
+                    if (degreeA !== degreeB) return degreeB - degreeA;
+                    const orderA = Number.isFinite(a.order) ? a.order : Number.MAX_SAFE_INTEGER;
+                    const orderB = Number.isFinite(b.order) ? b.order : Number.MAX_SAFE_INTEGER;
+                    if (orderA !== orderB) return orderA - orderB;
+                    return String(a.label || a.id).localeCompare(String(b.label || b.id));
+                })
+                .map(node => node.id);
+
+            const maxIterations = 25;
+            for (let iteration = 0; iteration < maxIterations; iteration += 1) {
+                let changed = false;
+                const clusterSizes = new Map();
+                labels.forEach(label => {
+                    clusterSizes.set(label, (clusterSizes.get(label) || 0) + 1);
+                });
+
+                orderedNodeIds.forEach(nodeId => {
+                    const neighbors = neighborMap.get(nodeId);
+                    if (!neighbors || neighbors.size === 0) return;
+
+                    const currentLabel = labels.get(nodeId);
+                    const labelScores = new Map([[currentLabel, 0]]);
+
+                    neighbors.forEach((weight, neighborId) => {
+                        const neighborLabel = labels.get(neighborId);
+                        labelScores.set(neighborLabel, (labelScores.get(neighborLabel) || 0) + weight);
+                    });
+
+                    let bestLabel = currentLabel;
+                    let bestScore = -Infinity;
+
+                    labelScores.forEach((score, label) => {
+                        const size = clusterSizes.get(label) || 1;
+                        let adjustedScore = score / Math.pow(size, 0.35);
+                        if (label === currentLabel) adjustedScore += 0.08;
+
+                        if (adjustedScore > bestScore) {
+                            bestLabel = label;
+                            bestScore = adjustedScore;
+                            return;
+                        }
+                        if (adjustedScore === bestScore && String(label) < String(bestLabel)) {
+                            bestLabel = label;
+                        }
+                    });
+
+                    if (bestLabel !== currentLabel) {
+                        labels.set(nodeId, bestLabel);
+                        changed = true;
+                    }
+                });
+
+                if (!changed) break;
+            }
+
+            const labelToIds = new Map();
+            labels.forEach((label, nodeId) => {
+                if (!labelToIds.has(label)) labelToIds.set(label, []);
+                labelToIds.get(label).push(nodeId);
+            });
+
+            const singletonIds = [];
+            labelToIds.forEach(nodeIds => {
+                if (nodeIds.length !== 1) return;
+                const nodeId = nodeIds[0];
+                if ((neighborMap.get(nodeId)?.size || 0) > 0) {
+                    singletonIds.push(nodeId);
+                }
+            });
+
+            singletonIds.forEach(nodeId => {
+                const neighbors = neighborMap.get(nodeId);
+                if (!neighbors || neighbors.size === 0) return;
+
+                let bestLabel = labels.get(nodeId);
+                let bestWeight = -Infinity;
+
+                neighbors.forEach((weight, neighborId) => {
+                    const candidateLabel = labels.get(neighborId);
+                    if (candidateLabel === labels.get(nodeId)) return;
+                    if (weight > bestWeight) {
+                        bestLabel = candidateLabel;
+                        bestWeight = weight;
+                    }
+                });
+
+                if (bestLabel && bestLabel !== labels.get(nodeId)) {
+                    labels.set(nodeId, bestLabel);
+                }
+            });
+
+            const rawClusters = new Map();
+            labels.forEach((label, nodeId) => {
+                if (!rawClusters.has(label)) rawClusters.set(label, []);
+                rawClusters.get(label).push(nodeId);
+            });
+
+            const isolatedNodes = [];
+            const mixedClusters = [];
+
+            rawClusters.forEach(nodeIds => {
+                const isIsolatedCluster = nodeIds.every(nodeId => (neighborMap.get(nodeId)?.size || 0) === 0);
+                if (isIsolatedCluster) {
+                    isolatedNodes.push(...nodeIds);
+                    return;
+                }
+                mixedClusters.push(nodeIds);
+            });
+
+            if (isolatedNodes.length > 0) {
+                mixedClusters.push(isolatedNodes);
+            }
+
+            const rebalancedClusters = enforceClusterCount(
+                mixedClusters,
+                neighborMap,
+                nodeById,
+                normalizedNodes.length
+            );
+
+            rebalancedClusters.forEach(nodeIds => {
+                nodeIds.sort((a, b) => {
+                    const nodeA = nodeById.get(a) || {};
+                    const nodeB = nodeById.get(b) || {};
+                    const orderA = Number.isFinite(nodeA.order) ? nodeA.order : Number.MAX_SAFE_INTEGER;
+                    const orderB = Number.isFinite(nodeB.order) ? nodeB.order : Number.MAX_SAFE_INTEGER;
+                    if (orderA !== orderB) return orderA - orderB;
+                    return String(nodeA.label || a).localeCompare(String(nodeB.label || b));
+                });
+            });
+
+            rebalancedClusters.sort((clusterA, clusterB) => {
+                if (clusterA.length !== clusterB.length) return clusterB.length - clusterA.length;
+                const avgOrder = (cluster) => {
+                    const total = cluster.reduce((sum, id) => {
+                        const node = nodeById.get(id) || {};
+                        const order = Number.isFinite(node.order) ? node.order : 0;
+                        return sum + order;
+                    }, 0);
+                    return total / Math.max(cluster.length, 1);
+                };
+                return avgOrder(clusterA) - avgOrder(clusterB);
+            });
+
+            const clusters = new Map();
+            const nodeToCluster = new Map();
+
+            rebalancedClusters.forEach((nodeIds, index) => {
+                const clusterId = `cluster-${index + 1}`;
+                clusters.set(clusterId, nodeIds);
+                nodeIds.forEach(nodeId => nodeToCluster.set(nodeId, clusterId));
+            });
+
+            return {
+                neighborMap,
+                clusters,
+                nodeToCluster,
+                orderedClusterIds: Array.from(clusters.keys())
+            };
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatRelatedModulesHtml(relatedModules) {
+            const items = (Array.isArray(relatedModules) ? relatedModules : [])
+                .filter(item => item && item.module_title)
+                .slice(0, 10);
+
+            if (items.length === 0) {
+                return '';
+            }
+
+            const rows = items.map(item => {
+                const relationshipLabel = item.relationship_label || (item.direction === 'incoming' ? 'Depends on' : 'Related to');
+                const influenceText = Number.isFinite(Number(item.influence_percent))
+                    ? ` · ${Number(item.influence_percent).toFixed(1).replace(/\.0$/, '')}%`
+                    : '';
+                const reasonText = item.reason || item.rationale || '';
+                const directionChipColor = item.direction === 'incoming' ? '#0f766e' : '#1d4ed8';
+
+                return `
+                    <div style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; margin-top: 8px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                            <span style="display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: white; background: ${directionChipColor}; border-radius: 999px; padding: 3px 8px;">${escapeHtml(relationshipLabel)}</span>
+                            <span style="font-size: 13px; font-weight: 600; color: #0f172a;">${escapeHtml(item.module_title)}</span>
+                            <span style="font-size: 12px; color: #64748b;">${escapeHtml(influenceText)}</span>
+                        </div>
+                        <div style="font-size: 12px; color: #475569; margin-top: 6px; line-height: 1.45;">
+                            ${escapeHtml(reasonText || 'Related in the roadmap dependency graph.')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div style="margin-top: 12px; font-weight: 700; color: #0f766e;">Why This Connects To Other Modules</div>
+                <div style="margin-top: 2px; font-size: 12px; color: #64748b;">Dependencies and links from the roadmap graph</div>
+                <div>${rows}</div>
+            `;
         }
 
         // Function to create the network
@@ -1055,154 +1550,301 @@
             const adjacencyEdges = normalizedEdges.filter(
                 edge => nodeIdSet.has(edge.from) && nodeIdSet.has(edge.to)
             );
+            const nodeById = new Map(normalizedNodes.map(node => [node.id, node]));
 
-            // ══════════════════════════════════════════════════════════════════
-            // YEAR-BASED LAYOUT: Modules grouped by year in horizontal rows
-            // Row 1 = Year 1, Row 2 = Year 2, Row 3 = Year 3
-            // Modules connected based on relationship matrix (edges)
-            // ══════════════════════════════════════════════════════════════════
-            
-            const YEAR_V_SPACING = 250;   // vertical gap between year rows
-            const MODULE_H_SPACING = 280; // horizontal gap between modules in same year
+            // Connectivity-based clustering:
+            // - cluster nodes by strongest adjacency relationships
+            // - place each cluster in a dedicated region
+            // - keep all original adjacency edges
+            const clusterResult = detectConnectivityClusters(normalizedNodes, adjacencyEdges);
+            const { neighborMap, clusters, nodeToCluster, orderedClusterIds } = clusterResult;
+            const clusterOrderMap = new Map(orderedClusterIds.map((clusterId, index) => [clusterId, index + 1]));
+            const deterministicJitter = (nodeId, salt = 0) => {
+                const text = `${nodeId}:${salt}`;
+                let hash = 2166136261;
+                for (let i = 0; i < text.length; i += 1) {
+                    hash ^= text.charCodeAt(i);
+                    hash = Math.imul(hash, 16777619);
+                }
+                return (((hash >>> 0) % 1000) / 1000) - 0.5;
+            };
+
             const posMap = new Map();
             nodesByLevel = new Map();
-            
-            // Group nodes by year
-            const nodesByYear = new Map();
-            normalizedNodes.forEach(node => {
-                const year = node.year || 1;
-                if (!nodesByYear.has(year)) {
-                    nodesByYear.set(year, []);
-                }
-                nodesByYear.get(year).push(node);
-            });
-            
-            // Sort years and sort nodes within each year by order
-            const sortedYears = Array.from(nodesByYear.keys()).sort((a, b) => a - b);
-            sortedYears.forEach(year => {
-                const yearNodes = nodesByYear.get(year);
-                yearNodes.sort((a, b) => (a.order || 0) - (b.order || 0));
-            });
-            
-            // Calculate max width needed for year labels offset
-            let maxRowWidth = 0;
-            sortedYears.forEach(year => {
-                const numNodes = nodesByYear.get(year).length;
-                const rowWidth = (numNodes - 1) * MODULE_H_SPACING;
-                maxRowWidth = Math.max(maxRowWidth, rowWidth);
-            });
-            const YEAR_LABEL_OFFSET = -(maxRowWidth / 2) - 180; // Position labels to the left
-            
-            // Position nodes: each year is a horizontal row
-            sortedYears.forEach((year, yearIndex) => {
-                const yearNodes = nodesByYear.get(year);
-                const numNodes = yearNodes.length;
-                
-                // Center the row horizontally
-                const totalWidth = (numNodes - 1) * MODULE_H_SPACING;
-                const startX = -totalWidth / 2;
-                const y = yearIndex * YEAR_V_SPACING;
-                
-                yearNodes.forEach((node, nodeIndex) => {
-                    const x = startX + nodeIndex * MODULE_H_SPACING;
-                    posMap.set(node.id, { x, y });
+            const CLUSTER_NODE_H_SPACING = 320;
+            const CLUSTER_NODE_V_SPACING = 220;
+            const CLUSTER_JITTER_X = 24;
+            const CLUSTER_JITTER_Y = 16;
+            const SHOW_CLUSTER_LABELS = false;
+
+            const clusterLayouts = orderedClusterIds.map((clusterId) => {
+                const clusterNodeIds = (clusters.get(clusterId) || []).slice();
+                const degreeByNode = new Map(clusterNodeIds.map(nodeId => [nodeId, neighborMap.get(nodeId)?.size || 0]));
+
+                clusterNodeIds.sort((a, b) => {
+                    const nodeA = nodeById.get(a) || {};
+                    const nodeB = nodeById.get(b) || {};
+                    const orderA = Number.isFinite(nodeA.order) ? nodeA.order : Number.MAX_SAFE_INTEGER;
+                    const orderB = Number.isFinite(nodeB.order) ? nodeB.order : Number.MAX_SAFE_INTEGER;
+                    if (orderA !== orderB) return orderA - orderB;
+                    const degreeA = degreeByNode.get(a) || 0;
+                    const degreeB = degreeByNode.get(b) || 0;
+                    if (degreeA !== degreeB) return degreeB - degreeA;
+                    return String(nodeA.label || a).localeCompare(String(nodeB.label || b));
                 });
-                
-                // Track nodes by level for height calculation
-                nodesByLevel.set(yearIndex, yearNodes.map(n => n.id));
+
+                const cols = Math.max(1, Math.ceil(Math.sqrt(clusterNodeIds.length)));
+                const rows = Math.max(1, Math.ceil(clusterNodeIds.length / cols));
+                const width = Math.max(420, (cols - 1) * CLUSTER_NODE_H_SPACING + 330);
+                const height = Math.max(320, (rows - 1) * CLUSTER_NODE_V_SPACING + 270);
+
+                return {
+                    clusterId,
+                    clusterNodeIds,
+                    cols,
+                    rows,
+                    width,
+                    height
+                };
             });
-            
-            // Add year label nodes (non-interactive visual labels)
-            const yearLabelNodes = sortedYears.map((year, yearIndex) => ({
-                id: `year-label-${year}`,
-                label: `Year ${year}`,
-                isYearLabel: true,
-                year: year,
-                x: YEAR_LABEL_OFFSET,
-                y: yearIndex * YEAR_V_SPACING
-            }));
-            
-            // Handle any nodes without year (fallback)
-            let fallbackY = sortedYears.length * YEAR_V_SPACING;
-            normalizedNodes.forEach(n => {
-                if (!posMap.has(n.id)) {
-                    posMap.set(n.id, { x: 0, y: fallbackY });
-                    fallbackY += 100;
-                }
+
+            const maxClusterWidth = Math.max(...clusterLayouts.map(layout => layout.width), 420);
+            const maxClusterHeight = Math.max(...clusterLayouts.map(layout => layout.height), 320);
+            const CLUSTER_INNER_GAP_X = 170;
+            const CLUSTER_INNER_GAP_Y = 140;
+            const CLUSTER_OUTER_GAP_X = 210;
+            const CLUSTER_OUTER_GAP_Y = 180;
+            const quadrantSlots = [
+                { sx: -1, sy: -1, name: 'top-left' },
+                { sx: 1, sy: -1, name: 'top-right' },
+                { sx: -1, sy: 1, name: 'bottom-left' },
+                { sx: 1, sy: 1, name: 'bottom-right' }
+            ];
+            const primaryLayouts = [
+                clusterLayouts[0] || null,
+                clusterLayouts[1] || null,
+                clusterLayouts[2] || null,
+                clusterLayouts[3] || null
+            ];
+            const leftColumnWidth = Math.max(primaryLayouts[0]?.width || 0, primaryLayouts[2]?.width || 0);
+            const rightColumnWidth = Math.max(primaryLayouts[1]?.width || 0, primaryLayouts[3]?.width || 0);
+            const topRowHeight = Math.max(primaryLayouts[0]?.height || 0, primaryLayouts[1]?.height || 0);
+            const bottomRowHeight = Math.max(primaryLayouts[2]?.height || 0, primaryLayouts[3]?.height || 0);
+            const hasLeftColumn = !!(primaryLayouts[0] || primaryLayouts[2]);
+            const hasRightColumn = !!(primaryLayouts[1] || primaryLayouts[3]);
+            const hasTopRow = !!(primaryLayouts[0] || primaryLayouts[1]);
+            const hasBottomRow = !!(primaryLayouts[2] || primaryLayouts[3]);
+            const leftCenterX = hasRightColumn
+                ? -((leftColumnWidth / 2) + (CLUSTER_INNER_GAP_X / 2))
+                : 0;
+            const rightCenterX = hasLeftColumn
+                ? ((rightColumnWidth / 2) + (CLUSTER_INNER_GAP_X / 2))
+                : 0;
+            const topCenterY = hasBottomRow
+                ? -((topRowHeight / 2) + (CLUSTER_INNER_GAP_Y / 2))
+                : 0;
+            const bottomCenterY = hasTopRow
+                ? ((bottomRowHeight / 2) + (CLUSTER_INNER_GAP_Y / 2))
+                : 0;
+            const innerHalfWidth = (leftColumnWidth / 2) + (rightColumnWidth / 2) + (CLUSTER_INNER_GAP_X / 2);
+            const innerHalfHeight = (topRowHeight / 2) + (bottomRowHeight / 2) + (CLUSTER_INNER_GAP_Y / 2);
+            const clusterAnchors = new Array(clusterLayouts.length).fill(null);
+
+            if (clusterLayouts.length === 1) {
+                clusterAnchors[0] = { x: 0, y: 0, sx: 0, sy: 0, name: 'center', ring: 0 };
+            } else {
+                if (primaryLayouts[0]) clusterAnchors[0] = { x: leftCenterX, y: topCenterY, sx: -1, sy: -1, name: 'top-left', ring: 0 };
+                if (primaryLayouts[1]) clusterAnchors[1] = { x: rightCenterX, y: topCenterY, sx: 1, sy: -1, name: 'top-right', ring: 0 };
+                if (primaryLayouts[2]) clusterAnchors[2] = { x: leftCenterX, y: bottomCenterY, sx: -1, sy: 1, name: 'bottom-left', ring: 0 };
+                if (primaryLayouts[3]) clusterAnchors[3] = { x: rightCenterX, y: bottomCenterY, sx: 1, sy: 1, name: 'bottom-right', ring: 0 };
+            }
+
+            for (let clusterIndex = 4; clusterIndex < clusterLayouts.length; clusterIndex += 1) {
+                const layout = clusterLayouts[clusterIndex];
+                const slot = quadrantSlots[(clusterIndex - 4) % quadrantSlots.length];
+                const ring = Math.floor((clusterIndex - 4) / quadrantSlots.length) + 1;
+                const anchorX = slot.sx * (
+                    innerHalfWidth
+                    + (layout.width / 2)
+                    + CLUSTER_OUTER_GAP_X
+                    + ((ring - 1) * (maxClusterWidth + CLUSTER_OUTER_GAP_X))
+                );
+                const anchorY = slot.sy * (
+                    innerHalfHeight
+                    + (layout.height / 2)
+                    + CLUSTER_OUTER_GAP_Y
+                    + ((ring - 1) * (maxClusterHeight + CLUSTER_OUTER_GAP_Y))
+                );
+                clusterAnchors[clusterIndex] = {
+                    x: anchorX,
+                    y: anchorY,
+                    sx: slot.sx,
+                    sy: slot.sy,
+                    name: slot.name,
+                    ring
+                };
+            }
+            const clusterLabelNodes = [];
+
+            clusterLayouts.forEach((layout, clusterIndex) => {
+                const anchor = clusterAnchors[clusterIndex] || { x: 0, y: 0, sx: 0, sy: 0, name: 'center', ring: 0 };
+                const centerX = anchor.x;
+                const centerY = anchor.y;
+                const startX = centerX - ((layout.cols - 1) * CLUSTER_NODE_H_SPACING) / 2;
+                const startY = centerY - ((layout.rows - 1) * CLUSTER_NODE_V_SPACING) / 2;
+
+                layout.clusterNodeIds.forEach((nodeId, nodeIndex) => {
+                    const row = Math.floor(nodeIndex / layout.cols);
+                    const col = nodeIndex % layout.cols;
+                    const staggerX = (row % 2 === 0 ? 0 : CLUSTER_NODE_H_SPACING * 0.08);
+                    const waveY = Math.sin((row * 1.4) + (col * 0.8)) * 6;
+                    const columnWaveX = Math.sin((col * 1.05) + (clusterIndex * 0.55)) * 10;
+                    const rowBendX = (row - ((layout.rows - 1) / 2)) * ((anchor.sx || 0) * 4.5);
+                    const colLiftY = Math.cos((col * 0.85) + (clusterIndex * 0.75)) * 6;
+                    const laneOffsetY = [0, 7, -5][col % 3];
+                    const diagonalSkewY = (row % 2 === 0 ? 1 : -1) * (col - ((layout.cols - 1) / 2)) * 2.2;
+                    const jitterX = deterministicJitter(nodeId, 1) * CLUSTER_JITTER_X;
+                    const jitterY = deterministicJitter(nodeId, 2) * CLUSTER_JITTER_Y;
+                    posMap.set(nodeId, {
+                        x: startX + col * CLUSTER_NODE_H_SPACING + staggerX + columnWaveX + rowBendX + jitterX,
+                        y: startY + row * CLUSTER_NODE_V_SPACING + waveY + colLiftY + laneOffsetY + diagonalSkewY + jitterY
+                    });
+                });
+
+                nodesByLevel.set(clusterIndex, layout.clusterNodeIds);
+
+                clusterLabelNodes.push({
+                    id: `cluster-label-${clusterIndex + 1}`,
+                    label: `Cluster ${clusterIndex + 1} (${layout.clusterNodeIds.length} modules)`,
+                    isClusterLabel: true,
+                    clusterId: layout.clusterId,
+                    x: centerX,
+                    y: centerY - (layout.height / 2) - 38
+                });
             });
-            
-            // Year colors for visual distinction
-            const yearColors = {
-                1: { background: '#3498db', border: '#2980b9' }, // Blue - Year 1
-                2: { background: '#1abc9c', border: '#16a085' }, // Teal - Year 2
-                3: { background: '#9b59b6', border: '#8e44ad' }  // Purple - Year 3
-            };
+
+            const clusterPalette = [
+                { background: '#1d4ed8', border: '#1e40af', hover: '#2563eb', highlight: '#3b82f6', shadow: 'rgba(29, 78, 216, 0.35)' },
+                { background: '#0f766e', border: '#115e59', hover: '#0d9488', highlight: '#14b8a6', shadow: 'rgba(15, 118, 110, 0.34)' },
+                { background: '#b45309', border: '#92400e', hover: '#d97706', highlight: '#f59e0b', shadow: 'rgba(180, 83, 9, 0.34)' },
+                { background: '#7c3aed', border: '#6d28d9', hover: '#8b5cf6', highlight: '#a78bfa', shadow: 'rgba(124, 58, 237, 0.32)' },
+                { background: '#be123c', border: '#9f1239', hover: '#e11d48', highlight: '#fb7185', shadow: 'rgba(190, 18, 60, 0.32)' },
+                { background: '#0ea5e9', border: '#0284c7', hover: '#38bdf8', highlight: '#7dd3fc', shadow: 'rgba(14, 165, 233, 0.30)' },
+                { background: '#15803d', border: '#166534', hover: '#16a34a', highlight: '#4ade80', shadow: 'rgba(21, 128, 61, 0.30)' },
+                { background: '#c026d3', border: '#a21caf', hover: '#d946ef', highlight: '#e879f9', shadow: 'rgba(192, 38, 211, 0.30)' }
+            ];
+
+            const clusterColors = new Map(
+                orderedClusterIds.map((clusterId, index) => [clusterId, clusterPalette[index % clusterPalette.length]])
+            );
 
             // Create enriched nodes with positions and styling
             const enrichedNodes = normalizedNodes.map((node) => {
                 const pos = posMap.get(node.id) || { x: 0, y: 0 };
-                const year = node.year || 1;
-                const colors = yearColors[year] || yearColors[1];
+                const clusterId = nodeToCluster.get(node.id) || orderedClusterIds[0] || 'cluster-1';
+                const clusterIndex = clusterOrderMap.get(clusterId) || 1;
+                const colors = clusterColors.get(clusterId) || clusterPalette[0];
                 
                 return {
                     ...node,
+                    clusterId,
+                    clusterIndex,
                     label: (node.label && String(node.label).trim()) ? node.label : `Module ${node.id}`,
                     widthConstraint: { minimum: 180, maximum: 260 },
                     heightConstraint: { minimum: 50, valign: 'middle' },
                     x: pos.x,
                     y: pos.y,
                     fixed: { x: true, y: true },
-                    color: colors,
-                    font: { size: 14, color: 'white', face: 'Arial', bold: true },
-                    borderWidth: 3,
+                    color: {
+                        background: colors.background,
+                        border: colors.border,
+                        hover: { background: colors.hover, border: colors.highlight },
+                        highlight: { background: colors.highlight, border: colors.highlight }
+                    },
+                    font: {
+                        size: 14,
+                        color: '#f8fafc',
+                        face: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+                        bold: true
+                    },
+                    shadow: {
+                        enabled: true,
+                        color: colors.shadow,
+                        size: 18,
+                        x: 0,
+                        y: 7
+                    },
+                    borderWidth: 2.2,
+                    shapeProperties: { borderRadius: 12 },
                     shape: 'box',
-                    margin: 12
+                    margin: 13
                 };
             });
             
-            // Add year label nodes to the visualization
-            yearLabelNodes.forEach(labelNode => {
-                const year = labelNode.year;
-                const yearLabelColors = {
-                    1: { background: '#e3f2fd', border: '#2196f3' },
-                    2: { background: '#e0f7fa', border: '#00bcd4' },
-                    3: { background: '#f3e5f5', border: '#9c27b0' }
-                };
-                const colors = yearLabelColors[year] || yearLabelColors[1];
-                
-                enrichedNodes.push({
-                    ...labelNode,
-                    widthConstraint: { minimum: 80, maximum: 100 },
-                    heightConstraint: { minimum: 40, valign: 'middle' },
-                    fixed: { x: true, y: true },
-                    color: colors,
-                    font: { size: 14, color: '#333', face: 'Arial', bold: true },
-                    borderWidth: 2,
-                    borderDashes: [5, 5],
-                    shape: 'box',
-                    margin: 8
+            // Cluster labels can be re-enabled later, but hidden for a cleaner graph UI.
+            if (SHOW_CLUSTER_LABELS) {
+                clusterLabelNodes.forEach(labelNode => {
+                    const clusterIndex = clusterOrderMap.get(labelNode.clusterId) || 1;
+                    const colors = {
+                        background: '#f8fafc',
+                        border: clusterPalette[(clusterIndex - 1) % clusterPalette.length].highlight
+                    };
+                    
+                    enrichedNodes.push({
+                        ...labelNode,
+                        widthConstraint: { minimum: 210, maximum: 340 },
+                        heightConstraint: { minimum: 40, valign: 'middle' },
+                        fixed: { x: true, y: true },
+                        color: colors,
+                        font: {
+                            size: 13,
+                            color: '#0f172a',
+                            face: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+                            bold: true
+                        },
+                        shadow: {
+                            enabled: true,
+                            color: 'rgba(15, 23, 42, 0.10)',
+                            size: 10,
+                            x: 0,
+                            y: 4
+                        },
+                        borderWidth: 1.8,
+                        borderDashes: [4, 4],
+                        shapeProperties: { borderRadius: 18 },
+                        shape: 'box',
+                        margin: 10
+                    });
                 });
-            });
+            }
             
-            // Style edges - all relationship edges get the same styling
-            // Edges crossing years vs within same year can be styled differently
+            // Style edges while keeping adjacency relations unchanged.
             const enrichedEdges = adjacencyEdges.map(edge => {
-                // Determine if edge crosses years
-                const fromNode = normalizedNodes.find(n => n.id === edge.from);
-                const toNode = normalizedNodes.find(n => n.id === edge.to);
-                const fromYear = fromNode ? (fromNode.year || 1) : 1;
-                const toYear = toNode ? (toNode.year || 1) : 1;
-                const crossesYears = fromYear !== toYear;
+                const fromCluster = nodeToCluster.get(edge.from);
+                const toCluster = nodeToCluster.get(edge.to);
+                const crossesClusters = fromCluster !== toCluster;
                 
                 return {
                     ...edge,
-                    color: { color: '#6f6f6f', highlight: '#1abc9c', hover: '#1abc9c' },
-                    width: crossesYears ? 2 : 1.5,
-                    arrows: { to: { enabled: true, scaleFactor: 0.5, type: 'arrow' } },
-                    smooth: crossesYears
-                        ? { enabled: true, type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.3 }
-                        : { enabled: true, type: 'curvedCW', roundness: 0.15 },
-                    dashes: !crossesYears ? [4, 4] : false // Dashed for same-year connections
+                    color: {
+                        color: crossesClusters ? '#94a3b8' : '#64748b',
+                        highlight: '#0d9488',
+                        hover: '#0d9488',
+                        inherit: false
+                    },
+                    width: crossesClusters ? 1.5 : 2.5,
+                    arrows: { to: { enabled: true, scaleFactor: crossesClusters ? 0.42 : 0.56, type: 'arrow' } },
+                    smooth: crossesClusters
+                        ? { enabled: true, type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.34 }
+                        : { enabled: true, type: 'curvedCW', roundness: 0.10 },
+                    dashes: crossesClusters ? [8, 6] : false,
+                    shadow: {
+                        enabled: !crossesClusters,
+                        color: 'rgba(30, 41, 59, 0.14)',
+                        size: 6,
+                        x: 0,
+                        y: 2
+                    }
                 };
             });
             
@@ -1220,7 +1862,7 @@
             // Store globally for later access
             window.nodes = data.nodes;
             window.edges = data.edges;
-            window.nodesData = nodesData;
+            window.nodesData = enrichedNodes.filter(node => !node.isClusterLabel);
             
             console.log('Data created with', data.nodes.length, 'nodes');
             console.log('Nodes:', data.nodes.get());
@@ -1250,7 +1892,7 @@
                 interaction: {
                     dragNodes: false,
                     dragView: true,
-                    zoomView: true,
+                    zoomView: false,
                     navigationButtons: false
                 },
                 nodes: {
@@ -1319,10 +1961,10 @@
                         window.network.fit({ 
                             animation: false,
                             padding: {
-                                top: 70,
-                                right: 80,
-                                bottom: 70,
-                                left: 80
+                                top: 24,
+                                right: 64,
+                                bottom: 46,
+                                left: 64
                             }
                         });
 
@@ -1331,10 +1973,10 @@
                         window.network.fit({ 
                             animation: false,
                             padding: {
-                                top: 70,
-                                right: 80,
-                                bottom: 70,
-                                left: 80
+                                top: 24,
+                                right: 64,
+                                bottom: 46,
+                                left: 64
                             }
                         });
 
@@ -1357,8 +1999,8 @@
                     if (params.nodes.length > 0) {
                         const nodeId = params.nodes[0];
                         
-                        // Skip year label nodes (they are not interactive)
-                        if (String(nodeId).startsWith('year-label-')) {
+                        // Skip cluster label nodes (they are not interactive)
+                        if (String(nodeId).startsWith('cluster-label-')) {
                             return;
                         }
                         
@@ -1374,21 +2016,26 @@
                                 document.getElementById('modal-title').textContent = moduleData.title;
                                 const topicsList = (moduleData.topics || []).map(t => `<li>${t.title}</li>`).join('');
                                 const topicsHtml = topicsList ? `<ul style="margin: 10px 0 0 18px;">${topicsList}</ul>` : '<p style="margin-top: 10px; color: #666;">No topics listed.</p>';
+                                const relatedModulesHtml = formatRelatedModulesHtml(moduleData.related_modules);
                                 
-                                // Show year info
-                                const yearInfo = node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">📅 Year ${node.year}</div>` : '';
+                                const clusterInfo = node.clusterIndex
+                                    ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">🧩 Cluster ${node.clusterIndex}</div>`
+                                    : (node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">📅 Year ${node.year}</div>` : '');
                                 
                                 document.getElementById('modal-content').innerHTML = `
-                                    ${yearInfo}
+                                    ${clusterInfo}
                                     <div style="font-size: 14px; color: #555;">${moduleData.description || 'Module details coming soon.'}</div>
+                                    ${relatedModulesHtml}
                                     <div style="margin-top: 10px; font-weight: 600; color: #1abc9c;">Topics</div>
                                     ${topicsHtml}
                                 `;
                             } else {
-                                const yearInfo = node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">📅 Year ${node.year}</div>` : '';
+                                const clusterInfo = node.clusterIndex
+                                    ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">🧩 Cluster ${node.clusterIndex}</div>`
+                                    : (node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">📅 Year ${node.year}</div>` : '');
                                 document.getElementById('modal-title').textContent = node.label;
                                 document.getElementById('modal-content').innerHTML = `
-                                    ${yearInfo}
+                                    ${clusterInfo}
                                     <div style="font-size: 14px; color: #555;">Detailed resources for learning ${node.label} will appear here.</div>
                                 `;
                             }
@@ -1521,10 +2168,10 @@
                         easingFunction: 'easeInOutQuad'
                     },
                     padding: {
-                        top: 70,
-                        right: 80,
-                        bottom: 70,
-                        left: 80
+                        top: 24,
+                        right: 64,
+                        bottom: 46,
+                        left: 64
                     }
                 });
             }
@@ -1869,26 +2516,79 @@
                         return;
                     }
 
-                    const graphResponse = await ApiService.getRoadmapGraph(roadmapIdParam);
-                    if (graphResponse.ok && graphResponse.data) {
-                        const graphData = graphResponse.data;
+	                    const graphResponse = await ApiService.getRoadmapGraph(roadmapIdParam);
+	                    if (graphResponse.ok && graphResponse.data) {
+	                        const graphData = graphResponse.data;
+	                        const normalizeTitle = (value) => String(value || '').trim().toLowerCase();
+	                        const toStringId = (value) => {
+	                            if (value === undefined || value === null) return null;
+	                            if (typeof value === 'object') {
+	                                if (value.id !== undefined && value.id !== null) return String(value.id);
+	                                if (value.pk !== undefined && value.pk !== null) return String(value.pk);
+	                                return null;
+	                            }
+	                            const asString = String(value).trim();
+	                            return asString ? asString : null;
+	                        };
+	                        const edgeEndpointFromCandidate = (candidate) => {
+	                            if (candidate === undefined || candidate === null) return null;
+	                            if (typeof candidate === 'object') {
+	                                return toStringId(
+	                                    candidate.id ??
+	                                    candidate.pk ??
+	                                    candidate.node_id ??
+	                                    candidate.nodeId ??
+	                                    candidate.title ??
+	                                    candidate.label ??
+	                                    candidate.name
+	                                );
+	                            }
+	                            return toStringId(candidate);
+	                        };
+	                        const pickFirstPresent = (...values) => {
+	                            for (const value of values) {
+	                                const parsed = edgeEndpointFromCandidate(value);
+	                                if (parsed !== null) return parsed;
+	                            }
+	                            return null;
+	                        };
+	                        const graphModuleIdByTitle = new Map();
 
-                        const extractModulesFromPayload = (payload) => {
-                            if (!payload || typeof payload !== 'object') return [];
+	                        const extractModulesFromPayload = (payload) => {
+	                            if (!payload || typeof payload !== 'object') return [];
                             if (Array.isArray(payload.modules)) return payload.modules;
                             if (payload.roadmap && Array.isArray(payload.roadmap.modules)) return payload.roadmap.modules;
                             if (payload.data && Array.isArray(payload.data.modules)) return payload.data.modules;
                             return [];
                         };
 
-                        const moduleNodes = (graphData.nodes || [])
-                            .filter(node => node.type === 'module')
-                            .sort((a, b) => (a.order || 0) - (b.order || 0));
-                        const topicNodes = (graphData.nodes || [])
-                            .filter(node => node.type === 'topic');
+	                        const moduleNodes = (graphData.nodes || [])
+	                            .filter(node => node.type === 'module')
+	                            .sort((a, b) => (a.order || 0) - (b.order || 0));
+	                        moduleNodes.forEach((moduleNode) => {
+	                            const titleKey = normalizeTitle(moduleNode.title);
+	                            const moduleId = toStringId(moduleNode.id);
+	                            if (titleKey && moduleId) {
+	                                graphModuleIdByTitle.set(titleKey, moduleId);
+	                            }
+	                        });
+	                        const topicNodes = (graphData.nodes || [])
+	                            .filter(node => node.type === 'topic');
+	                        const resolveCanonicalModuleId = (module, index) => {
+	                            const graphIdFromTitle = graphModuleIdByTitle.get(normalizeTitle(module.title));
+	                            const explicitId = pickFirstPresent(
+	                                module.id,
+	                                module.module_id,
+	                                module.node_id,
+	                                module.nodeId,
+	                                module.graph_node_id,
+	                                module.graphNodeId
+	                            );
+	                            return graphIdFromTitle || toStringId(explicitId) || `module-${index + 1}`;
+	                        };
 
-                        // Fetch full roadmap details and prefer it when it has more modules than graph payload
-                        let fullRoadmap = null;
+	                        // Fetch full roadmap details and prefer it when it has more modules than graph payload
+	                        let fullRoadmap = null;
                         const fullRoadmapResponse = await ApiService.getRoadmap(roadmapIdParam);
                         if (fullRoadmapResponse.ok) {
                             fullRoadmap = fullRoadmapResponse.data;
@@ -1902,39 +2602,51 @@
                             : [];
 
                         let modulesForDisplay;
-                        if (fullRoadmapModules.length > 0) {
-                            modulesForDisplay = fullRoadmapModules
-                                .slice()
-                                .sort((a, b) => (a.order || 0) - (b.order || 0))
+	                        if (fullRoadmapModules.length > 0) {
+	                            modulesForDisplay = fullRoadmapModules
+	                                .slice()
+	                                .sort((a, b) => (a.order || 0) - (b.order || 0))
                                 .map((module, index) => ({
-                                    id: module.id ?? module.module_id ?? `full-${index + 1}`,
+                                    id: resolveCanonicalModuleId(module, index),
                                     title: module.title,
                                     description: module.description || '',
+                                    cluster_id: module.cluster_id || module.clusterId || null,
+                                    cluster_label: module.cluster_label || module.clusterLabel || null,
+                                    cluster_index: module.cluster_index || module.clusterIndex || null,
+                                    related_modules: Array.isArray(module.related_modules) ? module.related_modules : [],
                                     topics: (module.topics || [])
                                         .slice()
                                         .sort((a, b) => (a.order || 0) - (b.order || 0))
                                         .map(topic => ({ id: topic.id, title: topic.title, description: topic.description || '' }))
                                 }));
-                        } else if (graphPayloadModules.length > 0) {
-                            modulesForDisplay = graphPayloadModules
-                                .slice()
-                                .sort((a, b) => (a.order || 0) - (b.order || 0))
+	                        } else if (graphPayloadModules.length > 0) {
+	                            modulesForDisplay = graphPayloadModules
+	                                .slice()
+	                                .sort((a, b) => (a.order || 0) - (b.order || 0))
                                 .map((module, index) => ({
-                                    id: module.id ?? module.module_id ?? `graph-${index + 1}`,
+                                    id: resolveCanonicalModuleId(module, index),
                                     title: module.title,
                                     description: module.description || '',
+                                    cluster_id: module.cluster_id || module.clusterId || null,
+                                    cluster_label: module.cluster_label || module.clusterLabel || null,
+                                    cluster_index: module.cluster_index || module.clusterIndex || null,
+                                    related_modules: Array.isArray(module.related_modules) ? module.related_modules : [],
                                     topics: (module.topics || [])
                                         .slice()
                                         .sort((a, b) => (a.order || 0) - (b.order || 0))
                                         .map(topic => ({ id: topic.id, title: topic.title, description: topic.description || '' }))
                                 }));
-                        } else {
+	                        } else {
                             modulesForDisplay = moduleNodes.map(moduleNode => ({
-                                id: moduleNode.id,
+                                id: toStringId(moduleNode.id) || `module-node-${moduleNode.order || 0}`,
                                 title: moduleNode.title,
                                 description: moduleNode.description || '',
+                                cluster_id: moduleNode.cluster_id || moduleNode.clusterId || null,
+                                cluster_label: moduleNode.cluster_label || moduleNode.clusterLabel || null,
+                                cluster_index: moduleNode.cluster_index || moduleNode.clusterIndex || null,
+                                related_modules: Array.isArray(moduleNode.related_modules) ? moduleNode.related_modules : [],
                                 topics: topicNodes
-                                    .filter(topic => topic.parent_module_id === moduleNode.id)
+                                    .filter(topic => String(topic.parent_module_id) === String(moduleNode.id))
                                     .sort((a, b) => (a.order || 0) - (b.order || 0))
                                     .map(topic => ({ id: topic.id, title: topic.title, description: topic.description || '' }))
                             }));
@@ -1952,25 +2664,29 @@
                                     id: `cached-${index + 1}`,
                                     title: moduleTitle,
                                     description: '',
+                                    related_modules: [],
                                     topics: []
                                 }));
                             modulesForDisplay = modulesForDisplay.concat(missingCached);
                         }
 
-                        const seenModuleIds = new Set();
-                        modulesForDisplay = modulesForDisplay
-                            .filter(module => module && module.title)
-                            .map((module, index) => {
-                                let resolvedId = module.id;
-                                if (resolvedId === undefined || resolvedId === null || seenModuleIds.has(String(resolvedId))) {
-                                    resolvedId = `module-${index + 1}`;
-                                }
-                                seenModuleIds.add(String(resolvedId));
-                                return {
-                                    ...module,
-                                    id: String(resolvedId)
-                                };
-                            });
+	                        const seenModuleIds = new Set();
+	                        modulesForDisplay = modulesForDisplay
+	                            .filter(module => module && module.title)
+	                            .map((module, index) => {
+	                                const resolvedId = toStringId(module.id) || resolveCanonicalModuleId(module, index);
+	                                return {
+	                                    ...module,
+	                                    id: String(resolvedId)
+	                                };
+	                            })
+	                            .filter(module => {
+	                                if (seenModuleIds.has(module.id)) {
+	                                    return false;
+	                                }
+	                                seenModuleIds.add(module.id);
+	                                return true;
+	                            });
 
                         // Calculate year distribution
                         const totalModules = modulesForDisplay.length;
@@ -1992,7 +2708,10 @@
                                 id: moduleNode.id,
                                 label: moduleNode.title,
                                 year: year,
-                                order: moduleNode.order || index
+                                order: moduleNode.order || index,
+                                clusterId: moduleNode.cluster_id || moduleNode.clusterId || null,
+                                clusterLabel: moduleNode.cluster_label || moduleNode.clusterLabel || null,
+                                clusterIndex: moduleNode.cluster_index || moduleNode.clusterIndex || null
                             };
                         });
 
@@ -2006,16 +2725,56 @@
                             }
                         });
 
-                        const moduleIdSet = new Set(nodesData.map(n => String(n.id)));
-                        let edgesData = (graphData.edges || [])
-                            .map(edge => ({ from: String(edge.source), to: String(edge.target) }))
-                            .filter(edge => moduleIdSet.has(edge.from) && moduleIdSet.has(edge.to));
+	                        const moduleIdSet = new Set(nodesData.map(n => String(n.id)));
+	                        const moduleIdByTitle = new Map(
+	                            nodesData.map(node => [normalizeTitle(node.label), String(node.id)])
+	                        );
+	                        const resolveEndpointToModuleId = (endpointValue) => {
+	                            if (!endpointValue) return null;
+	                            if (moduleIdSet.has(endpointValue)) return endpointValue;
+	                            return moduleIdByTitle.get(normalizeTitle(endpointValue)) || null;
+	                        };
+	                        const normalizeEdge = (edge) => {
+	                            if (!edge || typeof edge !== 'object') return null;
+	                            const fromRaw = pickFirstPresent(
+	                                edge.source,
+	                                edge.from,
+	                                edge.source_id,
+	                                edge.sourceId,
+	                                edge.src,
+	                                edge.u
+	                            );
+	                            const toRaw = pickFirstPresent(
+	                                edge.target,
+	                                edge.to,
+	                                edge.target_id,
+	                                edge.targetId,
+	                                edge.dst,
+	                                edge.v
+	                            );
+	                            const fromId = resolveEndpointToModuleId(fromRaw);
+	                            const toId = resolveEndpointToModuleId(toRaw);
+	                            if (!fromId || !toId) return null;
+	                            return { from: fromId, to: toId };
+	                        };
+	                        const filterModuleEdges = (edgeCollection) => {
+	                            const dedupe = new Set();
+	                            return (edgeCollection || [])
+	                                .map(normalizeEdge)
+	                                .filter(Boolean)
+	                                .filter(edge => moduleIdSet.has(edge.from) && moduleIdSet.has(edge.to))
+	                                .filter(edge => {
+	                                    const signature = `${edge.from}->${edge.to}`;
+	                                    if (dedupe.has(signature)) return false;
+	                                    dedupe.add(signature);
+	                                    return true;
+	                                });
+	                        };
+	                        let edgesData = filterModuleEdges(graphData.edges);
 
-                        if (edgesData.length === 0 && fullRoadmap && Array.isArray(fullRoadmap.edges)) {
-                            edgesData = fullRoadmap.edges
-                                .map(edge => ({ from: String(edge.source), to: String(edge.target) }))
-                                .filter(edge => moduleIdSet.has(edge.from) && moduleIdSet.has(edge.to));
-                        }
+	                        if (edgesData.length === 0 && fullRoadmap && Array.isArray(fullRoadmap.edges)) {
+	                            edgesData = filterModuleEdges(fullRoadmap.edges);
+	                        }
 
                         const roadmapTitle = (fullRoadmap && fullRoadmap.title) || graphData.roadmap_title || 'Roadmap';
                         const progressValue = graphData.overall_progress_percent || (fullRoadmap && fullRoadmap.overall_progress_percent) || 0;
