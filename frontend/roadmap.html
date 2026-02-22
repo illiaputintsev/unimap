@@ -37,7 +37,7 @@
         }
         h1 {
             text-align: center;
-            color: #1abc9c;
+            color: #83AF9B;
             margin: 10px 0 5px;
             font-size: 32px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
@@ -72,7 +72,7 @@
             transform: translateY(-50%);
             background-color: white;
             padding: 30px;
-            border: 3px solid #1abc9c;
+            border: 3px solid #83AF9B;
             border-radius: 15px;
             box-shadow: 0 15px 50px rgba(220, 53, 69, 0.3);
             z-index: 2000;
@@ -83,8 +83,8 @@
         }
         .modal h2 {
             margin-top: 0;
-            color: #1abc9c;
-            border-bottom: 2px solid #1abc9c;
+            color: #83AF9B;
+            border-bottom: 2px solid #83AF9B;
             padding-bottom: 10px;
         }
         .modal-close {
@@ -93,12 +93,12 @@
             right: 20px;
             cursor: pointer;
             font-size: 28px;
-            color: #1abc9c;
+            color: #83AF9B;
             font-weight: bold;
             transition: color 0.3s;
         }
         .modal-close:hover {
-            color: #16a085;
+            color: #6d9b89;
         }
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -128,7 +128,7 @@
             left: 15px;
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            background: linear-gradient(135deg, #83AF9B 0%, #6d9b89 100%);
             border: none;
             border-radius: 10px;
             cursor: pointer;
@@ -142,9 +142,7 @@
             transition: all 0.3s;
         }
         #menu-btn:hover {
-            background: linear-gradient(135deg, #16a085 0%, #a01810 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
+            transform: scale(1.1);
         }
         #menu-btn span {
             display: block;
@@ -179,7 +177,7 @@
         }
         #menu-dropdown a:hover {
             background-color: #fff5f5;
-            color: #1abc9c;
+            color: #83AF9B;
         }
         .menu-section {
             background-color: #f9f9f9;
@@ -210,7 +208,7 @@
         #module-input-container button {
             width: 100%;
             padding: 8px;
-            background-color: #1abc9c;
+            background-color: #83AF9B;
             color: white;
             border: none;
             border-radius: 4px;
@@ -219,7 +217,7 @@
             font-weight: 600;
         }
         #module-input-container button:hover {
-            background-color: #16a085;
+            background-color: #6d9b89;
         }
         /* User info */
         #user-info {
@@ -229,9 +227,9 @@
             background: linear-gradient(135deg, white 0%, #fff5f5 100%);
             padding: 10px 18px;
             border-radius: 20px;
-            box-shadow: 0 3px 10px rgba(26, 188, 156, 0.15);
+            box-shadow: 0 3px 10px rgba(131, 175, 155, 0.15);
             font-size: 13px;
-            color: #1abc9c;
+            color: #83AF9B;
             z-index: 999;
             border: 2px solid #c8f7f0;
             font-weight: 600;
@@ -243,7 +241,7 @@
             width: 35px;
             height: 35px;
             border-radius: 50%;
-            border: 2px solid #1abc9c;
+            border: 2px solid #83AF9B;
             object-fit: cover;
             display: none;
         }
@@ -258,7 +256,7 @@
             transition: all 0.2s ease;
         }
         .node-hover-glow {
-            filter: drop-shadow(0 0 15px rgba(26, 188, 156, 0.6));
+            filter: drop-shadow(0 0 15px rgba(131, 175, 155, 0.6));
             transform: scale(1.1);
         }
         
@@ -318,7 +316,7 @@
             <button onclick="addModuleToRoadmap()">Add Module</button>
         </div>
         
-        <div class="menu-section">⚙️ Navigation</div>        <a href="profile.html">⚙️ Profile</a>
+        <a href="profile.html">⚙️ Profile</a>
         <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">🗺️ My Roadmaps</a>
         <a href="#" onclick="openAchievements(); return false;">🏆 Achievements</a>
         <a href="progress.html">📊 Your Progress</a>
@@ -332,16 +330,16 @@
     <div id="user-info">
         <img id="profile-pic-avatar" alt="Profile">
         <span id="username">Guest</span>
-        <span id="user-level" style="margin-left: 8px; padding: 4px 10px; background: linear-gradient(135deg, #ffa500, #ff8c00); color: white; border-radius: 12px; font-size: 13px; font-weight: 700;">Lvl: 1</span>
+        <span id="user-level" style="margin-left: 8px; padding: 4px 10px; background: linear-gradient(135deg, #FC9D9A, #FE4365); color: white; border-radius: 12px; font-size: 13px; font-weight: 700;">Lvl: 1</span>
     </div>
 
 
 
     <h1>Student Roadmap</h1>
     <div id="header-progress-bar" style="display:flex; align-items:center; justify-content:center; gap:10px; margin:8px auto; max-width:260px;">
-        <div style="position:relative; width:180px; height:28px; border:2.5px solid #1abc9c; border-radius:7px; background:#e8f8f5; overflow:hidden;">
-            <div id="header-progress-fill" style="height:100%; width:0%; background:linear-gradient(90deg,#1abc9c 0%,#16a085 100%); border-radius:4px; transition:width 0.5s ease;"></div>
-            <span id="header-progress-text" style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#16a085;">0%</span>
+        <div style="position:relative; width:180px; height:28px; border:2.5px solid #83AF9B; border-radius:7px; background:#e8f0ed; overflow:hidden;">
+            <div id="header-progress-fill" style="height:100%; width:0%; background:linear-gradient(90deg,#83AF9B 0%,#6d9b89 100%); border-radius:4px; transition:width 0.5s ease;"></div>
+            <span id="header-progress-text" style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#6d9b89;">0%</span>
         </div>
     </div>
     <p id="input-display"></p>
@@ -352,7 +350,7 @@
         <span class="modal-close" onclick="closeModal()">&times;</span>
         <h2 id="modal-title"></h2>
         <p id="modal-content"></p>
-        <button id="quiz-button" style="margin-top: 15px; padding: 10px 20px; background-color: #1abc9c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="openQuiz()">📝 Take Quiz</button>
+        <button id="quiz-button" style="margin-top: 15px; padding: 10px 20px; background-color: #83AF9B; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="openQuiz()">📝 Take Quiz</button>
         <p id="quiz-score" style="margin-top: 10px; font-size: 14px; color: #666; display: none;"></p>
     </div>
 
@@ -517,7 +515,7 @@
             const response = await ApiService.listRoadmaps();
             if (!response.ok) {
                 modal.innerHTML = '<h2>🗺️ My Roadmaps</h2><p style="color: #c33; text-align: center; padding: 20px;">Failed to load roadmaps.</p>' +
-                    '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
+                    '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #83AF9B; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
                 return;
             }
 
@@ -530,7 +528,7 @@
             if (!modal) return;
 
             const editBtnLabel = myRoadmapsEditMode ? 'Done' : 'Edit';
-            const editBtnBg = myRoadmapsEditMode ? '#16a085' : '#1abc9c';
+            const editBtnBg = myRoadmapsEditMode ? '#6d9b89' : '#83AF9B';
             let html = `<div style="display:flex; align-items:center; justify-content:space-between;">
                 <h2 style="margin:0; border-bottom:none; padding-bottom:0;">🗺️ My Roadmaps</h2>
                 <button onclick="toggleMyRoadmapsEdit()" style="padding:6px 16px; background:${editBtnBg}; color:white; border:none; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer;">${editBtnLabel}</button>
@@ -546,18 +544,18 @@
 
                     if (myRoadmapsEditMode) {
                         html += `
-                            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; border-left: 4px solid #1abc9c;">
-                                <input id="rename-${roadmap.id}" type="text" value="${title.replace(/"/g, '&quot;')}" style="width:100%; padding:6px 8px; border:2px solid #1abc9c; border-radius:6px; font-size:14px; font-weight:600; box-sizing:border-box; margin-bottom:8px;">
+                            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; border-left: 4px solid #83AF9B;">
+                                <input id="rename-${roadmap.id}" type="text" value="${title.replace(/"/g, '&quot;')}" style="width:100%; padding:6px 8px; border:2px solid #83AF9B; border-radius:6px; font-size:14px; font-weight:600; box-sizing:border-box; margin-bottom:8px;">
                                 <small style="color: #999;">${dateText}</small>
                                 <div style="display:flex; gap:8px; margin-top:8px;">
-                                    <button onclick="renameRoadmap(${roadmap.id})" style="flex:1; padding:7px; background:#1abc9c; color:white; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">✓ Save Name</button>
-                                    <button onclick="deleteRoadmap(${roadmap.id}, '${title.replace(/'/g, "\\'")}')" style="flex:1; padding:7px; background:#e74c3c; color:white; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">🗑 Delete</button>
+                                    <button onclick="renameRoadmap(${roadmap.id})" style="flex:1; padding:7px; background:#83AF9B; color:white; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">✓ Save Name</button>
+                                    <button onclick="deleteRoadmap(${roadmap.id}, '${title.replace(/'/g, "\\'")}')" style="flex:1; padding:7px; background:#FE4365; color:white; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">🗑 Delete</button>
                                 </div>
                             </div>
                         `;
                     } else {
                         html += `
-                            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #1abc9c;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapById(${roadmap.id})">
+                            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #83AF9B;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapById(${roadmap.id})">
                                 <strong>${title}</strong><br>
                                 <small style="color: #999;">${dateText}</small>
                             </div>
@@ -567,7 +565,7 @@
                 html += '</div>';
             }
 
-            html += '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
+            html += '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #83AF9B; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
             modal.innerHTML = html;
         }
 
@@ -763,7 +761,7 @@
                 const box = document.createElement('div');
                 box.className = 'fallback-node-box';
                 box.textContent = node.label;
-                box.style.backgroundColor = '#1abc9c';
+                box.style.backgroundColor = '#83AF9B';
                 box.style.color = 'white';
                 box.style.padding = '20px 30px';
                 box.style.borderRadius = '8px';
@@ -778,7 +776,7 @@
                 
                 box.addEventListener('mouseenter', () => {
                     box.style.transform = 'translateY(-5px)';
-                    box.style.boxShadow = '0 10px 20px rgba(26, 188, 156, 0.3)';
+                    box.style.boxShadow = '0 10px 20px rgba(131, 175, 155, 0.3)';
                 });
                 
                 box.addEventListener('mouseleave', () => {
@@ -1951,7 +1949,7 @@
                                     ${clusterInfo}
                                     <div style="font-size: 14px; color: #555;">${moduleData.description || 'Module details coming soon.'}</div>
                                     ${relatedModulesHtml}
-                                    <div style="margin-top: 10px; font-weight: 600; color: #1abc9c;">Topics</div>
+                                    <div style="margin-top: 10px; font-weight: 600; color: #83AF9B;">Topics</div>
                                     ${topicsHtml}
                                 `;
                             } else {
@@ -2249,11 +2247,11 @@
             allAchievements.forEach(achievement => {
                 const earned = userAchievements.includes(achievement.id);
                 html += `
-                    <div style="padding: 12px; border-radius: 8px; background: ${earned ? '#f0f9f8' : '#f5f5f5'}; border: 2px solid ${earned ? '#1abc9c' : '#ddd'}; text-align: center; opacity: ${earned ? '1' : '0.6'};">
+                    <div style="padding: 12px; border-radius: 8px; background: ${earned ? '#e8f0ed' : '#f5f5f5'}; border: 2px solid ${earned ? '#83AF9B' : '#ddd'}; text-align: center; opacity: ${earned ? '1' : '0.6'};">
                         <div style="font-size: 24px; margin-bottom: 5px;">${achievement.icon}</div>
-                        <strong style="font-size: 12px; display: block; color: #1abc9c;">${achievement.name}</strong>
+                        <strong style="font-size: 12px; display: block; color: #83AF9B;">${achievement.name}</strong>
                         <small style="color: #666; display: block; margin-top: 5px;">${achievement.description}</small>
-                        ${earned ? '<small style="color: #1abc9c; display: block; margin-top: 5px;">✓ Earned</small>' : '<small style="color: #999;">Locked</small>'}
+                        ${earned ? '<small style="color: #83AF9B; display: block; margin-top: 5px;">✓ Earned</small>' : '<small style="color: #999;">Locked</small>'}
                     </div>
                 `;
             });
@@ -2263,7 +2261,7 @@
             // Show in modal
             const modal = document.querySelector('.modal');
             if (modal) {
-                modal.innerHTML = html + '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
+                modal.innerHTML = html + '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #83AF9B; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
                 modal.style.display = 'block';
             }
         }
@@ -2348,7 +2346,7 @@
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+                background: linear-gradient(135deg, #FC9D9A 0%, #FE4365 100%);
                 color: white;
                 padding: 30px 50px;
                 border-radius: 15px;
@@ -2356,7 +2354,7 @@
                 font-weight: bold;
                 z-index: 3000;
                 text-align: center;
-                box-shadow: 0 10px 40px rgba(255, 140, 0, 0.4);
+                box-shadow: 0 10px 40px rgba(254, 67, 101, 0.4);
                 animation: levelUpPop 0.6s ease-out;
             `;
             

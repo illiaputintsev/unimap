@@ -43,7 +43,7 @@
             display: block;
             width: 25px;
             height: 3px;
-            background-color: #1abc9c;
+            background-color: #83AF9B;
             margin: 3px 0;
             border-radius: 2px;
         }
@@ -72,7 +72,7 @@
         }
         #menu-dropdown a:hover {
             background-color: #f5f5f5;
-            color: #1abc9c;
+            color: #83AF9B;
         }
         /* Auth buttons (top right) */
         .auth-buttons {
@@ -85,7 +85,7 @@
         }
         .auth-btn {
             padding: 10px 20px;
-            border: 2px solid #1abc9c;
+            border: 2px solid #83AF9B;
             border-radius: 25px;
             font-size: 14px;
             font-weight: 600;
@@ -96,19 +96,19 @@
         }
         .auth-btn.login {
             background-color: white;
-            color: #1abc9c;
+            color: #83AF9B;
         }
         .auth-btn.login:hover {
-            background-color: #1abc9c;
+            background-color: #83AF9B;
             color: white;
         }
         .auth-btn.signup {
-            background-color: #1abc9c;
+            background-color: #83AF9B;
             color: white;
         }
         .auth-btn.signup:hover {
-            background-color: #b52a3a;
-            border-color: #b52a3a;
+            background-color: #d93757;
+            border-color: #d93757;
         }
         /* User info when logged in */
         #user-info {
@@ -120,7 +120,7 @@
             border-radius: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             font-size: 14px;
-            color: #1abc9c;
+            color: #83AF9B;
             z-index: 1000;
             display: none;
         }
@@ -136,7 +136,7 @@
         }
         h1 {
             text-align: center;
-            color: #1abc9c;
+            color: #83AF9B;
             margin-bottom: 10px;
             font-size: 32px;
         }
@@ -168,7 +168,7 @@
         input[type="text"]:focus,
         select:focus {
             outline: none;
-            border-color: #1abc9c;
+            border-color: #83AF9B;
         }
         select {
             cursor: pointer;
@@ -178,7 +178,7 @@
             display: block;
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            background: linear-gradient(135deg, #83AF9B 0%, #6d9b89 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -194,7 +194,7 @@
         }
         .info-box {
             background-color: #fff5f5;
-            border-left: 4px solid #1abc9c;
+            border-left: 4px solid #83AF9B;
             padding: 15px;
             border-radius: 5px;
             margin-top: 20px;
@@ -204,12 +204,69 @@
         .loading {
             display: none;
             text-align: center;
-            margin-top: 20px;
-            color: #1abc9c;
+            margin-top: 25px;
+            color: #83AF9B;
             position: relative;
             z-index: 100;
             font-size: 16px;
             font-weight: 600;
+        }
+        .loading-track {
+            position: relative;
+            width: 100%;
+            height: 80px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .loading-bar-bg {
+            position: absolute;
+            bottom: 18px;
+            left: 40px;
+            right: 40px;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .loading-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #83AF9B, #6d9b89);
+            border-radius: 5px;
+            transition: width 0.4s ease;
+        }
+        .loading-home {
+            position: absolute;
+            bottom: 30px;
+            left: 6px;
+            font-size: 28px;
+        }
+        .loading-uni {
+            position: absolute;
+            bottom: 30px;
+            right: 6px;
+            font-size: 28px;
+        }
+        .loading-runner {
+            position: absolute;
+            bottom: 26px;
+            left: 40px;
+            font-size: 32px;
+            transition: left 0.4s ease;
+            z-index: 2;
+            transform: scaleX(-1);
+        }
+        .loading-runner.running .runner-icon {
+            animation: runBounce 0.35s ease-in-out infinite;
+        }
+        @keyframes runBounce {
+            0%, 100% { transform: translateY(0) scaleX(1); }
+            50% { transform: translateY(-6px) scaleX(1); }
+        }
+        .loading-status {
+            margin-top: 6px;
+            font-size: 14px;
+            color: #888;
         }
         /* Walking student animation */
         .road {
@@ -380,14 +437,14 @@
 
             <div id="draft-modules-section" style="display: none; margin-top: 10px; background: #f7fffd; border: 2px solid #c8f7f0; border-radius: 10px; padding: 15px; position: relative;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <div style="font-weight: 700; color: #1abc9c;">Generated Module Draft</div>
-                    <button type="button" id="add-module-btn" style="padding: 6px 10px; border: none; border-radius: 6px; background: #1abc9c; color: white; font-size: 12px; font-weight: 700; cursor: pointer;">+ Add</button>
+                    <div style="font-weight: 700; color: #83AF9B;">Generated Module Draft</div>
+                    <button type="button" id="add-module-btn" style="padding: 6px 10px; border: none; border-radius: 6px; background: #83AF9B; color: white; font-size: 12px; font-weight: 700; cursor: pointer;">+ Add</button>
                 </div>
                 <p id="draft-modules-status" style="font-size: 13px; color: #666; margin-bottom: 10px;"></p>
                 <ul id="draft-modules-list" style="margin: 0; padding-left: 18px; color: #333; font-size: 14px; line-height: 1.6;"></ul>
                 <div id="draft-module-actions" style="display: none; position: absolute; top: 15px; right: 80px; z-index: 2000; gap: 8px;">
-                    <button type="button" id="edit-module-btn" style="padding: 6px 10px; border: none; border-radius: 6px; background: #1abc9c; color: white; font-size: 12px; font-weight: 700; cursor: pointer;">Edit</button>
-                    <button type="button" id="delete-module-btn" style="padding: 6px 10px; border: none; border-radius: 6px; background: #e74c3c; color: white; font-size: 12px; font-weight: 700; cursor: pointer;">Delete</button>
+                    <button type="button" id="edit-module-btn" style="padding: 6px 10px; border: none; border-radius: 6px; background: #83AF9B; color: white; font-size: 12px; font-weight: 700; cursor: pointer;">Edit</button>
+                    <button type="button" id="delete-module-btn" style="padding: 6px 10px; border: none; border-radius: 6px; background: #FE4365; color: white; font-size: 12px; font-weight: 700; cursor: pointer;">Delete</button>
                 </div>
             </div>
 
@@ -399,6 +456,17 @@
 
             <div class="loading" id="loading">
                 <p>🔄 Generating your personalized roadmap...</p>
+                <div class="loading-track">
+                    <span class="loading-home">🏠</span>
+                    <span class="loading-uni">🏫</span>
+                    <div class="loading-bar-bg">
+                        <div class="loading-bar-fill" id="loading-bar-fill"></div>
+                    </div>
+                    <div class="loading-runner running" id="loading-runner">
+                        <span class="runner-icon" id="runner-icon">🏃</span>
+                    </div>
+                </div>
+                <div class="loading-status" id="loading-status">Preparing your modules...</div>
             </div>
         </form>
     </div>
@@ -499,7 +567,7 @@
             listItems.forEach((li, index) => {
                 if (index === selectedModuleIndex) {
                     li.style.background = '#e9fffb';
-                    li.style.border = '1px solid #1abc9c';
+                    li.style.border = '1px solid #83AF9B';
                 } else {
                     li.style.background = 'transparent';
                     li.style.border = '1px solid transparent';
@@ -680,6 +748,67 @@
             });
         }
 
+        let loadingInterval = null;
+        let loadingProgress = 0;
+
+        function startLoadingAnimation() {
+            loadingProgress = 0;
+            const fill = document.getElementById('loading-bar-fill');
+            const runner = document.getElementById('loading-runner');
+            const icon = document.getElementById('runner-icon');
+            const status = document.getElementById('loading-status');
+            if (fill) fill.style.width = '0%';
+            if (runner) { runner.style.left = '40px'; runner.classList.add('running'); }
+            if (icon) icon.textContent = '🏃';
+            if (status) status.textContent = 'Preparing your modules...';
+
+            const trackEl = document.querySelector('.loading-track');
+            const trackWidth = trackEl ? trackEl.offsetWidth : 400;
+            const runnerStart = 40;
+            const runnerEnd = trackWidth - 72;
+
+            const messages = [
+                'Preparing your modules...',
+                'Analysing course structure...',
+                'Building module connections...',
+                'Mapping your learning path...',
+                'Almost at the university...'
+            ];
+
+            loadingInterval = setInterval(() => {
+                loadingProgress = Math.min(loadingProgress + 2, 95);
+                const pct = loadingProgress;
+                if (fill) fill.style.width = pct + '%';
+                if (runner) {
+                    const pos = runnerStart + ((runnerEnd - runnerStart) * pct / 100);
+                    runner.style.left = pos + 'px';
+                }
+                const msgIdx = Math.min(Math.floor(pct / 20), messages.length - 1);
+                if (status) status.textContent = messages[msgIdx];
+            }, 250);
+        }
+
+        function finishLoadingAnimation() {
+            if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null; }
+            const fill = document.getElementById('loading-bar-fill');
+            const runner = document.getElementById('loading-runner');
+            const icon = document.getElementById('runner-icon');
+            const status = document.getElementById('loading-status');
+
+            const trackEl = document.querySelector('.loading-track');
+            const trackWidth = trackEl ? trackEl.offsetWidth : 400;
+
+            if (fill) fill.style.width = '100%';
+            if (runner) { runner.style.left = (trackWidth - 72) + 'px'; runner.classList.remove('running'); }
+            if (icon) icon.textContent = '🧑‍🎓';
+            if (status) status.textContent = 'Roadmap ready! Redirecting...';
+        }
+
+        function resetLoadingAnimation() {
+            if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null; }
+            loadingProgress = 0;
+        }
+
         // Generate roadmap function
         async function generateRoadmap(event) {
             event.preventDefault();
@@ -697,6 +826,7 @@
             const loading = document.getElementById('loading');
             
             loading.style.display = 'block';
+            startLoadingAnimation();
 
             try {
                 let roadmapResponse;
@@ -759,8 +889,12 @@
                     localStorage.setItem(cacheKey, JSON.stringify(existingCache));
                 }
 
-                window.location.href = `roadmap.html?roadmap_id=${roadmapId}`;
+                finishLoadingAnimation();
+                setTimeout(() => {
+                    window.location.href = `roadmap.html?roadmap_id=${roadmapId}`;
+                }, 800);
             } catch (error) {
+                resetLoadingAnimation();
                 loading.style.display = 'none';
                 alert('Error generating roadmap: ' + error.message);
                 console.error('Error:', error);

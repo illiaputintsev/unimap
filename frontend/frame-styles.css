@@ -2,8 +2,8 @@
 
 /* No Frame */
 .profile-pic-none {
-    border: 3px solid #1abc9c;
-    box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
+    border: 3px solid #83AF9B;
+    box-shadow: 0 0 0 2px rgba(131, 175, 155, 0.2);
 }
 
 /* Basic Frame - Gray */
@@ -14,8 +14,8 @@
 
 /* Intermediary Frame - Orange Gold */
 .profile-pic-intermediary {
-    border: 5px solid #ff8c00;
-    box-shadow: 0 0 0 2px white, 0 0 0 7px #ff8c00, 0 0 20px rgba(255, 140, 0, 0.5);
+    border: 5px solid #FE4365;
+    box-shadow: 0 0 0 2px white, 0 0 0 7px #FE4365, 0 0 20px rgba(254, 67, 101, 0.5);
 }
 
 /* Master Frame - Gold */
