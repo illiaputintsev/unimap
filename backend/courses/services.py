@@ -1292,6 +1292,188 @@ class CourseModuleDraftService:
         return max(0.0, min(1.0, score))
 
 
+class CourseModuleGraphService:
+    """Builds module dependency adjacency matrices using Gemini (with deterministic fallback)."""
+
+    def __init__(self, enable_ai=True, request_timeout=60):
+        self.enable_ai = enable_ai
+        self.request_timeout = max(10, min(int(request_timeout or 60), 120))
+        self.api_key = getattr(settings, "GEMINI_API_KEY", "")
+        self.model = getattr(
+            settings,
+            "GEMINI_MODULES_MODEL",
+            getattr(settings, "GEMINI_MODEL", "gemini-2.5-flash"),
+        )
+
+    @property
+    def is_ai_configured(self):
+        return bool(self.api_key)
+
+    def build_graph(self, course, modules, threshold=0.55, max_outgoing=3):
+        normalized_modules = _normalize_user_modules(modules or [], limit=60)
+        if len(normalized_modules) < 2:
+            raise ValueError("At least 2 modules are required to build a dependency graph.")
+
+        if self.enable_ai and not self.api_key:
+            raise RuntimeError("Gemini is not configured.")
+
+        if self.enable_ai:
+            raw_matrix = self._generate_with_gemini(course=course, modules=normalized_modules)
+            source = "gemini"
+        else:
+            raw_matrix = [[0.0 for _ in normalized_modules] for _ in normalized_modules]
+            source = "heuristic_empty"
+
+        matrix = self._normalize_matrix(
+            matrix=raw_matrix,
+            module_count=len(normalized_modules),
+            threshold=threshold,
+            max_outgoing=max_outgoing,
+        )
+        return {
+            "modules": normalized_modules,
+            "adjacency_matrix": matrix,
+            "source": source,
+        }
+
+    def _generate_with_gemini(self, course, modules):
+        prompt = self._build_prompt(course=course, modules=modules)
+        parsed, _ = self._request_gemini_json(prompt)
+        matrix = parsed.get("adjacency_matrix")
+        if not isinstance(matrix, list):
+            raise RuntimeError("Gemini output missing adjacency_matrix.")
+        return matrix
+
+    def _request_gemini_json(self, prompt):
+        endpoint = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
+            f"?key={self.api_key}"
+        )
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "responseMimeType": "application/json",
+                "responseSchema": self._gemini_response_schema(),
+                "temperature": 0.1,
+            },
+        }
+
+        req = request.Request(
+            endpoint,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        last_error = None
+        for attempt in range(2):
+            timeout = self.request_timeout + (15 * attempt)
+            try:
+                with request.urlopen(req, timeout=timeout) as response:
+                    data = json.loads(response.read().decode("utf-8"))
+                break
+            except error.HTTPError as exc:
+                body = exc.read().decode("utf-8", errors="ignore")
+                raise RuntimeError(f"Gemini HTTP {exc.code}: {body[:160]}") from exc
+            except (error.URLError, TimeoutError) as exc:
+                last_error = exc
+                if attempt == 0:
+                    continue
+                reason = getattr(exc, "reason", exc)
+                raise RuntimeError(f"Gemini network error: {reason}") from exc
+        else:  # pragma: no cover
+            raise RuntimeError(f"Gemini network error: {last_error}")
+
+        text = self._extract_text_from_gemini(data)
+        parsed = self._extract_json(text)
+        if not isinstance(parsed, dict):
+            raise RuntimeError("Gemini output must be a JSON object.")
+        return parsed, None
+
+    def _gemini_response_schema(self):
+        return {
+            "type": "OBJECT",
+            "properties": {
+                "adjacency_matrix": {
+                    "type": "ARRAY",
+                    "items": {
+                        "type": "ARRAY",
+                        "items": {"type": "NUMBER"},
+                    },
+                },
+                "notes": {"type": "STRING"},
+            },
+            "required": ["adjacency_matrix", "notes"],
+        }
+
+    def _build_prompt(self, course, modules):
+        lines = "\n".join(f"{idx + 1}. {title}" for idx, title in enumerate(modules))
+        return (
+            "You are building a directed dependency graph between university modules. "
+            "Return strict JSON only with keys adjacency_matrix and notes.\n"
+            "Rules:\n"
+            "- adjacency_matrix must be N x N where N equals number of modules provided.\n"
+            "- matrix[i][j] is a number in [0,1] representing how much module i supports/is prerequisite for module j.\n"
+            "- diagonal must be 0.\n"
+            "- Keep graph sparse: only meaningful links, not every module connected.\n"
+            "- Use strong links only when skills transfer is realistic (e.g., algorithms -> robotics).\n"
+            "- If unsure, use 0.\n"
+            f"Course: {course.title}\n"
+            f"Subject area: {course.subject_area or 'not provided'}\n"
+            f"Modules:\n{lines}"
+        )
+
+    def _normalize_matrix(self, matrix, module_count, threshold=0.55, max_outgoing=3):
+        clean = [[0.0 for _ in range(module_count)] for _ in range(module_count)]
+
+        for i in range(module_count):
+            row = matrix[i] if i < len(matrix) and isinstance(matrix[i], list) else []
+            weighted_targets = []
+            for j in range(module_count):
+                if i == j:
+                    continue
+                raw = row[j] if j < len(row) else 0
+                try:
+                    value = float(raw)
+                except (TypeError, ValueError):
+                    value = 0.0
+                value = max(0.0, min(1.0, value))
+                if value >= threshold:
+                    weighted_targets.append((j, value))
+
+            weighted_targets.sort(key=lambda pair: pair[1], reverse=True)
+            for target_index, value in weighted_targets[:max_outgoing]:
+                clean[i][target_index] = round(value, 3)
+
+        return clean
+
+    def _extract_text_from_gemini(self, response):
+        candidates = response.get("candidates", [])
+        if not candidates:
+            raise RuntimeError("Gemini returned no candidates")
+
+        parts = candidates[0].get("content", {}).get("parts", [])
+        text_chunks = [part.get("text", "") for part in parts if part.get("text")]
+        if not text_chunks:
+            raise RuntimeError("Gemini response did not include text content")
+        return "\n".join(text_chunks)
+
+    def _extract_json(self, text):
+        stripped = text.strip()
+        if stripped.startswith("```"):
+            stripped = stripped.strip("`")
+            if stripped.startswith("json"):
+                stripped = stripped[4:].strip()
+
+        if stripped.startswith("{"):
+            return json.loads(stripped)
+
+        start = stripped.find("{")
+        end = stripped.rfind("}")
+        if start == -1 or end == -1 or end <= start:
+            raise RuntimeError("Gemini output did not contain JSON object")
+        return json.loads(stripped[start : end + 1])
+
+
 class DiscoverUniCatalogService:
     """Fetches and imports university/course catalog data from a Discover Uni compatible endpoint."""
 

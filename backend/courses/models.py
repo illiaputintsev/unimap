@@ -35,3 +35,27 @@ class Course(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.university})"
+
+
+class CourseModule(models.Model):
+    SOURCE_DRAFT = "draft"
+    SOURCE_CONFIRMED = "confirmed"
+    SOURCE_CHOICES = (
+        (SOURCE_DRAFT, "Draft"),
+        (SOURCE_CONFIRMED, "Confirmed"),
+    )
+
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="module_records")
+    title = models.CharField(max_length=255)
+    order = models.PositiveSmallIntegerField(default=0)
+    source = models.CharField(max_length=16, choices=SOURCE_CHOICES, default=SOURCE_DRAFT)
+    is_confirmed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("order", "id")
+        unique_together = ("course", "title")
+
+    def __str__(self):
+        return f"{self.title} [{self.source}]"

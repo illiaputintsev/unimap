@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     CourseListAPIView,
+    CourseModuleGraphAPIView,
     CourseModulesAPIView,
     CourseModulesConfirmAPIView,
     CourseModulesDraftAPIView,
@@ -19,6 +20,11 @@ urlpatterns = [
         "courses/<int:course_id>/modules/confirm/",
         CourseModulesConfirmAPIView.as_view(),
         name="course-modules-confirm",
+    ),
+    path(
+        "courses/<int:course_id>/modules/graph/",
+        CourseModuleGraphAPIView.as_view(),
+        name="course-modules-graph",
     ),
     path("discover-uni/sync/", DiscoverUniSyncAPIView.as_view(), name="discover-uni-sync"),
 ]
