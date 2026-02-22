@@ -1,160 +1,198 @@
-Version 7.4 Produced 2025-08-04
+# StudentRoadmap
 
-National Student Survey
+An AI-powered learning platform that generates personalised academic roadmaps for university students. Students search for their course, get an AI-generated module dependency graph, and track their progress through quizzes and topic mastery.
 
-The National Student Survey was updated in 2025 following a major review and consultation. As a result, the survey questions and response scales have changed for NSS 2025. The updated survey asks students in the UK questions about a range of factors related to their academic experience, including the teaching on their course, assessment and feedback, and how well courses are organised. The 2025 survey also asked students about mental wellbeing services and, in England, about freedom of expression for the first time. New direct questions with item-specific response scales have been introduced to improve students� understanding and to enhance the accuracy of results.
+---
 
-As the 2025 survey has been updated, it is not valid to either compare question responses or combine data from the NSS 2025 with those from previous years. Therefore, the NSS data displayed in the Discover Uni dataset is for two years, taken from students who were in their final year of their higher education course during the academic years 2023-2024 and 2024-2025.
+## Features
 
-For more information on the use of the data: https://www.officeforstudents.org.uk/advice-and-guidance/student-information-and-data/national-student-survey-nss/
+- **Course discovery** — search UK universities and courses via Discover Uni data
+- **AI roadmap generation** — Gemini extracts modules, builds a dependency graph, and lays out a visual roadmap
+- **Interactive graph** — vis-network visualisation with clusters, draggable modal, and progress badges on nodes
+- **Module workspace** — AI-generated topics, three quiz modes (Practice, Focused, Mock Exam), PDF note upload
+- **Progress tracking** — per-topic mastery percentages, overall progress bar, level and XP system
+- **Achievements** — badge system tied to progress milestones
+- **User profiles** — saved roadmaps, statistics, shareable links
 
-Teaching and Excellence Framework (TEF)
+---
 
-From 11th October 2023, the TEF ratings for participating providers will be included in the Discover Uni dataset. The TEF is a national scheme run by the Office for Students (OfS) that aims to encourage higher education providers to improve and deliver excellence in the areas that students care about the most: teaching, learning and achieving positive outcomes from their studies.  The TEF does this by assessing and rating universities and colleges for excellence above a set of minimum requirements for quality and standards. Providers that take part in the TEF receive an overall rating as well as two underpinning ratings � one for the student experience and one for student outcomes. 
+## Tech Stack
 
-The Discover Uni .csv files have been included in this folder to enable users to load .csv versions of the kis.xml file entities into their databases for analysis.
+| Layer | Technology |
+|---|---|
+| Frontend | HTML5, CSS3, Vanilla JS, [vis-network](https://visjs.github.io/vis-network/) |
+| Backend | Django 6, Django REST Framework, SimpleJWT |
+| Database | PostgreSQL (prod), SQLite3 (dev) |
+| AI | Google Gemini 2.5 Flash |
+| Storage | Google Cloud Storage (optional) |
+| Deployment | Google Cloud Run (backend + frontend), nginx |
 
-The .csv file structure is based on that created for the Discover Uni output .xml file with some exceptions (see paragraph below). 
+---
 
-This documentation includes details of the parent entity, field description, field type, min/max occurrence, field length and additional notes.  Field information for the .csv lookup tables (ACCREDITATIONTABLE.csv, KISAIM.csv, LOCATION.csv, GOSECSAL.csv, LEO3SECSAL.csv and LEO5SECSAL.csv), plus the two additional .csv entities (UCASCOURSEID.csv and SBJ.csv (created to hold the COURSELOCATION UCASCOURSEID and KISCourse SBJ repeating fields)), can be found in the 'Discover Uni dataset file structure and description' 
+## Project Structure
 
-https://www.hesa.ac.uk/collection/C25061/filestructure
+```
+studentroadmap/
+├── frontend/
+│   ├── index.html          # Home — course search & roadmap generation
+│   ├── roadmap.html        # Interactive roadmap graph
+│   ├── module.html         # Module workspace (topics, quizzes, notes)
+│   ├── quiz.html           # Quiz interface
+│   ├── progress.html       # Progress dashboard
+│   ├── profile.html        # User profile
+│   ├── api-service.js      # API client (all backend calls)
+│   └── theme.css           # Global styles
+├── backend/
+│   ├── config/             # Django settings & URL routing
+│   ├── accounts/           # Auth (register, JWT login)
+│   ├── courses/            # University & course catalog, module drafts
+│   ├── roadmaps/           # Roadmap generation, graph, progress
+│   ├── quizzes/            # Quiz generation, PDF notes, workspace state
+│   ├── requirements.txt
+│   └── manage.py
+├── nginx.conf              # nginx config for frontend Cloud Run service
+├── Dockerfile.frontend     # Docker image for frontend
+├── cloudbuild.yaml         # Cloud Build config
+└── proxy-server.js         # Local CORS proxy for development
+```
 
-The .csv file name, the entity name, the entity description, how to join to other files and additional notes, if applicable, are listed below:
+---
 
-ACCREDITATION.csv, 
-Accreditation entity, 
-Contains information about course accreditation, 
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+## Local Development
 
-ACCREDITATIONTABLE.csv, 
-Accreditation lookup table,
-Contains the accrediting body text and accreditation url for each ACCTYPE,
-Lookup table
-(This lookup table may be linked to the ACCREDITATION entity using ACCTYPE)
+### Prerequisites
 
-COMMON.csv, 
-Common job types entity, 
-Contains information relating to common job types obtained by students taking the course, 
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE,
-Linked to JOBLIST entity using PUBUKPRN, KISCOURSEID, KISMODE and COMSBJ,
-(Note COMSBJ may contain nulls)
+- Python 3.12+
+- PostgreSQL (or use SQLite for dev)
+- Node.js (only for local proxy server)
+- A Google Gemini API key
 
-CONTINUATION.csv,
-Continuation entity,
-Contains continuation information for students on the course,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+### Backend
 
-COURSELOCATION.csv,
-Course location entity,
-Contains details of the KIS course location,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
-Linked to UCASCOURSEID entity using PUBUKPRN, KISCOURSEID, KISMODE and LOCID
-(Note LOCID may contain nulls)
+```bash
+cd backend
 
-EMPLOYMENT.csv,
-Employment statistics entity,
-Contains information relating to student employment outcomes,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+python3.12 -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
 
-ENTRY.csv
-Entry qualifications entity,
-Contains information relating to the entry qualifications of students,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+pip install -r requirements.txt
 
-GOSALARY.csv,
-Salary entity,
-Contains salary information of graduates,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+# Copy and fill in environment variables
+cp .env.example .env
+```
 
-GOSECSAL.csv,
-Sector salary entity,
-Contains sector salary data,
-Linked to KISCOURSE and SBJ entities using GOSECSBJ, KISMODE and KISLEVEL
+`.env` variables:
 
-GOVOICEWORK.csv,
-Graduate voice entity,
-Contains information on graduate voice in relation to work,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+```
+DB_NAME=studentmap_db
+DB_USER=studentdb_user
+DB_PASSWORD=yourpassword
+DB_HOST=127.0.0.1
+DB_PORT=5432
 
-INSTITUTION.csv,
-Institution table,
-This entity describes the reporting institution
-Linked to KISCOURSE entity using PUBUKPRN and UKPRN
+GEMINI_API_KEY=your_gemini_key
+GEMINI_MODEL=gemini-2.5-flash
+```
 
-JOBLIST.csv,
-Job list entity,
-Contains information about common job types obtained by students,
-Linked to COMMON entity using PUBUKPRN, KISCOURSEID, KISMODE and COMSBJ,
-(Note COMSBJ may contain nulls)
+> Leave `DB_*` empty to fall back to SQLite3 automatically.
 
-JOBTYPE.csv,
-Job type entity,
-Contains information relating to the types of profession entered by students,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+```bash
+python manage.py migrate
+python manage.py runserver
+# API available at http://localhost:8000
+```
 
-KISAIM.csv, 
-KIS Aim lookup table,
-Contains the code and label for each KISAIM,
-Lookup table,
-(This lookup table may be linked to the KISCOURSE entity using KISAIMCODE)
+### Frontend
 
-KISCOURSE.csv,
-KIS course entity,
-This entity records details of KIS courses,
-Linked to INSTITUTION entity using PUBUKPRN and UKPRN, and
-Linked to child entities using PUBUKPRN, KISCOURSEID and KISMODE
+```bash
+cd frontend
+python3 -m http.server 5500
+# Open http://localhost:5500
+```
 
-LEO3.csv,
-LEO3 entity,
-Contains Longitudinal Education Outcomes earnings data - 3 year timepoint,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+Or open any `.html` file directly with VS Code Live Server.
 
-LEO3SEC.csv,
-LEO3 sector entity,
-Contains sector Longitudinal Education Outcomes earnings data - 3 year timepoint,
-Linked to KISCOURSE and SBJ entities using LEO3SECSBJ, KISMODE and KISLEVEL
+### Local CORS Proxy (if calling production API from local frontend)
 
-LEO5.csv,
-LEO5 entity,
-Contains Longitudinal Education Outcomes earnings data - 5 year timepoint,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+```bash
+node proxy-server.js
+# Listens on http://127.0.0.1:8081
+```
 
-LEO5SEC.csv,
-LEO5 sector entity,
-Contains sector Longitudinal Education Outcomes earnings data - 5 year timepoint,
-Linked to KISCOURSE and SBJ entities using LEO5SECSBJ, KISMODE and KISLEVEL
+---
 
-LOCATION.csv,
-Location lookup table,
-Contains details for each teaching location,
-Linked to COURSELOCATION using UKPRN and LOCID (to get location information for each KISCOURSEID)
+## Deployment
 
-NSS.csv,
-NSS entity,
-Contains the National Student Survey (NSS) results,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+The project runs two Cloud Run services:
 
-NSSCountry.csv,
-NSSCountry entity,
-Contains the country specific National Student Survey (NSS) results,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+| Service | Description |
+|---|---|
+| `studentroadmap-api` | Django backend |
+| `studentroadmap-frontend` | nginx serving static frontend |
 
-SBJ.csv,
-Subject entity,
-Contains CAH level subject codes for each KISCourse,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+### Deploy frontend
 
-TARIFF.csv,
-Tariff entity,
-Contains information relating to the entry tariff points of students,
-Linked to KISCOURSE entity using PUBUKPRN, KISCOURSEID and KISMODE
+```bash
+# In Cloud Shell at repo root
+git pull origin main
 
-TEFOutcome.csv
-TEFOutcome entity,
-Contains information relating to the Teaching and Excellence Framework (TEF) ratings
+gcloud builds submit --config cloudbuild.yaml --project <PROJECT_ID>
 
-UCASCOURSEID.csv,
-UCASCOURSEID entity,
-Contains UCAS course identifiers for each COURSELOCATION,
-Linked to COURSELOCATION entity using PUBUKPRN, KISCOURSEID, KISMODE and LOCID
+gcloud run deploy studentroadmap-frontend \
+  --image europe-west2-docker.pkg.dev/<PROJECT_ID>/cloud-run-source-deploy/studentroadmap-frontend \
+  --region europe-west2 \
+  --platform managed \
+  --allow-unauthenticated \
+  --port 8080 \
+  --project <PROJECT_ID>
+```
+
+### Deploy backend
+
+```bash
+cd backend
+
+gcloud run deploy studentroadmap-api \
+  --source . \
+  --region europe-west2 \
+  --platform managed \
+  --allow-unauthenticated \
+  --project <PROJECT_ID>
+```
+
+---
+
+## API Overview
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register/` | Register a new user |
+| POST | `/api/auth/token/` | Obtain JWT token pair |
+| POST | `/api/auth/token/refresh/` | Refresh access token |
+| GET | `/api/catalog/universities/` | Search universities |
+| GET | `/api/catalog/courses/` | Search courses |
+| POST | `/api/catalog/courses/{id}/modules/draft/` | AI-generate module draft |
+| POST | `/api/roadmaps/generate/` | Generate a new roadmap |
+| GET | `/api/roadmaps/` | List user's roadmaps |
+| GET | `/api/roadmaps/{id}/graph/` | Get graph (nodes + edges) |
+| PATCH | `/api/roadmaps/{id}/graph/topics/{topic_id}/progress/` | Update topic mastery |
+| POST | `/api/quizzes/module-quiz/generate/` | Generate a quiz |
+| POST | `/api/quizzes/module-notes/` | Upload a PDF note |
+
+---
+
+## Environment Variables Reference
+
+| Variable | Required | Description |
+|---|---|---|
+| `GEMINI_API_KEY` | Yes | Google Gemini API key |
+| `GEMINI_MODEL` | No | Model name (default: `gemini-2.5-flash`) |
+| `DB_NAME` | No | PostgreSQL database name |
+| `DB_USER` | No | PostgreSQL user |
+| `DB_PASSWORD` | No | PostgreSQL password |
+| `DB_HOST` | No | PostgreSQL host |
+| `DB_PORT` | No | PostgreSQL port |
+| `SECRET_KEY` | Yes (prod) | Django secret key |
+| `ALLOWED_HOSTS` | Yes (prod) | Comma-separated allowed hostnames |
+| `CSRF_TRUSTED_ORIGINS` | Yes (prod) | Comma-separated trusted origins |
+| `GCS_BUCKET_NAME` | No | Google Cloud Storage bucket for media |
