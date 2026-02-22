@@ -1771,6 +1771,9 @@
                 const masteryCaption = totalQuestions
                     ? `${accuracy}% · ${correctQuestions}/${totalQuestions} correct · ${attempts} attempt${attempts === 1 ? '' : 's'}`
                     : 'No quiz data yet';
+                const metaChipsHtml = isFocusTarget
+                    ? `<div class="topic-meta"><span class="tiny-chip" style="color:#3f6f5d;border-color:rgba(131,175,155,0.2);background:rgba(232,240,237,0.92);">Focused quiz target</span></div>`
+                    : '';
 
                 return `
                     <div class="topic-row ${isExpanded ? 'expanded' : ''} ${isFocusTarget ? 'topic-focus-active' : ''}" data-topic-id="${escapeHtml(topic.id)}">
@@ -1779,10 +1782,7 @@
                             <div class="topic-topline">
                                 <div class="topic-title-stack">
                                     <div class="topic-title-text">${escapeHtml(topic.title)}</div>
-                                    <div class="topic-meta">
-                                        <span class="tiny-chip">${escapeHtml(topic.source || 'custom')}</span>
-                                        ${isFocusTarget ? '<span class="tiny-chip" style="color:#3f6f5d;border-color:rgba(131,175,155,0.2);background:rgba(232,240,237,0.92);">Focused quiz target</span>' : ''}
-                                    </div>
+                                    ${metaChipsHtml}
                                 </div>
                                 <div class="topic-actions-inline">
                                     <button class="btn-secondary topic-quiz-trigger" type="button" data-action="topic-quiz">Quiz</button>

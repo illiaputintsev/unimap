@@ -64,6 +64,43 @@
             z-index: 1;
             border: 3px solid #e0e0e0;
         }
+        #roadmap-node-progress-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .roadmap-node-progress-badge {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7.5px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+            border: 1px solid rgba(255,255,255,0.98);
+            box-shadow: 0 3px 8px rgba(15,23,42,0.18);
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            transform: translate(-70%, -70%);
+            user-select: none;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .roadmap-node-progress-badge.is-low {
+            background: linear-gradient(135deg, #fcd5ce 0%, #f9a8a4 100%);
+            color: #7f1d1d;
+        }
+        .roadmap-node-progress-badge.is-mid {
+            background: linear-gradient(135deg, #fde68a 0%, #f9cdad 100%);
+            color: #78350f;
+        }
+        .roadmap-node-progress-badge.is-high {
+            background: linear-gradient(135deg, #bbf7d0 0%, #83AF9B 100%);
+            color: #052e16;
+        }
         .modal {
             display: none;
             position: fixed;
@@ -99,6 +136,29 @@
         }
         .modal-close:hover {
             color: #6d9b89;
+        }
+        #modal-drag-handle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 24px;
+            cursor: grab;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #modal-drag-handle::after {
+            content: '';
+            display: block;
+            width: 38px;
+            height: 4px;
+            background: #c8dcd5;
+            border-radius: 2px;
+        }
+        #modal-drag-handle:active {
+            cursor: grabbing;
         }
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -441,6 +501,7 @@
     <div id="roadmap"></div>
 
     <div id="node-modal" class="modal">
+        <div id="modal-drag-handle"></div>
         <span class="modal-close" onclick="closeModal()">&times;</span>
         <h2 id="modal-title"></h2>
         <p id="modal-content"></p>
@@ -480,7 +541,7 @@
         if (roadmapIdParam) {
             document.getElementById('input-display').textContent = 'Loading roadmap...';
         } else {
-            document.getElementById('input-display').textContent = firstNode ? `Tailored Roadmap for: ${courseName || firstNode}` : 'Sample roadmap (no input provided)';
+            document.getElementById('input-display').textContent = firstNode ? `Roadmap for: ${(courseName || firstNode).replace(/\s+Roadmap$/i, '').trim()}` : 'Sample roadmap (no input provided)';
         }
         
         if (universityName) {
@@ -804,6 +865,16 @@
                             setTimeout(() => {
                                 network.unselectAll();
                                 network.fit({ animation: { duration: 600, easingFunction: 'easeInOutQuad' } });
+                                setTimeout(() => {
+                                    if (window.network) {
+                                        const roadmapEl = document.getElementById('roadmap');
+                                        applyRoadmapVisualScaleBoost(roadmapEl, window.network, window.nodesData || [], 1.14);
+                                        alignRoadmapGraphToTop(roadmapEl, window.network, window.nodesData || [], 4, 4);
+                                        tightenRoadmapContainerToRenderedGraph(roadmapEl, window.network, window.nodesData || [], 4, 4);
+                                        alignRoadmapGraphToTop(roadmapEl, window.network, window.nodesData || [], 4, 4);
+                                        scheduleRoadmapNodeProgressBadgesRender();
+                                    }
+                                }, 640);
                             }, 2000);
                         };
                         resultsBox.appendChild(item);
@@ -921,7 +992,7 @@
             }
 
             const titleText = roadmap.title || (roadmap.course && roadmap.course.title) || 'UniMap';
-            document.getElementById('input-display').textContent = `Tailored Roadmap for: ${titleText}`;
+            document.getElementById('input-display').textContent = `Roadmap for: ${titleText.replace(/\s+Roadmap$/i, '').trim()}`;
             if (roadmap.course && roadmap.course.university) {
                 // University info available
             } else if (roadmap.manual_course_title) {
@@ -1014,18 +1085,36 @@
 
             try {
                 const nodeIds = nodesData.map(node => node.id);
-                const positions = network.getPositions(nodeIds);
-                const coords = Object.values(positions);
-                if (!coords.length) return;
+                let graphWidth = 0;
+                let graphHeight = 0;
 
-                const xs = coords.map(p => p.x);
-                const ys = coords.map(p => p.y);
+                const boxes = nodeIds.map(id => {
+                    try {
+                        return network.getBoundingBox(String(id));
+                    } catch (error) {
+                        return null;
+                    }
+                }).filter(Boolean);
 
-                const graphWidth = Math.max(...xs) - Math.min(...xs);
-                const graphHeight = Math.max(...ys) - Math.min(...ys);
+                if (boxes.length) {
+                    const left = Math.min(...boxes.map(box => box.left));
+                    const right = Math.max(...boxes.map(box => box.right));
+                    const top = Math.min(...boxes.map(box => box.top));
+                    const bottom = Math.max(...boxes.map(box => box.bottom));
+                    graphWidth = Math.max(0, right - left);
+                    graphHeight = Math.max(0, bottom - top);
+                } else {
+                    const positions = network.getPositions(nodeIds);
+                    const coords = Object.values(positions);
+                    if (!coords.length) return;
+                    const xs = coords.map(p => p.x);
+                    const ys = coords.map(p => p.y);
+                    graphWidth = Math.max(...xs) - Math.min(...xs);
+                    graphHeight = Math.max(...ys) - Math.min(...ys);
+                }
 
-                const targetWidth = Math.min(Math.max(Math.ceil(graphWidth + 300), 900), 1800);
-                const targetHeight = Math.min(Math.max(Math.ceil(graphHeight + 56), 340), 2200);
+                const targetWidth = Math.min(Math.max(Math.ceil(graphWidth + 220), 1000), 2800);
+                const targetHeight = Math.min(Math.max(Math.ceil(graphHeight + 20), 400), 4000);
 
                 container.style.width = '95%';
                 container.style.maxWidth = `${targetWidth}px`;
@@ -1036,6 +1125,113 @@
                 network.redraw();
             } catch (error) {
                 console.error('Error resizing roadmap container:', error);
+            }
+        }
+
+        function getRoadmapGraphDomBounds(container, network, nodesData) {
+            if (!container || !network || !Array.isArray(nodesData) || nodesData.length === 0) return null;
+            if (typeof network.getBoundingBox !== 'function' || typeof network.canvasToDOM !== 'function') return null;
+
+            const points = [];
+            nodesData.forEach((node) => {
+                if (!node || node.id === undefined || node.id === null) return;
+                try {
+                    const box = network.getBoundingBox(String(node.id));
+                    if (!box) return;
+                    points.push(network.canvasToDOM({ x: box.left, y: box.top }));
+                    points.push(network.canvasToDOM({ x: box.right, y: box.bottom }));
+                } catch (error) {
+                    // Ignore nodes that are not ready yet.
+                }
+            });
+
+            if (!points.length) return null;
+
+            return {
+                left: Math.min(...points.map((p) => p.x)),
+                right: Math.max(...points.map((p) => p.x)),
+                top: Math.min(...points.map((p) => p.y)),
+                bottom: Math.max(...points.map((p) => p.y))
+            };
+        }
+
+        function alignRoadmapGraphToTop(container, network, nodesData, topMargin = 4, bottomMargin = 4) {
+            if (!container || !network || !Array.isArray(nodesData) || nodesData.length === 0) return;
+            if (typeof network.getScale !== 'function' || typeof network.getViewPosition !== 'function' || typeof network.moveTo !== 'function') return;
+
+            try {
+                const bounds = getRoadmapGraphDomBounds(container, network, nodesData);
+                if (!bounds) return;
+
+                const topGap = Math.max(0, bounds.top);
+                const bottomGap = Math.max(0, (container.clientHeight || 0) - bounds.bottom);
+                const desiredShiftUp = Math.max(0, topGap - topMargin);
+                const allowedShiftUp = Math.max(0, bottomGap - bottomMargin);
+                const shiftUpDom = Math.min(desiredShiftUp, allowedShiftUp);
+
+                if (shiftUpDom < 1) return;
+
+                const scale = Number(network.getScale()) || 1;
+                if (!scale) return;
+                const current = network.getViewPosition();
+                network.moveTo({
+                    position: {
+                        x: current.x,
+                        y: current.y + (shiftUpDom / scale)
+                    },
+                    scale,
+                    animation: false
+                });
+                network.redraw();
+            } catch (error) {
+                console.error('Error aligning roadmap graph to top:', error);
+            }
+        }
+
+        function tightenRoadmapContainerToRenderedGraph(container, network, nodesData, topPadding = 4, bottomPadding = 4) {
+            if (!container || !network || !Array.isArray(nodesData) || nodesData.length === 0) return;
+            if (typeof network.setSize !== 'function') return;
+
+            try {
+                const bounds = getRoadmapGraphDomBounds(container, network, nodesData);
+                if (!bounds) return;
+
+                const renderedGraphHeight = Math.max(0, bounds.bottom - bounds.top);
+                const targetHeight = Math.min(
+                    Math.max(Math.ceil(renderedGraphHeight + topPadding + bottomPadding), 400),
+                    5000
+                );
+                const currentHeight = container.clientHeight || 0;
+
+                if (Math.abs(targetHeight - currentHeight) < 2) return;
+
+                container.style.minHeight = `${targetHeight}px`;
+                container.style.height = `${targetHeight}px`;
+                network.setSize('100%', `${targetHeight}px`);
+                network.redraw();
+            } catch (error) {
+                console.error('Error tightening roadmap container to rendered graph:', error);
+            }
+        }
+
+        function applyRoadmapVisualScaleBoost(container, network, nodesData, scaleMultiplier = 1.12) {
+            if (!container || !network || !Array.isArray(nodesData) || nodesData.length === 0) return;
+            if (typeof network.getScale !== 'function' || typeof network.getViewPosition !== 'function' || typeof network.moveTo !== 'function') return;
+
+            try {
+                const currentScale = Number(network.getScale()) || 1;
+                const nextScale = Math.max(0.01, currentScale * Number(scaleMultiplier || 1));
+                if (!Number.isFinite(nextScale) || Math.abs(nextScale - currentScale) < 0.0001) return;
+
+                const current = network.getViewPosition();
+                network.moveTo({
+                    position: { x: current.x, y: current.y },
+                    scale: nextScale,
+                    animation: false
+                });
+                network.redraw();
+            } catch (error) {
+                console.error('Error applying roadmap visual scale boost:', error);
             }
         }
 
@@ -1518,10 +1714,113 @@
             }).join('');
 
             return `
-                <div style="margin-top: 12px; font-weight: 700; color: #0f766e;">Why This Connects To Other Modules</div>
-                <div style="margin-top: 2px; font-size: 12px; color: #64748b;">Dependencies and links from the roadmap graph</div>
+                <div style="margin-top: 12px; font-weight: 700; color: #0f766e;"></div>
+                <div style="margin-top: 2px; font-size: 12px; color: #64748b;"></div>
                 <div>${rows}</div>
             `;
+        }
+
+        let roadmapBadgeRenderRaf = null;
+
+        function ensureRoadmapNodeProgressLayer(container) {
+            if (!container) return null;
+            let layer = container.querySelector('#roadmap-node-progress-layer');
+            if (!layer) {
+                layer = document.createElement('div');
+                layer.id = 'roadmap-node-progress-layer';
+                container.appendChild(layer);
+            }
+            return layer;
+        }
+
+        function toPercentValue(value) {
+            const parsed = Number(value);
+            if (!Number.isFinite(parsed)) return null;
+            return Math.max(0, Math.min(100, Math.round(parsed)));
+        }
+
+        function getModuleNodeProgressPercent(node) {
+            const nodeId = String(node && node.id !== undefined ? node.id : '');
+            const moduleData = modulesById && modulesById.get ? modulesById.get(nodeId) : null;
+            const candidates = [
+                node?.progressPercent,
+                node?.progress_percent,
+                node?.masteryPercent,
+                node?.mastery_percent,
+                node?.completionPercent,
+                node?.completion_percent,
+                moduleData?.progressPercent,
+                moduleData?.progress_percent,
+                moduleData?.masteryPercent,
+                moduleData?.mastery_percent,
+                moduleData?.overall_progress_percent
+            ];
+
+            for (const candidate of candidates) {
+                const pct = toPercentValue(candidate);
+                if (pct !== null) return pct;
+            }
+
+            try {
+                const raw = localStorage.getItem(`quiz-${nodeId}`);
+                if (!raw) return 0;
+                const snapshot = JSON.parse(raw);
+                return toPercentValue(snapshot?.score) ?? 0;
+            } catch (error) {
+                return 0;
+            }
+        }
+
+        function renderRoadmapNodeProgressBadges() {
+            const container = document.getElementById('roadmap');
+            const layer = ensureRoadmapNodeProgressLayer(container);
+            const net = window.network;
+
+            if (!container || !layer) return;
+            if (!net || typeof net.getBoundingBox !== 'function' || typeof net.canvasToDOM !== 'function') {
+                layer.innerHTML = '';
+                return;
+            }
+
+            const nodes = Array.isArray(window.nodesData) ? window.nodesData : [];
+            if (!nodes.length) {
+                layer.innerHTML = '';
+                return;
+            }
+
+            const containerWidth = container.clientWidth || 0;
+            const containerHeight = container.clientHeight || 0;
+
+            const badgesHtml = nodes.map((node) => {
+                if (!node || String(node.id || '').startsWith('cluster-label-')) return '';
+                const percent = getModuleNodeProgressPercent(node);
+                let bbox;
+                try {
+                    bbox = net.getBoundingBox(String(node.id));
+                } catch (error) {
+                    return '';
+                }
+                if (!bbox) return '';
+
+                const domPoint = net.canvasToDOM({ x: bbox.right, y: bbox.bottom });
+                const x = Math.max(10, Math.min(containerWidth - 10, Math.round(domPoint.x)));
+                const y = Math.max(10, Math.min(containerHeight - 10, Math.round(domPoint.y)));
+                const toneClass = percent >= 75 ? 'is-high' : (percent >= 40 ? 'is-mid' : 'is-low');
+                const text = `${percent}%`;
+                const style = text.length >= 4 ? 'font-size:6.5px;' : '';
+
+                return `<div class="roadmap-node-progress-badge ${toneClass}" style="left:${x}px;top:${y}px;${style}" aria-hidden="true">${text}</div>`;
+            }).join('');
+
+            layer.innerHTML = badgesHtml;
+        }
+
+        function scheduleRoadmapNodeProgressBadgesRender() {
+            if (roadmapBadgeRenderRaf !== null) return;
+            roadmapBadgeRenderRaf = requestAnimationFrame(() => {
+                roadmapBadgeRenderRaf = null;
+                renderRoadmapNodeProgressBadges();
+            });
         }
 
         // Function to create the network
@@ -1529,7 +1828,7 @@
             let container;
             let network;
             let nodesByLevel = new Map();
-            const V_SPACING = 180; // vertical gap for height calculation
+            const V_SPACING = 220; // vertical gap for height calculation
             try {
             console.log('createNetwork called with', nodesData.length, 'nodes and', edgesData.length, 'edges');
             
@@ -1592,24 +1891,24 @@
 
             const posMap = new Map();
             nodesByLevel = new Map();
-            const CLUSTER_NODE_H_SPACING = 120;
-            const CLUSTER_NODE_V_SPACING = 220;
+            const CLUSTER_NODE_H_SPACING = 150;
+            const CLUSTER_NODE_V_SPACING = 270;
             const CLUSTER_JITTER_X = 24;
             const CLUSTER_JITTER_Y = 16;
             const SHOW_CLUSTER_LABELS = false;
-            const PILE_RING_STEP_X = 222;
-            const PILE_RING_STEP_Y = 72;
-            const PILE_MIN_DISTANCE = 206;
-            const PILE_MAX_COLLISION_PASSES = 12;
-            const NODE_BOX_GAP_X = 40;
-            const NODE_BOX_GAP_Y = 24;
-            const NODE_BOX_MIN_HEIGHT = 56;
+            const PILE_RING_STEP_X = 278;
+            const PILE_RING_STEP_Y = 92;
+            const PILE_MIN_DISTANCE = 340;
+            const PILE_MAX_COLLISION_PASSES = 40;
+            const NODE_BOX_GAP_X = 68;
+            const NODE_BOX_GAP_Y = 46;
+            const NODE_BOX_MIN_HEIGHT = 90;
             const estimateNodeBox = (nodeId) => {
                 const node = nodeById.get(nodeId) || {};
                 const rawLabel = (node.label && String(node.label).trim()) ? String(node.label) : `Module ${nodeId}`;
                 const estimatedWidth = Math.max(
-                    180,
-                    Math.min(260, 126 + (rawLabel.length * 6.4))
+                    290,
+                    Math.min(450, 190 + (rawLabel.length * 9))
                 );
                 return {
                     halfW: (estimatedWidth / 2) + (NODE_BOX_GAP_X / 2),
@@ -1663,10 +1962,10 @@
 
             const maxClusterWidth = Math.max(...clusterLayouts.map(layout => layout.width), 420);
             const maxClusterHeight = Math.max(...clusterLayouts.map(layout => layout.height), 320);
-            const CLUSTER_INNER_GAP_X = 110;
-            const CLUSTER_INNER_GAP_Y = 90;
-            const CLUSTER_OUTER_GAP_X = 140;
-            const CLUSTER_OUTER_GAP_Y = 120;
+            const CLUSTER_INNER_GAP_X = 300;
+            const CLUSTER_INNER_GAP_Y = 260;
+            const CLUSTER_OUTER_GAP_X = 360;
+            const CLUSTER_OUTER_GAP_Y = 320;
             const quadrantSlots = [
                 { sx: -1, sy: -1, name: 'top-left' },
                 { sx: 1, sy: -1, name: 'top-right' },
@@ -1805,14 +2104,14 @@
                                 // Separate boxes along the axis with less penetration.
                                 if (overlapX <= overlapY) {
                                     const dirX = dx === 0 ? (deterministicJitter(`${a.id}|${b.id}`, pass + 20) >= 0 ? 1 : -1) : (dx > 0 ? 1 : -1);
-                                    const pushX = (overlapX / 2) + 1;
-                                    a.x -= dirX * pushX;
-                                    b.x += dirX * pushX;
+                                    const pushX = overlapX + 4;
+                                    a.x -= dirX * (pushX / 2);
+                                    b.x += dirX * (pushX / 2);
                                 } else {
                                     const dirY = dy === 0 ? (deterministicJitter(`${a.id}|${b.id}`, pass + 30) >= 0 ? 1 : -1) : (dy > 0 ? 1 : -1);
-                                    const pushY = (overlapY / 2) + 1;
-                                    a.y -= dirY * pushY;
-                                    b.y += dirY * pushY;
+                                    const pushY = overlapY + 4;
+                                    a.y -= dirY * (pushY / 2);
+                                    b.y += dirY * (pushY / 2);
                                 }
                                 moved = true;
                             }
@@ -1875,8 +2174,8 @@
                     clusterId,
                     clusterIndex,
                     label: (node.label && String(node.label).trim()) ? node.label : `Module ${node.id}`,
-                    widthConstraint: { minimum: 180, maximum: 260 },
-                    heightConstraint: { minimum: 50, valign: 'middle' },
+                    widthConstraint: { minimum: 290, maximum: 450 },
+                    heightConstraint: { minimum: 90, valign: 'middle' },
                     x: pos.x,
                     y: pos.y,
                     fixed: { x: true, y: true },
@@ -1887,7 +2186,7 @@
                         highlight: { background: colors.highlight, border: colors.highlight }
                     },
                     font: {
-                        size: 14,
+                        size: 21,
                         color: '#f8fafc',
                         face: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
                         bold: true
@@ -1895,14 +2194,14 @@
                     shadow: {
                         enabled: true,
                         color: colors.shadow,
-                        size: 18,
+                        size: 20,
                         x: 0,
-                        y: 7
+                        y: 8
                     },
-                    borderWidth: 2.2,
-                    shapeProperties: { borderRadius: 12 },
+                    borderWidth: 2.5,
+                    shapeProperties: { borderRadius: 14 },
                     shape: 'box',
-                    margin: 13
+                    margin: 22
                 };
             });
             
@@ -2035,6 +2334,7 @@
             
             // Store network globally for later access
             window.network = network;
+            ensureRoadmapNodeProgressLayer(container);
             
             console.log('Network created successfully');
             console.log('Network object:', network);
@@ -2063,7 +2363,14 @@
             network.on('stabilizationIterationsDone', function() {
                 network.setOptions({ physics: false });
                 console.log('Network initialized');
+                scheduleRoadmapNodeProgressBadgesRender();
             });
+
+            network.on('afterDrawing', scheduleRoadmapNodeProgressBadgesRender);
+            network.on('dragEnd', scheduleRoadmapNodeProgressBadgesRender);
+            network.on('zoom', scheduleRoadmapNodeProgressBadgesRender);
+            network.on('resize', scheduleRoadmapNodeProgressBadgesRender);
+            network.on('animationFinished', scheduleRoadmapNodeProgressBadgesRender);
 
             // Prevent canvas from capturing scroll wheel - allow page scroll
             container.addEventListener('wheel', (e) => {
@@ -2074,7 +2381,7 @@
             // Calculate and set container height based on levels
             const nodeCount = nodesData.length;
             const numLevels = nodesByLevel ? nodesByLevel.size : Math.ceil(nodeCount / 4);
-            const estimatedHeight = Math.max(360, numLevels * V_SPACING + 48);
+            const estimatedHeight = Math.max(320, numLevels * V_SPACING + 28);
             container.style.minHeight = estimatedHeight + 'px';
             container.style.height = estimatedHeight + 'px';
 
@@ -2082,24 +2389,34 @@
             setTimeout(() => {
                 if (window.network) {
                     try {
-                        // First fit to get node positions settled
+                        // Initial fit to settle positions in the current container
                         window.network.fit({ animation: false });
 
-                        // Resize container tightly around actual graph
+                        // Resize container generously around the actual graph canvas bounds
                         resizeRoadmapContainerToGraph(container, window.network, nodesData);
 
-                        // Final fit with minimal padding so nodes fill the container
-                        window.network.fit({ 
+                        // Re-fit with generous padding so nodes aren't squeezed to edges,
+                        // giving a larger natural scale than near-zero padding would.
+                        window.network.fit({
                             animation: false,
                             padding: {
-                                top: 8,
-                                right: 26,
-                                bottom: 8,
-                                left: 26
+                                top: 60,
+                                right: 60,
+                                bottom: 60,
+                                left: 60
                             }
                         });
 
+                        // Boost scale so nodes read at a comfortable size
+                        applyRoadmapVisualScaleBoost(container, window.network, nodesData, 1.5);
+
+                        // Expand container to match the now-larger rendered graph, with
+                        // generous padding so bottom/side nodes aren't clipped
+                        tightenRoadmapContainerToRenderedGraph(container, window.network, nodesData, 80, 80);
+                        alignRoadmapGraphToTop(container, window.network, nodesData, 20, 20);
+
                         console.log('Network fitted successfully');
+                        scheduleRoadmapNodeProgressBadgesRender();
                     } catch (e) {
                         console.error('Fit error:', e);
                     }
@@ -2110,6 +2427,7 @@
                 updateLevelDisplay();
                 addNodeHoverEffects();
                 checkAchievements();
+                scheduleRoadmapNodeProgressBadgesRender();
             }, 200);
 
             // POPUP LOGIC: Re-adding the click event
@@ -2143,22 +2461,13 @@
                             if (moduleData) {
                                 document.getElementById('modal-title').textContent = moduleData.title;
                                 const relatedModulesHtml = formatRelatedModulesHtml(moduleData.related_modules);
-                                const yearInfo = node.year
-                                    ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">Year ${node.year}</div>`
-                                    : '';
-                                
                                 document.getElementById('modal-content').innerHTML = `
-                                    ${yearInfo}
                                     <div style="font-size: 14px; color: #555;">${moduleData.description || 'Module details coming soon.'}</div>
                                     ${relatedModulesHtml}
                                 `;
                             } else {
-                                const yearInfo = node.year
-                                    ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">Year ${node.year}</div>`
-                                    : '';
                                 document.getElementById('modal-title').textContent = node.label;
                                 document.getElementById('modal-content').innerHTML = `
-                                    ${yearInfo}
                                     <div style="font-size: 14px; color: #555;">Detailed resources for learning ${node.label} will appear here.</div>
                                 `;
                             }
@@ -2201,6 +2510,42 @@
         function closeModal() {
             document.getElementById('node-modal').style.display = 'none';
         }
+
+        (function initModalDrag() {
+            const modal = document.getElementById('node-modal');
+            const handle = document.getElementById('modal-drag-handle');
+            if (!modal || !handle) return;
+
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const rect = modal.getBoundingClientRect();
+                // Switch to left/top positioning so we can freely move the element
+                modal.style.right = 'auto';
+                modal.style.transform = 'none';
+                modal.style.left = rect.left + 'px';
+                modal.style.top = rect.top + 'px';
+
+                const offsetX = e.clientX - rect.left;
+                const offsetY = e.clientY - rect.top;
+
+                function onMove(e) {
+                    const x = Math.max(0, Math.min(e.clientX - offsetX, window.innerWidth - modal.offsetWidth));
+                    const y = Math.max(0, Math.min(e.clientY - offsetY, window.innerHeight - modal.offsetHeight));
+                    modal.style.left = x + 'px';
+                    modal.style.top = y + 'px';
+                }
+
+                function onUp() {
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onUp);
+                    modal.style.userSelect = '';
+                }
+
+                modal.style.userSelect = 'none';
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
+            });
+        })();
 
         function openModuleWorkspace(node, moduleData) {
             if (!node) return;
@@ -2328,12 +2673,21 @@
                         easingFunction: 'easeInOutQuad'
                     },
                     padding: {
-                        top: 10,
+                        top: 4,
                         right: 48,
-                        bottom: 14,
+                        bottom: 6,
                         left: 48
                     }
                 });
+                setTimeout(() => {
+                    if (window.network) {
+                        applyRoadmapVisualScaleBoost(document.getElementById('roadmap'), window.network, window.nodesData || [], 1.14);
+                        alignRoadmapGraphToTop(document.getElementById('roadmap'), window.network, window.nodesData || [], 4, 4);
+                        tightenRoadmapContainerToRenderedGraph(document.getElementById('roadmap'), window.network, window.nodesData || [], 4, 4);
+                        alignRoadmapGraphToTop(document.getElementById('roadmap'), window.network, window.nodesData || [], 4, 4);
+                        scheduleRoadmapNodeProgressBadgesRender();
+                    }
+                }, 340);
             }
             
             // Close menu
@@ -2378,6 +2732,8 @@
             if (progressText) {
                 progressText.textContent = `${progressPercent}%`;
             }
+
+            scheduleRoadmapNodeProgressBadgesRender();
         }
 
         // Achievement System
@@ -2752,6 +3108,8 @@
                                     id: resolveCanonicalModuleId(module, index),
                                     title: module.title,
                                     description: module.description || '',
+                                    progress_percent: module.progress_percent ?? module.progressPercent ?? module.mastery_percent ?? module.masteryPercent ?? module.completion_percent ?? module.completionPercent ?? null,
+                                    mastery_percent: module.mastery_percent ?? module.masteryPercent ?? null,
                                     cluster_id: module.cluster_id || module.clusterId || null,
                                     cluster_label: module.cluster_label || module.clusterLabel || null,
                                     cluster_index: module.cluster_index || module.clusterIndex || null,
@@ -2769,6 +3127,8 @@
                                     id: resolveCanonicalModuleId(module, index),
                                     title: module.title,
                                     description: module.description || '',
+                                    progress_percent: module.progress_percent ?? module.progressPercent ?? module.mastery_percent ?? module.masteryPercent ?? module.completion_percent ?? module.completionPercent ?? null,
+                                    mastery_percent: module.mastery_percent ?? module.masteryPercent ?? null,
                                     cluster_id: module.cluster_id || module.clusterId || null,
                                     cluster_label: module.cluster_label || module.clusterLabel || null,
                                     cluster_index: module.cluster_index || module.clusterIndex || null,
@@ -2783,6 +3143,8 @@
                                 id: toStringId(moduleNode.id) || `module-node-${moduleNode.order || 0}`,
                                 title: moduleNode.title,
                                 description: moduleNode.description || '',
+                                progress_percent: moduleNode.progress_percent ?? moduleNode.progressPercent ?? moduleNode.mastery_percent ?? moduleNode.masteryPercent ?? moduleNode.completion_percent ?? moduleNode.completionPercent ?? null,
+                                mastery_percent: moduleNode.mastery_percent ?? moduleNode.masteryPercent ?? null,
                                 cluster_id: moduleNode.cluster_id || moduleNode.clusterId || null,
                                 cluster_label: moduleNode.cluster_label || moduleNode.clusterLabel || null,
                                 cluster_index: moduleNode.cluster_index || moduleNode.clusterIndex || null,
@@ -2851,6 +3213,8 @@
                                 label: moduleNode.title,
                                 year: year,
                                 order: moduleNode.order || index,
+                                progress_percent: moduleNode.progress_percent ?? moduleNode.progressPercent ?? null,
+                                mastery_percent: moduleNode.mastery_percent ?? moduleNode.masteryPercent ?? null,
                                 clusterId: moduleNode.cluster_id || moduleNode.clusterId || null,
                                 clusterLabel: moduleNode.cluster_label || moduleNode.clusterLabel || null,
                                 clusterIndex: moduleNode.cluster_index || moduleNode.clusterIndex || null
@@ -2920,7 +3284,7 @@
 
                         const roadmapTitle = (fullRoadmap && fullRoadmap.title) || graphData.roadmap_title || 'Roadmap';
                         const progressValue = graphData.overall_progress_percent || (fullRoadmap && fullRoadmap.overall_progress_percent) || 0;
-                        document.getElementById('input-display').textContent = `Tailored Roadmap for: ${roadmapTitle}`;
+                        document.getElementById('input-display').textContent = `Roadmap for: ${roadmapTitle.replace(/\s+Roadmap$/i, '').trim()}`;
                         document.getElementById('header-progress-fill').style.width = `${progressValue}%`;
                         document.getElementById('header-progress-text').textContent = `${progressValue}%`;
                         createNetwork(nodesData, edgesData);
