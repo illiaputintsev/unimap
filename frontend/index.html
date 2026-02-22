@@ -349,49 +349,50 @@
         
         <form id="roadmap-form" onsubmit="generateRoadmap(event)">
             <div class="form-group">
-                <label for="university">University</label>
-                <select id="university" name="university" required>
-                    <option value="">-- Select University --</option>
-                    <option value="ucl">University College London (UCL)</option>
-                    <option value="imperial">Imperial College London</option>
-                    <option value="oxford">University of Oxford</option>
-                    <option value="cambridge">University of Cambridge</option>
-                    <option value="edinburgh">University of Edinburgh</option>
-                    <option value="manchester">University of Manchester</option>
-                    <option value="kcl">King's College London</option>
-                    <option value="other">Other</option>
-                </select>
+                <label for="university-search">University</label>
+                <input 
+                    type="text" 
+                    id="university-search" 
+                    name="university" 
+                    placeholder="Start typing a university name" 
+                    list="university-list"
+                    required
+                >
+                <input type="hidden" id="university-id" name="university-id">
+                <datalist id="university-list"></datalist>
+                <p style="font-size: 12px; color: #999; margin-top: 6px;">Searches live from the catalog</p>
             </div>
 
             <div class="form-group">
-                <label for="course-search">Course Name or UCAS Code</label>
+                <label for="course-search">Course Name</label>
                 <input 
                     type="text" 
                     id="course-search" 
                     name="course" 
-                    placeholder="e.g., Computer Science, G400, Artificial Intelligence" 
+                    placeholder="Search courses in the selected university" 
+                    list="course-list"
                     required
                 >
+                <input type="hidden" id="course-id" name="course-id">
+                <datalist id="course-list"></datalist>
+                <p style="font-size: 12px; color: #999; margin-top: 6px;">Select a course from the suggestions</p>
             </div>
 
-            <div class="form-group">
-                <label onclick="toggleModulesInput()" style="cursor: pointer; color: #1abc9c; display: flex; align-items: center; gap: 8px;">
-                    <span id="expand-arrow">▶</span>
-                    <span>(Optional) Custom Module Names</span>
-                </label>
-                <div id="modules-input-section" style="display: none; margin-top: 10px;">
-                    <textarea 
-                        id="modules-input" 
-                        name="modules" 
-                        placeholder="Enter module names separated by commas&#10;e.g., Fundamentals, Data Structures, Algorithms, Advanced Concepts"
-                        style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Segoe UI'; font-size: 14px; resize: vertical; min-height: 80px; transition: border-color 0.3s;"
-                    ></textarea>
-                    <p style="font-size: 12px; color: #999; margin-top: 8px;">💡 Leave empty to auto-generate modules based on your course</p>
+            <div id="draft-modules-section" style="display: none; margin-top: 10px; background: #f7fffd; border: 2px solid #c8f7f0; border-radius: 10px; padding: 15px; position: relative;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="font-weight: 700; color: #1abc9c;">Generated Module Draft</div>
+                    <button type="button" id="add-module-btn" style="padding: 6px 10px; border: none; border-radius: 6px; background: #1abc9c; color: white; font-size: 12px; font-weight: 700; cursor: pointer;">+ Add</button>
+                </div>
+                <p id="draft-modules-status" style="font-size: 13px; color: #666; margin-bottom: 10px;"></p>
+                <ul id="draft-modules-list" style="margin: 0; padding-left: 18px; color: #333; font-size: 14px; line-height: 1.6;"></ul>
+                <div id="draft-module-actions" style="display: none; position: absolute; top: 15px; right: 90px; z-index: 2000; background: white; border: 1px solid #c8f7f0; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); padding: 8px; gap: 8px;">
+                    <button type="button" id="edit-module-btn" style="padding: 6px 10px; border: none; border-radius: 6px; background: #f0f8ff; color: #1abc9c; font-weight: 700; cursor: pointer;">Edit</button>
+                    <button type="button" id="delete-module-btn" style="padding: 6px 10px; border: none; border-radius: 6px; background: #fff1f1; color: #c0392b; font-weight: 700; cursor: pointer;">Delete</button>
                 </div>
             </div>
 
             <div class="info-box">
-                ℹ️ <strong>Tip:</strong> You can enter either the course name or the UCAS code. Our system will find the matching course modules and create your roadmap. Optionally, customize your module names above!
+                ℹ️ <strong>Tip:</strong> Enter your university and course, then select a suggested course to auto-generate modules. Click any module name to edit or delete it, or use <strong>+ Add</strong> to add your own — your roadmap will be tailored just for you! 🚀
             </div>
 
             <button type="submit" class="primary-btn">Generate Roadmap</button>
@@ -402,20 +403,14 @@
         </form>
     </div>
 
+    <script src="api-service.js"></script>
     <script>
-        // Toggle modules input section
-        function toggleModulesInput() {
-            const section = document.getElementById('modules-input-section');
-            const arrow = document.getElementById('expand-arrow');
-            
-            if (section.style.display === 'none') {
-                section.style.display = 'block';
-                arrow.textContent = '▼';
-            } else {
-                section.style.display = 'none';
-                arrow.textContent = '▶';
-            }
-        }
+        let universityMap = new Map();
+        let courseMap = new Map();
+        let universitySearchTimeout;
+        let courseSearchTimeout;
+        let selectedDraftModules = [];
+        let selectedModuleIndex = -1;
 
         // Toggle menu
         function toggleMenu() {
@@ -438,9 +433,9 @@
             const authButtons = document.getElementById('auth-buttons');
             const userInfo = document.getElementById('user-info');
             
-            if (user) {
+            if (ApiService.isAuthenticated() && user) {
                 const userData = JSON.parse(user);
-                document.getElementById('username').textContent = userData.name || userData.email;
+                document.getElementById('username').textContent = userData.username || userData.email || 'User';
                 authButtons.style.display = 'none';
                 userInfo.style.display = 'block';
             } else {
@@ -452,66 +447,306 @@
         // Logout function
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
+                ApiService.logout();
                 localStorage.removeItem('currentUser');
                 alert('Logged out successfully!');
                 checkLoginStatus();
             }
         }
 
+        function updateDatalist(listId, items, map) {
+            const list = document.getElementById(listId);
+            list.innerHTML = '';
+            map.clear();
+            items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.label;
+                list.appendChild(option);
+                map.set(item.label, item.id);
+            });
+        }
+
+        function renderDraftModules(modules, courseName = '') {
+            const section = document.getElementById('draft-modules-section');
+            const status = document.getElementById('draft-modules-status');
+            const list = document.getElementById('draft-modules-list');
+
+            section.style.display = 'block';
+            list.innerHTML = '';
+            selectedDraftModules = modules.slice();
+            selectedModuleIndex = -1;
+            hideModuleActions();
+
+            status.textContent = `${modules.length} modules drafted${courseName ? ` for ${courseName}` : ''}.`;
+            modules.forEach((moduleName, index) => {
+                const li = document.createElement('li');
+                li.textContent = moduleName;
+                li.style.cursor = 'pointer';
+                li.style.borderRadius = '6px';
+                li.style.padding = '2px 6px';
+                li.style.marginBottom = '2px';
+                li.dataset.moduleIndex = String(index);
+                li.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    selectModuleLine(index, li);
+                });
+                list.appendChild(li);
+            });
+        }
+
+        function refreshDraftListSelectionStyles() {
+            const listItems = document.querySelectorAll('#draft-modules-list li');
+            listItems.forEach((li, index) => {
+                if (index === selectedModuleIndex) {
+                    li.style.background = '#e9fffb';
+                    li.style.border = '1px solid #1abc9c';
+                } else {
+                    li.style.background = 'transparent';
+                    li.style.border = '1px solid transparent';
+                }
+            });
+        }
+
+        function hideModuleActions() {
+            const actions = document.getElementById('draft-module-actions');
+            actions.style.display = 'none';
+        }
+
+        function selectModuleLine(index, element) {
+            selectedModuleIndex = index;
+            refreshDraftListSelectionStyles();
+
+            const actions = document.getElementById('draft-module-actions');
+            actions.style.display = 'flex';
+        }
+
+        function addModuleName() {
+            const newName = prompt('Enter new module name:');
+            if (!newName || !newName.trim()) return;
+            selectedDraftModules.push(newName.trim());
+            renderDraftModules(selectedDraftModules, document.getElementById('course-search').value.trim());
+        }
+
+        function editSelectedModule() {
+            if (selectedModuleIndex < 0 || selectedModuleIndex >= selectedDraftModules.length) return;
+            const currentName = selectedDraftModules[selectedModuleIndex];
+            const updatedName = prompt('Edit module name:', currentName);
+            if (updatedName === null) return;
+            const trimmed = updatedName.trim();
+            if (!trimmed) {
+                alert('Module name cannot be empty. Use Delete to remove it.');
+                return;
+            }
+            selectedDraftModules[selectedModuleIndex] = trimmed;
+            renderDraftModules(selectedDraftModules, document.getElementById('course-search').value.trim());
+        }
+
+        function deleteSelectedModule() {
+            if (selectedModuleIndex < 0 || selectedModuleIndex >= selectedDraftModules.length) return;
+            const moduleName = selectedDraftModules[selectedModuleIndex];
+            if (!confirm(`Delete module "${moduleName}"?`)) return;
+            selectedDraftModules.splice(selectedModuleIndex, 1);
+            renderDraftModules(selectedDraftModules, document.getElementById('course-search').value.trim());
+        }
+
+        function clearDraftModules() {
+            selectedDraftModules = [];
+            selectedModuleIndex = -1;
+            const section = document.getElementById('draft-modules-section');
+            const status = document.getElementById('draft-modules-status');
+            const list = document.getElementById('draft-modules-list');
+            section.style.display = 'none';
+            status.textContent = '';
+            list.innerHTML = '';
+            hideModuleActions();
+        }
+
+        async function fetchDraftModulesForSelection() {
+            const courseId = document.getElementById('course-id').value;
+            const courseName = document.getElementById('course-search').value.trim();
+
+            if (!courseId) {
+                clearDraftModules();
+                return;
+            }
+
+            if (!ApiService.isAuthenticated()) {
+                clearDraftModules();
+                return;
+            }
+
+            const section = document.getElementById('draft-modules-section');
+            const status = document.getElementById('draft-modules-status');
+            const list = document.getElementById('draft-modules-list');
+            section.style.display = 'block';
+            status.textContent = 'Generating module draft...';
+            list.innerHTML = '';
+
+            const draftResponse = await ApiService.generateModuleDraft(courseId, {
+                contextText: ''
+            });
+
+            if (!draftResponse.ok) {
+                status.textContent = `Could not generate draft: ${ApiService.getErrorMessage(draftResponse)}`;
+                return;
+            }
+
+            const modules = draftResponse.data.draft_modules || draftResponse.data.modules || [];
+            if (modules.length === 0) {
+                status.textContent = 'No draft modules returned for this course.';
+                return;
+            }
+
+            renderDraftModules(modules, courseName);
+        }
+
+        function handleUniversitySearch() {
+            const query = document.getElementById('university-search').value.trim();
+            const universityIdInput = document.getElementById('university-id');
+
+            universityIdInput.value = '';
+            if (query.length < 2) return;
+
+            clearTimeout(universitySearchTimeout);
+            universitySearchTimeout = setTimeout(async () => {
+                const response = await ApiService.searchUniversities(query);
+                if (response.ok) {
+                    const items = response.data.map(u => ({
+                        id: u.id,
+                        label: u.name
+                    }));
+                    updateDatalist('university-list', items, universityMap);
+                }
+            }, 300);
+        }
+
+        function handleCourseSearch() {
+            const query = document.getElementById('course-search').value.trim();
+            const universityId = document.getElementById('university-id').value;
+            const courseIdInput = document.getElementById('course-id');
+
+            courseIdInput.value = '';
+            if (!universityId || query.length < 2) return;
+
+            clearTimeout(courseSearchTimeout);
+            courseSearchTimeout = setTimeout(async () => {
+                const response = await ApiService.searchCourses(universityId, query);
+                if (response.ok) {
+                    const items = response.data.map(c => ({
+                        id: c.id,
+                        label: c.title
+                    }));
+                    updateDatalist('course-list', items, courseMap);
+                }
+            }, 300);
+        }
+
+        function bindSearchInputs() {
+            const universityInput = document.getElementById('university-search');
+            const courseInput = document.getElementById('course-search');
+            const universityIdInput = document.getElementById('university-id');
+            const courseIdInput = document.getElementById('course-id');
+            const addButton = document.getElementById('add-module-btn');
+            const editButton = document.getElementById('edit-module-btn');
+            const deleteButton = document.getElementById('delete-module-btn');
+
+            addButton.addEventListener('click', addModuleName);
+            editButton.addEventListener('click', editSelectedModule);
+            deleteButton.addEventListener('click', deleteSelectedModule);
+
+            document.addEventListener('click', (event) => {
+                const actions = document.getElementById('draft-module-actions');
+                const list = document.getElementById('draft-modules-list');
+                if (!actions.contains(event.target) && !list.contains(event.target)) {
+                    hideModuleActions();
+                    selectedModuleIndex = -1;
+                    refreshDraftListSelectionStyles();
+                }
+            });
+
+            universityInput.addEventListener('input', handleUniversitySearch);
+            universityInput.addEventListener('change', () => {
+                universityIdInput.value = universityMap.get(universityInput.value) || '';
+                courseInput.value = '';
+                courseIdInput.value = '';
+                document.getElementById('course-list').innerHTML = '';
+                clearDraftModules();
+            });
+
+            courseInput.addEventListener('input', handleCourseSearch);
+            courseInput.addEventListener('change', async () => {
+                courseIdInput.value = courseMap.get(courseInput.value) || '';
+                await fetchDraftModulesForSelection();
+            });
+        }
+
         // Generate roadmap function
         async function generateRoadmap(event) {
             event.preventDefault();
             
-            const university = document.getElementById('university').value;
-            const course = document.getElementById('course-search').value;
-            const customModules = document.getElementById('modules-input').value.trim();
+            if (!ApiService.isAuthenticated()) {
+                alert('Please login to generate your roadmap.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const universityName = document.getElementById('university-search').value.trim();
+            const universityId = document.getElementById('university-id').value;
+            const courseName = document.getElementById('course-search').value.trim();
+            const courseId = document.getElementById('course-id').value;
             const loading = document.getElementById('loading');
             
-            // Show loading
             loading.style.display = 'block';
 
-            // TODO: Backend API call placeholder
-            // This is where you'll make the API call to your backend
             try {
-                // Example API call (uncomment when backend is ready):
-                /*
-                const response = await fetch('/api/get-course-roadmap', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || '')
-                    },
-                    body: JSON.stringify({
-                        university: university,
-                        course: course,
-                        customModules: customModules
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to fetch roadmap');
-                }
-                
-                const data = await response.json();
-                // The backend should return: { courseName: string, modules: string[] }
-                
-                // Redirect to roadmap page with data
-                const modules = data.modules.join(',');
-                window.location.href = `roadmap.html?input=${encodeURIComponent(modules)}&course=${encodeURIComponent(data.courseName)}&university=${encodeURIComponent(university)}`;
-                */
-                
-                // TEMPORARY: For now, use a mock response
-                setTimeout(() => {
-                    // Use custom modules if provided, otherwise generate mock modules
-                    let modules;
-                    if (customModules) {
-                        modules = customModules;
-                    } else {
-                        modules = `${course},Introduction to ${course},Core Concepts,Advanced Topics,Practical Applications,Research Methods,Final Project`;
+                let roadmapResponse;
+
+                if (courseId) {
+                    let modules = selectedDraftModules.slice();
+
+                    if (modules.length === 0) {
+                        await fetchDraftModulesForSelection();
+                        modules = selectedDraftModules.slice();
                     }
-                    window.location.href = `roadmap.html?input=${encodeURIComponent(modules)}&course=${encodeURIComponent(course)}&university=${encodeURIComponent(university)}`;
-                }, 1500);
-                
+
+                    if (modules.length > 0) {
+                        const confirmResponse = await ApiService.confirmModules(courseId, modules);
+                        if (!confirmResponse.ok) {
+                            throw new Error(ApiService.getErrorMessage(confirmResponse));
+                        }
+                    }
+
+                    roadmapResponse = await ApiService.generateRoadmap({
+                        title: `${courseName} Roadmap`,
+                        course_id: Number(courseId),
+                        career_goal: ''
+                    });
+                } else {
+                    if (!courseName) {
+                        throw new Error('Please select a course from the list.');
+                    }
+
+                    if (selectedDraftModules.length === 0) {
+                        await fetchDraftModulesForSelection();
+                    }
+
+                    const modules = selectedDraftModules.slice();
+                    if (modules.length === 0) {
+                        throw new Error('No draft modules available for this course yet.');
+                    }
+                    roadmapResponse = await ApiService.generateRoadmap({
+                        manual_course_title: courseName || universityName || 'Custom Roadmap',
+                        module_names: modules,
+                        career_goal: ''
+                    });
+                }
+
+                if (!roadmapResponse.ok) {
+                    throw new Error(ApiService.getErrorMessage(roadmapResponse));
+                }
+
+                const roadmapId = roadmapResponse.data.id;
+                window.location.href = `roadmap.html?roadmap_id=${roadmapId}`;
             } catch (error) {
                 loading.style.display = 'none';
                 alert('Error generating roadmap: ' + error.message);
@@ -521,6 +756,7 @@
 
         // Initialize
         checkLoginStatus();
+        bindSearchInputs();
     </script>
 </body>
 </html>
