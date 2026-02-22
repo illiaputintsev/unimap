@@ -1571,11 +1571,30 @@
 
             const posMap = new Map();
             nodesByLevel = new Map();
-            const CLUSTER_NODE_H_SPACING = 320;
+            const CLUSTER_NODE_H_SPACING = 120;
             const CLUSTER_NODE_V_SPACING = 220;
             const CLUSTER_JITTER_X = 24;
             const CLUSTER_JITTER_Y = 16;
             const SHOW_CLUSTER_LABELS = false;
+            const PILE_RING_STEP_X = 222;
+            const PILE_RING_STEP_Y = 72;
+            const PILE_MIN_DISTANCE = 206;
+            const PILE_MAX_COLLISION_PASSES = 12;
+            const NODE_BOX_GAP_X = 40;
+            const NODE_BOX_GAP_Y = 24;
+            const NODE_BOX_MIN_HEIGHT = 56;
+            const estimateNodeBox = (nodeId) => {
+                const node = nodeById.get(nodeId) || {};
+                const rawLabel = (node.label && String(node.label).trim()) ? String(node.label) : `Module ${nodeId}`;
+                const estimatedWidth = Math.max(
+                    180,
+                    Math.min(260, 126 + (rawLabel.length * 6.4))
+                );
+                return {
+                    halfW: (estimatedWidth / 2) + (NODE_BOX_GAP_X / 2),
+                    halfH: (NODE_BOX_MIN_HEIGHT / 2) + (NODE_BOX_GAP_Y / 2)
+                };
+            };
 
             const clusterLayouts = orderedClusterIds.map((clusterId) => {
                 const clusterNodeIds = (clusters.get(clusterId) || []).slice();
@@ -1595,14 +1614,27 @@
 
                 const cols = Math.max(1, Math.ceil(Math.sqrt(clusterNodeIds.length)));
                 const rows = Math.max(1, Math.ceil(clusterNodeIds.length / cols));
-                const width = Math.max(420, (cols - 1) * CLUSTER_NODE_H_SPACING + 330);
-                const height = Math.max(320, (rows - 1) * CLUSTER_NODE_V_SPACING + 270);
+
+                let remainingForRings = Math.max(0, clusterNodeIds.length - 1);
+                let ringCount = clusterNodeIds.length > 0 ? 1 : 0;
+                let ringIndex = 1;
+                while (remainingForRings > 0) {
+                    const capacity = Math.max(4, Math.round(2 * Math.PI * ringIndex * 1.18));
+                    remainingForRings -= capacity;
+                    ringCount += 1;
+                    ringIndex += 1;
+                }
+                const radiusX = Math.max(0, (ringCount - 1) * PILE_RING_STEP_X + 95);
+                const radiusY = Math.max(0, (ringCount - 1) * PILE_RING_STEP_Y + 80);
+                const width = Math.max(420, Math.round(radiusX * 2 + 300));
+                const height = Math.max(320, Math.round(radiusY * 2 + 220));
 
                 return {
                     clusterId,
                     clusterNodeIds,
                     cols,
                     rows,
+                    ringCount,
                     width,
                     height
                 };
@@ -1610,10 +1642,10 @@
 
             const maxClusterWidth = Math.max(...clusterLayouts.map(layout => layout.width), 420);
             const maxClusterHeight = Math.max(...clusterLayouts.map(layout => layout.height), 320);
-            const CLUSTER_INNER_GAP_X = 170;
-            const CLUSTER_INNER_GAP_Y = 140;
-            const CLUSTER_OUTER_GAP_X = 210;
-            const CLUSTER_OUTER_GAP_Y = 180;
+            const CLUSTER_INNER_GAP_X = 110;
+            const CLUSTER_INNER_GAP_Y = 90;
+            const CLUSTER_OUTER_GAP_X = 140;
+            const CLUSTER_OUTER_GAP_Y = 120;
             const quadrantSlots = [
                 { sx: -1, sy: -1, name: 'top-left' },
                 { sx: 1, sy: -1, name: 'top-right' },
@@ -1690,25 +1722,97 @@
                 const anchor = clusterAnchors[clusterIndex] || { x: 0, y: 0, sx: 0, sy: 0, name: 'center', ring: 0 };
                 const centerX = anchor.x;
                 const centerY = anchor.y;
-                const startX = centerX - ((layout.cols - 1) * CLUSTER_NODE_H_SPACING) / 2;
-                const startY = centerY - ((layout.rows - 1) * CLUSTER_NODE_V_SPACING) / 2;
+                const localPositions = [];
+                let placedBeforeRing = 1;
+                let currentRing = 1;
 
                 layout.clusterNodeIds.forEach((nodeId, nodeIndex) => {
-                    const row = Math.floor(nodeIndex / layout.cols);
-                    const col = nodeIndex % layout.cols;
-                    const staggerX = (row % 2 === 0 ? 0 : CLUSTER_NODE_H_SPACING * 0.08);
-                    const waveY = Math.sin((row * 1.4) + (col * 0.8)) * 6;
-                    const columnWaveX = Math.sin((col * 1.05) + (clusterIndex * 0.55)) * 10;
-                    const rowBendX = (row - ((layout.rows - 1) / 2)) * ((anchor.sx || 0) * 4.5);
-                    const colLiftY = Math.cos((col * 0.85) + (clusterIndex * 0.75)) * 6;
-                    const laneOffsetY = [0, 7, -5][col % 3];
-                    const diagonalSkewY = (row % 2 === 0 ? 1 : -1) * (col - ((layout.cols - 1) / 2)) * 2.2;
+                    if (nodeIndex === 0) {
+                        localPositions.push({ id: nodeId, x: centerX, y: centerY });
+                        return;
+                    }
+
+                    while (true) {
+                        const currentRingCapacity = Math.max(4, Math.round(2 * Math.PI * currentRing * 1.18));
+                        if (nodeIndex < placedBeforeRing + currentRingCapacity) {
+                            break;
+                        }
+                        placedBeforeRing += currentRingCapacity;
+                        currentRing += 1;
+                    }
+
+                    const ringCapacity = Math.max(4, Math.round(2 * Math.PI * currentRing * 1.18));
+                    const slotIndex = nodeIndex - placedBeforeRing;
+                    const ringPhase = (clusterIndex * 0.47) + ((currentRing % 2) * 0.19);
+                    const angleJitter = deterministicJitter(nodeId, 3) * 0.34;
+                    const radialJitter = deterministicJitter(nodeId, 4) * 16;
+                    const tangentialJitter = deterministicJitter(nodeId, 5) * 10;
+                    const angle = ((slotIndex / ringCapacity) * Math.PI * 2) + ringPhase + angleJitter;
+                    const radiusX = (currentRing * PILE_RING_STEP_X) + radialJitter;
+                    const radiusY = (currentRing * PILE_RING_STEP_Y) + (radialJitter * 0.55);
+                    const mindmapLeanX = (anchor.sx || 0) * currentRing * 5;
+                    const mindmapLeanY = (anchor.sy || 0) * currentRing * 3;
                     const jitterX = deterministicJitter(nodeId, 1) * CLUSTER_JITTER_X;
                     const jitterY = deterministicJitter(nodeId, 2) * CLUSTER_JITTER_Y;
-                    posMap.set(nodeId, {
-                        x: startX + col * CLUSTER_NODE_H_SPACING + staggerX + columnWaveX + rowBendX + jitterX,
-                        y: startY + row * CLUSTER_NODE_V_SPACING + waveY + colLiftY + laneOffsetY + diagonalSkewY + jitterY
+
+                    localPositions.push({
+                        id: nodeId,
+                        x: centerX + Math.cos(angle) * radiusX + Math.cos(angle + Math.PI / 2) * tangentialJitter + mindmapLeanX + jitterX,
+                        y: centerY + Math.sin(angle) * radiusY + Math.sin(angle + Math.PI / 2) * (tangentialJitter * 0.7) + mindmapLeanY + jitterY
                     });
+                });
+
+                // Light collision relaxation so nodes feel piled/organic but don't sit too close.
+                for (let pass = 0; pass < PILE_MAX_COLLISION_PASSES; pass += 1) {
+                    let moved = false;
+                    for (let i = 0; i < localPositions.length; i += 1) {
+                        for (let j = i + 1; j < localPositions.length; j += 1) {
+                            const a = localPositions[i];
+                            const b = localPositions[j];
+                            const dx = b.x - a.x;
+                            const dy = b.y - a.y;
+                            const dist = Math.hypot(dx, dy) || 0.0001;
+                            const minDist = PILE_MIN_DISTANCE + ((i === 0 || j === 0) ? 8 : 0);
+                            const boxA = estimateNodeBox(a.id);
+                            const boxB = estimateNodeBox(b.id);
+                            const absDx = Math.abs(dx);
+                            const absDy = Math.abs(dy);
+                            const overlapX = (boxA.halfW + boxB.halfW) - absDx;
+                            const overlapY = (boxA.halfH + boxB.halfH) - absDy;
+
+                            if (overlapX > 0 && overlapY > 0) {
+                                // Separate boxes along the axis with less penetration.
+                                if (overlapX <= overlapY) {
+                                    const dirX = dx === 0 ? (deterministicJitter(`${a.id}|${b.id}`, pass + 20) >= 0 ? 1 : -1) : (dx > 0 ? 1 : -1);
+                                    const pushX = (overlapX / 2) + 1;
+                                    a.x -= dirX * pushX;
+                                    b.x += dirX * pushX;
+                                } else {
+                                    const dirY = dy === 0 ? (deterministicJitter(`${a.id}|${b.id}`, pass + 30) >= 0 ? 1 : -1) : (dy > 0 ? 1 : -1);
+                                    const pushY = (overlapY / 2) + 1;
+                                    a.y -= dirY * pushY;
+                                    b.y += dirY * pushY;
+                                }
+                                moved = true;
+                            }
+
+                            if (dist < minDist) {
+                                const push = (minDist - dist) / 2;
+                                const nx = dx / dist;
+                                const ny = dy / dist;
+                                a.x -= nx * push;
+                                a.y -= ny * push;
+                                b.x += nx * push;
+                                b.y += ny * push;
+                                moved = true;
+                            }
+                        }
+                    }
+                    if (!moved) break;
+                }
+
+                localPositions.forEach(({ id, x, y }) => {
+                    posMap.set(id, { x, y });
                 });
 
                 nodesByLevel.set(clusterIndex, layout.clusterNodeIds);
@@ -1724,14 +1828,14 @@
             });
 
             const clusterPalette = [
-                { background: '#1d4ed8', border: '#1e40af', hover: '#2563eb', highlight: '#3b82f6', shadow: 'rgba(29, 78, 216, 0.35)' },
-                { background: '#0f766e', border: '#115e59', hover: '#0d9488', highlight: '#14b8a6', shadow: 'rgba(15, 118, 110, 0.34)' },
-                { background: '#b45309', border: '#92400e', hover: '#d97706', highlight: '#f59e0b', shadow: 'rgba(180, 83, 9, 0.34)' },
-                { background: '#7c3aed', border: '#6d28d9', hover: '#8b5cf6', highlight: '#a78bfa', shadow: 'rgba(124, 58, 237, 0.32)' },
-                { background: '#be123c', border: '#9f1239', hover: '#e11d48', highlight: '#fb7185', shadow: 'rgba(190, 18, 60, 0.32)' },
-                { background: '#0ea5e9', border: '#0284c7', hover: '#38bdf8', highlight: '#7dd3fc', shadow: 'rgba(14, 165, 233, 0.30)' },
-                { background: '#15803d', border: '#166534', hover: '#16a34a', highlight: '#4ade80', shadow: 'rgba(21, 128, 61, 0.30)' },
-                { background: '#c026d3', border: '#a21caf', hover: '#d946ef', highlight: '#e879f9', shadow: 'rgba(192, 38, 211, 0.30)' }
+                { background: '#1e3a8a', border: '#1e40af', hover: '#1d4ed8', highlight: '#3b82f6', shadow: 'rgba(30, 58, 138, 0.34)' },
+                { background: '#1d4ed8', border: '#1e40af', hover: '#2563eb', highlight: '#60a5fa', shadow: 'rgba(29, 78, 216, 0.34)' },
+                { background: '#1e40af', border: '#1d4ed8', hover: '#2563eb', highlight: '#3b82f6', shadow: 'rgba(30, 64, 175, 0.32)' },
+                { background: '#2563eb', border: '#1d4ed8', hover: '#3b82f6', highlight: '#93c5fd', shadow: 'rgba(37, 99, 235, 0.32)' },
+                { background: '#1e429f', border: '#1d4ed8', hover: '#2563eb', highlight: '#60a5fa', shadow: 'rgba(30, 66, 159, 0.30)' },
+                { background: '#274690', border: '#1e40af', hover: '#2563eb', highlight: '#60a5fa', shadow: 'rgba(39, 70, 144, 0.30)' },
+                { background: '#2b5fbf', border: '#1d4ed8', hover: '#3b82f6', highlight: '#93c5fd', shadow: 'rgba(43, 95, 191, 0.30)' },
+                { background: '#3b82f6', border: '#2563eb', hover: '#60a5fa', highlight: '#bfdbfe', shadow: 'rgba(59, 130, 246, 0.28)' }
             ];
 
             const clusterColors = new Map(
