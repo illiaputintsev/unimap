@@ -156,20 +156,39 @@
             background-color: #d4edda;
             color: #155724;
             border: 2px solid #28a745;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            padding: 20px 30px;
+            border-radius: 12px;
             display: none;
             text-align: center;
             font-weight: 600;
+            font-size: 16px;
+            /* Center on screen */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+            min-width: 280px;
         }
         .success-message.show {
             display: block;
-            animation: slideIn 0.3s ease-in;
+            animation: popIn 0.3s ease-out;
         }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Overlay behind the popup */
+        .success-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 9999;
+        }
+        .success-overlay.show {
+            display: block;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
         .avatar-emoji {
             display: inline-block;
@@ -317,6 +336,7 @@
             <h1>⚙️ Profile Settings</h1>
         </div>
 
+        <div class="success-overlay" id="success-overlay" onclick="hideSuccessMessage()"></div>
         <div class="success-message" id="success-message">✓ Profile updated successfully!</div>
 
         <form id="profile-form">
@@ -465,14 +485,21 @@
             // Save selected frame
             saveSelectedFrame();
             
-            // Show success message
+            // Show success message centered on screen
             const successMsg = document.getElementById('success-message');
+            const overlay = document.getElementById('success-overlay');
             successMsg.classList.add('show');
+            overlay.classList.add('show');
             
             setTimeout(() => {
-                successMsg.classList.remove('show');
+                hideSuccessMessage();
             }, 3000);
         });
+        
+        function hideSuccessMessage() {
+            document.getElementById('success-message').classList.remove('show');
+            document.getElementById('success-overlay').classList.remove('show');
+        }
 
         // Handle picture upload
         function handlePictureUpload(event) {

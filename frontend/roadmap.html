@@ -719,11 +719,14 @@
         }
         
         // Open My Roadmaps modal
+        let myRoadmapsEditMode = false;
+        
         async function openMyRoadmaps() {
             if (!ApiService.isAuthenticated()) {
                 alert('Please login to view your roadmaps');
                 return;
             }
+            myRoadmapsEditMode = false;
             
             let html = '<h2>🗺️ My Roadmaps</h2>';
             html += '<p style="color: #666; text-align: center; padding: 10px;">Loading...</p>';
@@ -744,27 +747,152 @@
             }
 
             const roadmaps = response.data || [];
+            renderMyRoadmaps(roadmaps, false);
+        }
+
+        function renderMyRoadmaps(roadmaps, editMode) {
+            const modal = document.querySelector('.modal');
+            if (!modal) return;
+            
+            myRoadmapsEditMode = editMode;
+            
+            // Header with Edit/Done button
+            let html = '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">';
+            html += '<h2 style="margin: 0;">🗺️ My Roadmaps</h2>';
+            if (roadmaps.length > 0) {
+                if (editMode) {
+                    html += '<button onclick="toggleMyRoadmapsEdit()" style="padding: 6px 16px; border: none; border-radius: 6px; background: #1abc9c; color: white; font-size: 13px; font-weight: 700; cursor: pointer;">Done</button>';
+                } else {
+                    html += '<button onclick="toggleMyRoadmapsEdit()" style="padding: 6px 16px; border: none; border-radius: 6px; background: #3498db; color: white; font-size: 13px; font-weight: 700; cursor: pointer;">✏️ Edit</button>';
+                }
+            }
+            html += '</div>';
+            
             if (roadmaps.length === 0) {
-                html = '<h2>🗺️ My Roadmaps</h2>';
                 html += '<p style="color: #666; text-align: center; padding: 20px;">No roadmaps yet. Generate one from the Home page.</p>';
             } else {
-                html = '<h2>🗺️ My Roadmaps</h2>';
-                html += '<div style="display: flex; flex-direction: column; gap: 10px;">';
+                html += '<div id="my-roadmaps-list" style="display: flex; flex-direction: column; gap: 10px;">';
                 roadmaps.forEach(roadmap => {
                     const dateText = roadmap.created_at ? new Date(roadmap.created_at).toLocaleDateString() : 'Unknown date';
-                    html += `
-                        <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #1abc9c;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapById(${roadmap.id})">
-                            <strong>${roadmap.title || 'Untitled Roadmap'}</strong><br>
-                            <small style="color: #999;">${dateText}</small>
-                        </div>
-                    `;
+                    const title = roadmap.title || 'Untitled Roadmap';
+                    
+                    if (editMode) {
+                        // Edit mode: show rename input + delete button
+                        html += `
+                            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; border-left: 4px solid #3498db; display: flex; align-items: center; gap: 8px;">
+                                <div style="flex: 1;">
+                                    <input type="text" id="rename-${roadmap.id}" value="${title.replace(/"/g, '&quot;')}" 
+                                        style="width: 100%; padding: 6px 10px; border: 2px solid #3498db; border-radius: 6px; font-size: 14px; font-weight: 600; box-sizing: border-box;"
+                                        onkeydown="if(event.key==='Enter') renameRoadmap(${roadmap.id})" />
+                                    <small style="color: #999;">${dateText}</small>
+                                </div>
+                                <button onclick="renameRoadmap(${roadmap.id})" style="padding: 6px 12px; border: none; border-radius: 6px; background: #1abc9c; color: white; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;" title="Save name">💾 Save</button>
+                                <button onclick="deleteRoadmap(${roadmap.id}, '${title.replace(/'/g, "\\'")}')" style="padding: 6px 12px; border: none; border-radius: 6px; background: #e74c3c; color: white; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;" title="Delete roadmap">🗑️ Delete</button>
+                            </div>
+                        `;
+                    } else {
+                        // Normal mode: clickable cards
+                        html += `
+                            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #1abc9c;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapById(${roadmap.id})">
+                                <strong>${title}</strong><br>
+                                <small style="color: #999;">${dateText}</small>
+                            </div>
+                        `;
+                    }
                 });
                 html += '</div>';
             }
             
-            if (modal) {
-                modal.innerHTML = html + '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
-                modal.style.display = 'block';
+            html += '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
+            
+            modal.innerHTML = html;
+            
+            // Store roadmaps data for toggling
+            window._myRoadmapsData = roadmaps;
+        }
+        
+        function toggleMyRoadmapsEdit() {
+            const roadmaps = window._myRoadmapsData || [];
+            renderMyRoadmaps(roadmaps, !myRoadmapsEditMode);
+        }
+        
+        async function renameRoadmap(roadmapId) {
+            const input = document.getElementById(`rename-${roadmapId}`);
+            if (!input) return;
+            
+            const newTitle = input.value.trim();
+            if (!newTitle) {
+                alert('Roadmap name cannot be empty.');
+                return;
+            }
+
+            // TODO: Replace with actual API call when backend supports it
+            // e.g. await ApiService.updateRoadmap(roadmapId, { title: newTitle });
+            try {
+                const response = await ApiService.request(`/api/roadmaps/${roadmapId}/`, { 
+                    method: 'PATCH', 
+                    body: { title: newTitle } 
+                });
+                if (response.ok) {
+                    // Update local data
+                    const roadmaps = window._myRoadmapsData || [];
+                    const rm = roadmaps.find(r => r.id === roadmapId);
+                    if (rm) rm.title = newTitle;
+                    renderMyRoadmaps(roadmaps, true);
+                    
+                    // If currently viewing this roadmap, update the display
+                    const currentRoadmapId = new URLSearchParams(window.location.search).get('roadmap_id');
+                    if (String(currentRoadmapId) === String(roadmapId)) {
+                        const titleEl = document.getElementById('input-display');
+                        if (titleEl) titleEl.textContent = `Tailored Roadmap for: ${newTitle}`;
+                    }
+                } else {
+                    alert('Failed to rename roadmap. ' + (response.error || ''));
+                }
+            } catch (e) {
+                alert('Failed to rename roadmap: ' + e.message);
+            }
+        }
+        
+        async function deleteRoadmap(roadmapId, title) {
+            if (!confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) return;
+            
+            try {
+                const response = await ApiService.request(`/api/roadmaps/${roadmapId}/`, { 
+                    method: 'DELETE' 
+                });
+                console.log('Delete response:', response);
+                
+                // 204 No Content or 200 OK both mean success
+                if (response.ok || response.status === 204) {
+                    // Remove from local data and re-render
+                    let roadmaps = window._myRoadmapsData || [];
+                    roadmaps = roadmaps.filter(r => r.id !== roadmapId);
+                    window._myRoadmapsData = roadmaps;
+                    renderMyRoadmaps(roadmaps, true);
+                    
+                    // If currently viewing the deleted roadmap, redirect to home
+                    const currentRoadmapId = new URLSearchParams(window.location.search).get('roadmap_id');
+                    if (String(currentRoadmapId) === String(roadmapId)) {
+                        alert('This roadmap has been deleted. Redirecting to home.');
+                        window.location.href = '../index.html';
+                    }
+                } else if (response.status === 404) {
+                    alert('Roadmap not found. It may have already been deleted.');
+                    // Remove from local list anyway
+                    let roadmaps = window._myRoadmapsData || [];
+                    roadmaps = roadmaps.filter(r => r.id !== roadmapId);
+                    window._myRoadmapsData = roadmaps;
+                    renderMyRoadmaps(roadmaps, true);
+                } else if (response.status === 405) {
+                    alert('The server does not support deleting roadmaps yet. (HTTP 405)');
+                } else {
+                    const errMsg = response.data && response.data.detail ? response.data.detail : (response.error || `HTTP ${response.status}`);
+                    alert('Failed to delete roadmap: ' + errMsg);
+                }
+            } catch (e) {
+                console.error('Delete roadmap error:', e);
+                alert('Failed to delete roadmap: ' + e.message);
             }
         }
 
@@ -1288,14 +1416,52 @@
             
             console.log('Force-directed layout with', normalizedNodes.length, 'nodes and', finalEdges.length, 'edges');
 
-            // Create enriched nodes with styling (no fixed positions — physics will arrange them)
+            // Helper: get module quiz progress from localStorage (placeholder for backend data)
+            function getModuleProgress(moduleId) {
+                const quizResultsKey = `quiz-${moduleId}`;
+                const results = localStorage.getItem(quizResultsKey);
+                if (results) {
+                    try {
+                        const parsed = JSON.parse(results);
+                        return parsed.score !== undefined ? parsed.score : null;
+                    } catch (e) { return null; }
+                }
+                return null; // null = not attempted
+            }
+
+            // Create enriched nodes with styling and progress badge
             const enrichedNodes = normalizedNodes.map((node) => {
+                const progress = getModuleProgress(node.id);
+                const hasProgress = progress !== null;
+                
+                // Build label: module name only; add progress line ONLY if a quiz was completed
+                let label = (node.label && String(node.label).trim()) ? node.label : `Module ${node.id}`;
+                if (hasProgress) {
+                    label += `\nScore: ${progress}%`;
+                }
+
+                // Color based on progress
+                let bgColor = '#1abc9c';      // default teal (no quiz taken)
+                let borderColor = '#16a085';
+                if (hasProgress) {
+                    if (progress >= 80) {
+                        bgColor = '#27ae60';    // green — high score
+                        borderColor = '#1e8449';
+                    } else if (progress >= 50) {
+                        bgColor = '#f39c12';    // orange — mid score
+                        borderColor = '#d68910';
+                    } else {
+                        bgColor = '#e74c3c';    // red — low score
+                        borderColor = '#c0392b';
+                    }
+                }
+
                 return {
                     ...node,
-                    label: (node.label && String(node.label).trim()) ? node.label : `Module ${node.id}`,
+                    label: label,
                     widthConstraint: { minimum: 160, maximum: 240 },
                     heightConstraint: { minimum: 45, valign: 'middle' },
-                    color: { background: '#1abc9c', border: '#16a085', highlight: { background: '#16a085', border: '#0d6b5c' }, hover: { background: '#16a085', border: '#0d6b5c' } },
+                    color: { background: bgColor, border: borderColor, highlight: { background: borderColor, border: '#0d6b5c' }, hover: { background: borderColor, border: '#0d6b5c' } },
                     font: { size: 14, color: 'white', face: 'Arial', bold: true },
                     borderWidth: 3,
                     shape: 'box',
