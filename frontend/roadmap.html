@@ -74,18 +74,20 @@
             padding: 30px;
             border: 3px solid #1abc9c;
             border-radius: 15px;
-            box-shadow: 0 15px 50px rgba(220, 53, 69, 0.3);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
             z-index: 2000;
-            max-width: 400px;
+            max-width: 420px;
             max-height: 85vh;
-            overflow: auto;
-            width: 350px;
+            overflow-y: auto;
+            width: 380px;
         }
         .modal h2 {
             margin-top: 0;
             color: #1abc9c;
-            border-bottom: 2px solid #1abc9c;
-            padding-bottom: 10px;
+            border-bottom: 3px solid #1abc9c;
+            padding-bottom: 12px;
+            font-size: 22px;
+            line-height: 1.3;
         }
         .modal-close {
             position: absolute;
@@ -99,6 +101,96 @@
         }
         .modal-close:hover {
             color: #16a085;
+        }
+        .modal-description {
+            font-size: 14px;
+            color: #555;
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+        .modal-connections-header {
+            text-align: center;
+            margin: 18px 0 4px;
+        }
+        .modal-connections-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+        .modal-connections-header p {
+            font-size: 12px;
+            color: #999;
+            margin: 2px 0 12px;
+        }
+        .connection-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+        }
+        .connection-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .badge-depends {
+            background: #1abc9c;
+            color: white;
+        }
+        .badge-unlocks {
+            background: #1abc9c;
+            color: white;
+        }
+        .connection-card .conn-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 2px;
+        }
+        .connection-card .conn-progress {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .connection-card .conn-desc {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+        .modal-topics-header {
+            text-align: center;
+            font-weight: 600;
+            color: #1abc9c;
+            font-size: 16px;
+            margin-top: 18px;
+            margin-bottom: 4px;
+        }
+        .modal-topics-list {
+            list-style: disc;
+            margin: 6px 0 0 24px;
+            padding: 0;
+            text-align: center;
+            list-style-position: inside;
+        }
+        .modal-topics-list li {
+            font-size: 14px;
+            color: #444;
+            margin-bottom: 3px;
+        }
+        .no-connections {
+            font-size: 13px;
+            color: #aaa;
+            text-align: center;
+            font-style: italic;
+            margin: 8px 0;
         }
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -292,8 +384,8 @@
             position: fixed;
             top: 250px;
             right: 20px;
-            width: 40px;
-            height: 40px;
+            width: 56px;
+            height: 56px;
             background: white;
             padding: 0;
             border-radius: 50%;
@@ -304,7 +396,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 28px;
             transition: all 0.3s ease;
             overflow: hidden;
         }
@@ -362,10 +454,10 @@
         /* Level/XP Display - Collapsible Icon */
         #level-container {
             position: fixed;
-            top: 305px;
+            top: 320px;
             right: 20px;
-            width: 40px;
-            height: 40px;
+            width: 56px;
+            height: 56px;
             background: linear-gradient(135deg, #fff8f0 0%, #fff0e8 100%);
             padding: 0;
             border-radius: 50%;
@@ -376,7 +468,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 28px;
             transition: all 0.3s ease;
             overflow: hidden;
         }
@@ -571,8 +663,10 @@
     <div id="node-modal" class="modal">
         <span class="modal-close" onclick="closeModal()">&times;</span>
         <h2 id="modal-title"></h2>
-        <p id="modal-content"></p>
-        <button id="quiz-button" style="margin-top: 15px; padding: 10px 20px; background-color: #1abc9c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="openQuiz()">📝 Take Quiz</button>
+        <div id="modal-content"></div>
+        <div id="modal-connections"></div>
+        <div id="modal-topics"></div>
+        <button id="quiz-button" style="margin-top: 18px; padding: 12px 24px; background-color: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 15px; width: auto;" onclick="openQuiz()">📝 Take Quiz</button>
         <p id="quiz-score" style="margin-top: 10px; font-size: 14px; color: #666; display: none;"></p>
     </div>
 
@@ -910,7 +1004,7 @@
         
         // Initial positions
         const progressInitialTop = 250;
-        const levelInitialTop = 305;
+        const levelInitialTop = 320;
         
         progressContainer.addEventListener('mouseenter', function() {
             // Move level container down when progress expands
@@ -1624,40 +1718,88 @@
                         const node = window.nodesData.find(n => n.id === nodeId || String(n.id) === String(nodeId));
                         if (node) {
                             const moduleData = modulesById.get(String(nodeId));
+                            const nodeIdStr = String(nodeId);
 
                             // Store current node ID for quiz button
                             window.currentNodeId = nodeId;
-                            window.currentTopicId = moduleTopicMap.get(String(nodeId)) || null;
+                            window.currentTopicId = moduleTopicMap.get(nodeIdStr) || null;
 
-                            if (moduleData) {
-                                document.getElementById('modal-title').textContent = moduleData.title;
-                                const topicsList = (moduleData.topics || []).map(t => `<li>${t.title}</li>`).join('');
-                                const topicsHtml = topicsList ? `<ul style="margin: 10px 0 0 18px;">${topicsList}</ul>` : '<p style="margin-top: 10px; color: #666;">No topics listed.</p>';
-                                
-                                // Show year info
-                                const yearInfo = node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">📅 Year ${node.year}</div>` : '';
-                                
-                                document.getElementById('modal-content').innerHTML = `
-                                    ${yearInfo}
-                                    <div style="font-size: 14px; color: #555;">${moduleData.description || 'Module details coming soon.'}</div>
-                                    <div style="margin-top: 10px; font-weight: 600; color: #1abc9c;">Topics</div>
-                                    ${topicsHtml}
+                            // --- Title ---
+                            const title = (moduleData && moduleData.title) || node.label || `Module ${nodeId}`;
+                            document.getElementById('modal-title').textContent = title;
+
+                            // --- Description ---
+                            const description = (moduleData && moduleData.description) || 'Module details coming soon.';
+                            document.getElementById('modal-content').innerHTML = `
+                                <div class="modal-description">${description}</div>
+                            `;
+
+                            // --- Connections: DEPENDS ON + UNLOCKS ---
+                            const allEdges = window.edges ? window.edges.get() : [];
+                            const dependsOnIds = allEdges.filter(e => String(e.to) === nodeIdStr).map(e => String(e.from));
+                            const unlocksIds = allEdges.filter(e => String(e.from) === nodeIdStr).map(e => String(e.to));
+
+                            let connectionsHtml = '';
+                            if (dependsOnIds.length > 0 || unlocksIds.length > 0) {
+                                connectionsHtml += `
+                                    <div class="modal-connections-header">
+                                        <h3>Why This Connects To Other Modules</h3>
+                                        <p>Dependencies and links from the roadmap graph</p>
+                                    </div>
+                                `;
+
+                                dependsOnIds.forEach(depId => {
+                                    const depModule = modulesById.get(depId);
+                                    const depNode = window.nodesData.find(n => String(n.id) === depId);
+                                    const depTitle = (depModule && depModule.title) || (depNode && depNode.label) || `Module ${depId}`;
+                                    const depProgress = getModuleProgress(depId);
+                                    const progressText = depProgress !== null ? `${depProgress}%` : '0%';
+                                    connectionsHtml += `
+                                        <div class="connection-card" style="cursor: pointer;" onclick="navigateToModule('${depId}')">
+                                            <span class="connection-badge badge-depends">Depends On</span>
+                                            <div class="conn-title">${depTitle}</div>
+                                            <div class="conn-progress">· ${progressText}</div>
+                                            <div class="conn-desc">Builds directly on concepts from the previous module.</div>
+                                        </div>
+                                    `;
+                                });
+
+                                unlocksIds.forEach(unlId => {
+                                    const unlModule = modulesById.get(unlId);
+                                    const unlNode = window.nodesData.find(n => String(n.id) === unlId);
+                                    const unlTitle = (unlModule && unlModule.title) || (unlNode && unlNode.label) || `Module ${unlId}`;
+                                    const unlProgress = getModuleProgress(unlId);
+                                    const progressText = unlProgress !== null ? `${unlProgress}%` : '0%';
+                                    connectionsHtml += `
+                                        <div class="connection-card" style="cursor: pointer;" onclick="navigateToModule('${unlId}')">
+                                            <span class="connection-badge badge-unlocks">Unlocks</span>
+                                            <div class="conn-title">${unlTitle}</div>
+                                            <div class="conn-progress">· ${progressText}</div>
+                                            <div class="conn-desc">Builds directly on concepts from the previous module.</div>
+                                        </div>
+                                    `;
+                                });
+                            } else {
+                                connectionsHtml = '<p class="no-connections">No direct connections to other modules.</p>';
+                            }
+                            document.getElementById('modal-connections').innerHTML = connectionsHtml;
+
+                            // --- Topics ---
+                            const topics = (moduleData && moduleData.topics) || [];
+                            if (topics.length > 0) {
+                                const topicsItems = topics.map(t => `<li>${t.title}</li>`).join('');
+                                document.getElementById('modal-topics').innerHTML = `
+                                    <div class="modal-topics-header">Topics</div>
+                                    <ul class="modal-topics-list">${topicsItems}</ul>
                                 `;
                             } else {
-                                const yearInfo = node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">📅 Year ${node.year}</div>` : '';
-                                document.getElementById('modal-title').textContent = node.label;
-                                document.getElementById('modal-content').innerHTML = `
-                                    ${yearInfo}
-                                    <div style="font-size: 14px; color: #555;">Detailed resources for learning ${node.label} will appear here.</div>
-                                `;
+                                document.getElementById('modal-topics').innerHTML = '';
                             }
 
-                            // Check if quiz has been completed for this module
+                            // --- Quiz score ---
                             const quizResultsKey = `quiz-${nodeId}`;
                             const quizResults = JSON.parse(localStorage.getItem(quizResultsKey));
-                            
                             if (quizResults) {
-                                // Show quiz score
                                 document.getElementById('quiz-score').textContent = `Your Quiz Score: ${quizResults.score}%`;
                                 document.getElementById('quiz-score').style.display = 'block';
                             } else {
@@ -1689,6 +1831,21 @@
 
         function closeModal() {
             document.getElementById('node-modal').style.display = 'none';
+        }
+
+        function navigateToModule(moduleId) {
+            // Close current modal, focus the network on the target node, then simulate a click to open its modal
+            closeModal();
+            if (window.network) {
+                window.network.focus(moduleId, { scale: 1.2, animation: { duration: 500, easingFunction: 'easeInOutQuad' } });
+                // Simulate click after animation
+                setTimeout(() => {
+                    window.network.selectNodes([moduleId]);
+                    // Trigger the click handler manually
+                    const event = { nodes: [moduleId] };
+                    window.network.body.emitter.emit('click', event);
+                }, 550);
+            }
         }
 
         function openQuiz() {
