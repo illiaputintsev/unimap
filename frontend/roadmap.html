@@ -74,20 +74,18 @@
             padding: 30px;
             border: 3px solid #1abc9c;
             border-radius: 15px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 15px 50px rgba(220, 53, 69, 0.3);
             z-index: 2000;
-            max-width: 420px;
+            max-width: 400px;
             max-height: 85vh;
-            overflow-y: auto;
-            width: 380px;
+            overflow: auto;
+            width: 350px;
         }
         .modal h2 {
             margin-top: 0;
             color: #1abc9c;
-            border-bottom: 3px solid #1abc9c;
-            padding-bottom: 12px;
-            font-size: 22px;
-            line-height: 1.3;
+            border-bottom: 2px solid #1abc9c;
+            padding-bottom: 10px;
         }
         .modal-close {
             position: absolute;
@@ -101,96 +99,6 @@
         }
         .modal-close:hover {
             color: #16a085;
-        }
-        .modal-description {
-            font-size: 14px;
-            color: #555;
-            text-align: center;
-            line-height: 1.5;
-            margin-bottom: 18px;
-        }
-        .modal-connections-header {
-            text-align: center;
-            margin: 18px 0 4px;
-        }
-        .modal-connections-header h3 {
-            font-size: 16px;
-            font-weight: 700;
-            color: #333;
-            margin: 0;
-        }
-        .modal-connections-header p {
-            font-size: 12px;
-            color: #999;
-            margin: 2px 0 12px;
-        }
-        .connection-card {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
-        }
-        .connection-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-        .badge-depends {
-            background: #1abc9c;
-            color: white;
-        }
-        .badge-unlocks {
-            background: #1abc9c;
-            color: white;
-        }
-        .connection-card .conn-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 2px;
-        }
-        .connection-card .conn-progress {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 4px;
-        }
-        .connection-card .conn-desc {
-            font-size: 12px;
-            color: #666;
-            font-style: italic;
-        }
-        .modal-topics-header {
-            text-align: center;
-            font-weight: 600;
-            color: #1abc9c;
-            font-size: 16px;
-            margin-top: 18px;
-            margin-bottom: 4px;
-        }
-        .modal-topics-list {
-            list-style: disc;
-            margin: 6px 0 0 24px;
-            padding: 0;
-            text-align: center;
-            list-style-position: inside;
-        }
-        .modal-topics-list li {
-            font-size: 14px;
-            color: #444;
-            margin-bottom: 3px;
-        }
-        .no-connections {
-            font-size: 13px;
-            color: #aaa;
-            text-align: center;
-            font-style: italic;
-            margin: 8px 0;
         }
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -360,12 +268,12 @@
             gap: 12px;
         }
         #profile-pic-avatar {
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
+            border: 2px solid #1abc9c;
             object-fit: cover;
             display: none;
-            margin-left: auto;
         }
         #profile-pic-avatar.show {
             display: block;
@@ -384,8 +292,8 @@
             position: fixed;
             top: 250px;
             right: 20px;
-            width: 56px;
-            height: 56px;
+            width: 40px;
+            height: 40px;
             background: white;
             padding: 0;
             border-radius: 50%;
@@ -396,7 +304,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 28px;
+            font-size: 20px;
             transition: all 0.3s ease;
             overflow: hidden;
         }
@@ -454,10 +362,10 @@
         /* Level/XP Display - Collapsible Icon */
         #level-container {
             position: fixed;
-            top: 320px;
+            top: 305px;
             right: 20px;
-            width: 56px;
-            height: 56px;
+            width: 40px;
+            height: 40px;
             background: linear-gradient(135deg, #fff8f0 0%, #fff0e8 100%);
             padding: 0;
             border-radius: 50%;
@@ -468,7 +376,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 28px;
+            font-size: 20px;
             transition: all 0.3s ease;
             overflow: hidden;
         }
@@ -609,8 +517,7 @@
             <button onclick="addModuleToRoadmap()">Add Module</button>
         </div>
         
-        <a href="profile.html">⚙️ Profile Settings</a>
-        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">🗺️ My Roadmaps</a>
+        <div class="menu-section">⚙️ Navigation</div>        <a href="#" id="my-roads-btn" style="display: none;" onclick="openMyRoadmaps(); return false;">🗺️ My Roadmaps</a>
         <a href="#" onclick="openAchievements(); return false;">🏆 Achievements</a>
         <a href="progress.html">📊 Your Progress</a>
         <a href="index.html">🏠 Home</a>
@@ -621,8 +528,9 @@
 
     <!-- User Info -->
     <div id="user-info">
-        <span id="username">Guest</span>
         <img id="profile-pic-avatar" alt="Profile">
+        <span id="username">Guest</span>
+        <a href="profile.html" style="margin-left: 15px; padding: 8px 15px; background-color: #1abc9c; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.backgroundColor='#16a085'" onmouseout="this.style.backgroundColor='#1abc9c'">⚙️ Profile</a>
     </div>
 
     <!-- Progress Container -->
@@ -663,10 +571,8 @@
     <div id="node-modal" class="modal">
         <span class="modal-close" onclick="closeModal()">&times;</span>
         <h2 id="modal-title"></h2>
-        <div id="modal-content"></div>
-        <div id="modal-connections"></div>
-        <div id="modal-topics"></div>
-        <button id="quiz-button" style="margin-top: 18px; padding: 12px 24px; background-color: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 15px; width: auto;" onclick="openQuiz()">📝 Take Quiz</button>
+        <p id="modal-content"></p>
+        <button id="quiz-button" style="margin-top: 15px; padding: 10px 20px; background-color: #1abc9c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="openQuiz()">📝 Take Quiz</button>
         <p id="quiz-score" style="margin-top: 10px; font-size: 14px; color: #666; display: none;"></p>
     </div>
 
@@ -813,14 +719,11 @@
         }
         
         // Open My Roadmaps modal
-        let myRoadmapsEditMode = false;
-        
         async function openMyRoadmaps() {
             if (!ApiService.isAuthenticated()) {
                 alert('Please login to view your roadmaps');
                 return;
             }
-            myRoadmapsEditMode = false;
             
             let html = '<h2>🗺️ My Roadmaps</h2>';
             html += '<p style="color: #666; text-align: center; padding: 10px;">Loading...</p>';
@@ -841,152 +744,27 @@
             }
 
             const roadmaps = response.data || [];
-            renderMyRoadmaps(roadmaps, false);
-        }
-
-        function renderMyRoadmaps(roadmaps, editMode) {
-            const modal = document.querySelector('.modal');
-            if (!modal) return;
-            
-            myRoadmapsEditMode = editMode;
-            
-            // Header with Edit/Done button
-            let html = '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">';
-            html += '<h2 style="margin: 0;">🗺️ My Roadmaps</h2>';
-            if (roadmaps.length > 0) {
-                if (editMode) {
-                    html += '<button onclick="toggleMyRoadmapsEdit()" style="padding: 6px 16px; border: none; border-radius: 6px; background: #1abc9c; color: white; font-size: 13px; font-weight: 700; cursor: pointer;">Done</button>';
-                } else {
-                    html += '<button onclick="toggleMyRoadmapsEdit()" style="padding: 6px 16px; border: none; border-radius: 6px; background: #3498db; color: white; font-size: 13px; font-weight: 700; cursor: pointer;">✏️ Edit</button>';
-                }
-            }
-            html += '</div>';
-            
             if (roadmaps.length === 0) {
+                html = '<h2>🗺️ My Roadmaps</h2>';
                 html += '<p style="color: #666; text-align: center; padding: 20px;">No roadmaps yet. Generate one from the Home page.</p>';
             } else {
-                html += '<div id="my-roadmaps-list" style="display: flex; flex-direction: column; gap: 10px;">';
+                html = '<h2>🗺️ My Roadmaps</h2>';
+                html += '<div style="display: flex; flex-direction: column; gap: 10px;">';
                 roadmaps.forEach(roadmap => {
                     const dateText = roadmap.created_at ? new Date(roadmap.created_at).toLocaleDateString() : 'Unknown date';
-                    const title = roadmap.title || 'Untitled Roadmap';
-                    
-                    if (editMode) {
-                        // Edit mode: show rename input + delete button
-                        html += `
-                            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; border-left: 4px solid #3498db; display: flex; align-items: center; gap: 8px;">
-                                <div style="flex: 1;">
-                                    <input type="text" id="rename-${roadmap.id}" value="${title.replace(/"/g, '&quot;')}" 
-                                        style="width: 100%; padding: 6px 10px; border: 2px solid #3498db; border-radius: 6px; font-size: 14px; font-weight: 600; box-sizing: border-box;"
-                                        onkeydown="if(event.key==='Enter') renameRoadmap(${roadmap.id})" />
-                                    <small style="color: #999;">${dateText}</small>
-                                </div>
-                                <button onclick="renameRoadmap(${roadmap.id})" style="padding: 6px 12px; border: none; border-radius: 6px; background: #1abc9c; color: white; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;" title="Save name">💾 Save</button>
-                                <button onclick="deleteRoadmap(${roadmap.id}, '${title.replace(/'/g, "\\'")}')" style="padding: 6px 12px; border: none; border-radius: 6px; background: #e74c3c; color: white; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;" title="Delete roadmap">🗑️ Delete</button>
-                            </div>
-                        `;
-                    } else {
-                        // Normal mode: clickable cards
-                        html += `
-                            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #1abc9c;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapById(${roadmap.id})">
-                                <strong>${title}</strong><br>
-                                <small style="color: #999;">${dateText}</small>
-                            </div>
-                        `;
-                    }
+                    html += `
+                        <div style="padding: 12px; background-color: #f5f5f5; border-radius: 8px; cursor: pointer; border-left: 4px solid #1abc9c;" onmouseover="this.style.backgroundColor='#efefef'" onmouseout="this.style.backgroundColor='#f5f5f5'" onclick="loadRoadmapById(${roadmap.id})">
+                            <strong>${roadmap.title || 'Untitled Roadmap'}</strong><br>
+                            <small style="color: #999;">${dateText}</small>
+                        </div>
+                    `;
                 });
                 html += '</div>';
             }
             
-            html += '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
-            
-            modal.innerHTML = html;
-            
-            // Store roadmaps data for toggling
-            window._myRoadmapsData = roadmaps;
-        }
-        
-        function toggleMyRoadmapsEdit() {
-            const roadmaps = window._myRoadmapsData || [];
-            renderMyRoadmaps(roadmaps, !myRoadmapsEditMode);
-        }
-        
-        async function renameRoadmap(roadmapId) {
-            const input = document.getElementById(`rename-${roadmapId}`);
-            if (!input) return;
-            
-            const newTitle = input.value.trim();
-            if (!newTitle) {
-                alert('Roadmap name cannot be empty.');
-                return;
-            }
-
-            // TODO: Replace with actual API call when backend supports it
-            // e.g. await ApiService.updateRoadmap(roadmapId, { title: newTitle });
-            try {
-                const response = await ApiService.request(`/api/roadmaps/${roadmapId}/`, { 
-                    method: 'PATCH', 
-                    body: { title: newTitle } 
-                });
-                if (response.ok) {
-                    // Update local data
-                    const roadmaps = window._myRoadmapsData || [];
-                    const rm = roadmaps.find(r => r.id === roadmapId);
-                    if (rm) rm.title = newTitle;
-                    renderMyRoadmaps(roadmaps, true);
-                    
-                    // If currently viewing this roadmap, update the display
-                    const currentRoadmapId = new URLSearchParams(window.location.search).get('roadmap_id');
-                    if (String(currentRoadmapId) === String(roadmapId)) {
-                        const titleEl = document.getElementById('input-display');
-                        if (titleEl) titleEl.textContent = `Tailored Roadmap for: ${newTitle}`;
-                    }
-                } else {
-                    alert('Failed to rename roadmap. ' + (response.error || ''));
-                }
-            } catch (e) {
-                alert('Failed to rename roadmap: ' + e.message);
-            }
-        }
-        
-        async function deleteRoadmap(roadmapId, title) {
-            if (!confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) return;
-            
-            try {
-                const response = await ApiService.request(`/api/roadmaps/${roadmapId}/`, { 
-                    method: 'DELETE' 
-                });
-                console.log('Delete response:', response);
-                
-                // 204 No Content or 200 OK both mean success
-                if (response.ok || response.status === 204) {
-                    // Remove from local data and re-render
-                    let roadmaps = window._myRoadmapsData || [];
-                    roadmaps = roadmaps.filter(r => r.id !== roadmapId);
-                    window._myRoadmapsData = roadmaps;
-                    renderMyRoadmaps(roadmaps, true);
-                    
-                    // If currently viewing the deleted roadmap, redirect to home
-                    const currentRoadmapId = new URLSearchParams(window.location.search).get('roadmap_id');
-                    if (String(currentRoadmapId) === String(roadmapId)) {
-                        alert('This roadmap has been deleted. Redirecting to home.');
-                        window.location.href = '../index.html';
-                    }
-                } else if (response.status === 404) {
-                    alert('Roadmap not found. It may have already been deleted.');
-                    // Remove from local list anyway
-                    let roadmaps = window._myRoadmapsData || [];
-                    roadmaps = roadmaps.filter(r => r.id !== roadmapId);
-                    window._myRoadmapsData = roadmaps;
-                    renderMyRoadmaps(roadmaps, true);
-                } else if (response.status === 405) {
-                    alert('The server does not support deleting roadmaps yet. (HTTP 405)');
-                } else {
-                    const errMsg = response.data && response.data.detail ? response.data.detail : (response.error || `HTTP ${response.status}`);
-                    alert('Failed to delete roadmap: ' + errMsg);
-                }
-            } catch (e) {
-                console.error('Delete roadmap error:', e);
-                alert('Failed to delete roadmap: ' + e.message);
+            if (modal) {
+                modal.innerHTML = html + '<button onclick="closeModal()" style="width: 100%; margin-top: 15px; padding: 10px; background: #1abc9c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>';
+                modal.style.display = 'block';
             }
         }
 
@@ -1004,7 +782,7 @@
         
         // Initial positions
         const progressInitialTop = 250;
-        const levelInitialTop = 320;
+        const levelInitialTop = 305;
         
         progressContainer.addEventListener('mouseenter', function() {
             // Move level container down when progress expands
@@ -1021,168 +799,6 @@
         const logo = document.getElementById('logo');
         let isDragging = false;
         let offsetX, offsetY;
-
-        /**
-         * Topological sort of nodes based on edges (prerequisites come first).
-         * Uses Kahn's algorithm with fallback to order property.
-         * @param {Array} nodes - Array of node objects
-         * @param {Array} edges - Array of edge objects with from/to properties
-         * @returns {Array} Sorted array of nodes
-         */
-        function topologicalSort(nodes, edges) {
-            const nodeMap = new Map(nodes.map(n => [n.id, n]));
-            const inDegree = new Map();
-            const adjList = new Map();
-            
-            // Initialize
-            nodes.forEach(node => {
-                inDegree.set(node.id, 0);
-                adjList.set(node.id, []);
-            });
-            
-            // Build adjacency list and in-degree count
-            edges.forEach(edge => {
-                if (adjList.has(edge.from) && inDegree.has(edge.to)) {
-                    adjList.get(edge.from).push(edge.to);
-                    inDegree.set(edge.to, inDegree.get(edge.to) + 1);
-                }
-            });
-            
-            // Start with nodes that have no prerequisites (in-degree 0)
-            const queue = [];
-            nodes.forEach(node => {
-                if (inDegree.get(node.id) === 0) {
-                    queue.push(node);
-                }
-            });
-            
-            // Sort nodes with in-degree 0 by their order property
-            queue.sort((a, b) => (a.order || 0) - (b.order || 0));
-            
-            const result = [];
-            
-            while (queue.length > 0) {
-                const current = queue.shift();
-                result.push(current);
-                
-                // Get neighbors and sort by order
-                const neighbors = adjList.get(current.id) || [];
-                neighbors.forEach(neighborId => {
-                    inDegree.set(neighborId, inDegree.get(neighborId) - 1);
-                    if (inDegree.get(neighborId) === 0) {
-                        const neighborNode = nodeMap.get(neighborId);
-                        if (neighborNode) {
-                            // Insert in order-sorted position
-                            let inserted = false;
-                            for (let i = 0; i < queue.length; i++) {
-                                if ((neighborNode.order || 0) < (queue[i].order || 0)) {
-                                    queue.splice(i, 0, neighborNode);
-                                    inserted = true;
-                                    break;
-                                }
-                            }
-                            if (!inserted) queue.push(neighborNode);
-                        }
-                    }
-                });
-            }
-            
-            // Handle any remaining nodes (cycles or disconnected)
-            nodes.forEach(node => {
-                if (!result.find(n => n.id === node.id)) {
-                    result.push(node);
-                }
-            });
-            
-            return result;
-        }
-
-        /**
-         * Infer module years from prerequisite edges using topological ordering.
-         * Modules with no prerequisites start at Year 1.
-         * A module's year = max(year of all prerequisites) + 1, capped at 3.
-         * @param {Array} modules - Array of module objects with id property
-         * @param {Array} edges - Array of edge objects with source/from and target/to properties
-         * @returns {Map} Map of moduleId -> inferred year (1, 2, or 3)
-         */
-        function inferYearsFromEdges(modules, edges) {
-            const yearMap = new Map();
-            const moduleIds = new Set(modules.map(m => String(m.id)));
-            
-            // Build adjacency list (incoming edges for each node)
-            const incomingEdges = new Map();
-            const outgoingEdges = new Map();
-            moduleIds.forEach(id => {
-                incomingEdges.set(id, []);
-                outgoingEdges.set(id, []);
-            });
-            
-            edges.forEach(edge => {
-                const from = String(edge.source || edge.from);
-                const to = String(edge.target || edge.to);
-                if (moduleIds.has(from) && moduleIds.has(to)) {
-                    incomingEdges.get(to).push(from);
-                    outgoingEdges.get(from).push(to);
-                }
-            });
-            
-            // Initialize all modules to year 0 (unassigned)
-            moduleIds.forEach(id => yearMap.set(id, 0));
-            
-            // Use BFS/topological approach: process nodes level by level
-            // Nodes with no incoming edges start at Year 1
-            const queue = [];
-            moduleIds.forEach(id => {
-                if (incomingEdges.get(id).length === 0) {
-                    yearMap.set(id, 1);
-                    queue.push(id);
-                }
-            });
-            
-            // Process queue: for each node, update its dependents
-            while (queue.length > 0) {
-                const currentId = queue.shift();
-                const currentYear = yearMap.get(currentId);
-                
-                outgoingEdges.get(currentId).forEach(dependentId => {
-                    // Dependent's year should be at least current + 1
-                    const newYear = Math.min(currentYear + 1, 3);
-                    if (newYear > yearMap.get(dependentId)) {
-                        yearMap.set(dependentId, newYear);
-                    }
-                    
-                    // Check if all prerequisites of dependent have been assigned
-                    const allPrereqsAssigned = incomingEdges.get(dependentId).every(prereq => yearMap.get(prereq) > 0);
-                    if (allPrereqsAssigned && !queue.includes(dependentId)) {
-                        // Recalculate year based on all prerequisites
-                        const maxPrereqYear = Math.max(...incomingEdges.get(dependentId).map(prereq => yearMap.get(prereq)));
-                        yearMap.set(dependentId, Math.min(maxPrereqYear + 1, 3));
-                        queue.push(dependentId);
-                    }
-                });
-            }
-            
-            // Handle any remaining unassigned nodes (cycles or disconnected)
-            moduleIds.forEach(id => {
-                if (yearMap.get(id) === 0) {
-                    // If has incoming edges, calculate from prerequisites; otherwise Year 1
-                    const prereqs = incomingEdges.get(id);
-                    if (prereqs.length > 0) {
-                        const assignedPrereqs = prereqs.filter(p => yearMap.get(p) > 0);
-                        if (assignedPrereqs.length > 0) {
-                            const maxYear = Math.max(...assignedPrereqs.map(p => yearMap.get(p)));
-                            yearMap.set(id, Math.min(maxYear + 1, 3));
-                        } else {
-                            yearMap.set(id, 1);
-                        }
-                    } else {
-                        yearMap.set(id, 1);
-                    }
-                }
-            });
-            
-            return yearMap;
-        }
 
         // Sample data for the roadmap (demonstrates year-based layout)
         const sampleNodes = [
@@ -1224,23 +840,10 @@
             const nodesData = [];
             const edgesData = [];
             
-            // First extract edges data for year inference (exclude 'contains' module→topic edges)
-            const rawEdges = [];
-            if (Array.isArray(roadmap.edges)) {
-                roadmap.edges.forEach(edge => {
-                    if (edge.edge_type === 'contains') return;
-                    rawEdges.push({ source: String(edge.source), target: String(edge.target) });
-                });
-            }
-            
-            // Infer years from prerequisite relationships (edges)
-            const inferredYears = inferYearsFromEdges(modules, rawEdges);
-            
             // Determine year for each module based on:
             // 1. module.year property (if exists)
             // 2. module.level property (if exists)  
-            // 3. Inferred from prerequisite edges
-            // 4. Fallback: divide modules into 3 years by order
+            // 3. Inferred from order (divide modules into 3 years)
             const totalModules = modules.length;
             const modulesPerYear = Math.ceil(totalModules / 3);
             
@@ -1248,17 +851,14 @@
                 const moduleId = String(module.id);
                 modulesById.set(moduleId, { ...module, id: moduleId });
                 
-                // Determine year: use explicit year/level, infer from edges, or fallback to order
+                // Determine year: use explicit year/level, or infer from order
                 let year = 1;
                 if (module.year !== undefined) {
                     year = module.year;
                 } else if (module.level !== undefined) {
                     year = module.level;
-                } else if (inferredYears.has(moduleId) && inferredYears.get(moduleId) > 0) {
-                    // Use year inferred from prerequisite edges
-                    year = inferredYears.get(moduleId);
                 } else {
-                    // Fallback: Infer year from order (distribute across 3 years)
+                    // Infer year from order (distribute across 3 years)
                     year = Math.floor(index / modulesPerYear) + 1;
                     year = Math.min(year, 3); // Cap at year 3
                 }
@@ -1268,7 +868,10 @@
                     id: moduleId, 
                     label: module.title,
                     year: year,
-                    order: module.order || index
+                    order: module.order || index,
+                    clusterId: module.cluster_id || module.clusterId || null,
+                    clusterLabel: module.cluster_label || module.clusterLabel || null,
+                    clusterIndex: module.cluster_index || module.clusterIndex || null
                 });
                 
                 // Store topics for modal display
@@ -1277,53 +880,23 @@
                 }
             });
             
-            // Use ONLY dependency edges between modules (exclude 'contains' edges which are module→topic)
+            // Use ONLY explicit edges from the roadmap matrix (relationships between modules)
             if (Array.isArray(roadmap.edges)) {
                 const nodeIds = new Set(nodesData.map(n => String(n.id)));
-                
-                // Build a set of all topic IDs so we can exclude edges involving topics
-                const topicIdSet = new Set();
-                modules.forEach(module => {
-                    (module.topics || []).forEach(topic => {
-                        if (topic.id) topicIdSet.add(String(topic.id));
-                    });
-                });
-                
-                // Debug: log all edges with their edge_type
-                const edgesByType = {};
+                const normalizeRoadmapEdge = (edge) => {
+                    if (!edge || typeof edge !== 'object') return null;
+                    const from = edge.source ?? edge.from ?? edge.source_id ?? edge.sourceId;
+                    const to = edge.target ?? edge.to ?? edge.target_id ?? edge.targetId;
+                    if (from === undefined || from === null || to === undefined || to === null) return null;
+                    return { from: String(from), to: String(to) };
+                };
                 roadmap.edges.forEach(edge => {
-                    const t = edge.edge_type || 'unknown';
-                    if (!edgesByType[t]) edgesByType[t] = [];
-                    edgesByType[t].push({ source: edge.source, target: edge.target });
-                });
-                console.log('=== buildNetworkFromRoadmap EDGE DEBUG ===');
-                console.log('Total raw edges:', roadmap.edges.length);
-                console.log('Edge types:', Object.keys(edgesByType).map(t => t + ': ' + edgesByType[t].length).join(', '));
-                console.log('Edges by type:', JSON.stringify(edgesByType, null, 2));
-                console.log('Topic IDs:', [...topicIdSet]);
-                
-                roadmap.edges.forEach(edge => {
-                    // Skip 'contains' edges — those are module→topic parent-child relationships
-                    if (edge.edge_type === 'contains') return;
-                    const from = String(edge.source);
-                    const to = String(edge.target);
-                    // Skip edges where source or target is a topic node
-                    if (topicIdSet.has(from) || topicIdSet.has(to)) return;
-                    if (nodeIds.has(from) && nodeIds.has(to)) {
-                        edgesData.push({ from, to });
+                    const normalized = normalizeRoadmapEdge(edge);
+                    if (!normalized) return;
+                    if (nodeIds.has(normalized.from) && nodeIds.has(normalized.to)) {
+                        edgesData.push(normalized);
                     }
                 });
-                
-                // Debug: Professional Practice edges
-                const ppNode = nodesData.find(n => n.label && n.label.toLowerCase().includes('professional practice'));
-                if (ppNode) {
-                    const ppId = String(ppNode.id);
-                    const ppEdgesAll = roadmap.edges.filter(e => String(e.source) === ppId || String(e.target) === ppId);
-                    console.log('Professional Practice (id=' + ppId + ') ALL raw edges:', JSON.stringify(ppEdgesAll));
-                    const ppEdgesFiltered = edgesData.filter(e => String(e.from) === ppId || String(e.to) === ppId);
-                    console.log('Professional Practice FILTERED edges:', JSON.stringify(ppEdgesFiltered));
-                }
-                console.log('Final edgesData count:', edgesData.length);
             }
 
             const titleText = roadmap.title || (roadmap.course && roadmap.course.title) || 'Student Roadmap';
@@ -1430,8 +1003,8 @@
                 const graphWidth = Math.max(...xs) - Math.min(...xs);
                 const graphHeight = Math.max(...ys) - Math.min(...ys);
 
-                const targetWidth = Math.min(Math.max(Math.ceil(graphWidth + 700), 1200), 1900);
-                const targetHeight = Math.min(Math.max(Math.ceil(graphHeight + 700), 700), 2800);
+                const targetWidth = Math.min(Math.max(Math.ceil(graphWidth + 580), 1100), 1800);
+                const targetHeight = Math.min(Math.max(Math.ceil(graphHeight + 430), 620), 2200);
 
                 container.style.width = '95%';
                 container.style.maxWidth = `${targetWidth}px`;
@@ -1443,6 +1016,491 @@
             } catch (error) {
                 console.error('Error resizing roadmap container:', error);
             }
+        }
+
+        function buildUndirectedNeighborMap(normalizedNodes, adjacencyEdges) {
+            const neighborMap = new Map();
+
+            normalizedNodes.forEach(node => {
+                neighborMap.set(node.id, new Map());
+            });
+
+            adjacencyEdges.forEach(edge => {
+                if (!neighborMap.has(edge.from) || !neighborMap.has(edge.to)) return;
+                if (edge.from === edge.to) return;
+
+                const fromNeighbors = neighborMap.get(edge.from);
+                const toNeighbors = neighborMap.get(edge.to);
+
+                fromNeighbors.set(edge.to, (fromNeighbors.get(edge.to) || 0) + 1);
+                toNeighbors.set(edge.from, (toNeighbors.get(edge.from) || 0) + 1);
+            });
+
+            return neighborMap;
+        }
+
+        function shortestDistancesWithinCluster(seedId, clusterNodeSet, neighborMap) {
+            const distances = new Map([[seedId, 0]]);
+            const queue = [seedId];
+
+            while (queue.length > 0) {
+                const current = queue.shift();
+                const currentDistance = distances.get(current);
+                const neighbors = neighborMap.get(current);
+                if (!neighbors) continue;
+
+                neighbors.forEach((_, neighborId) => {
+                    if (!clusterNodeSet.has(neighborId)) return;
+                    if (distances.has(neighborId)) return;
+                    distances.set(neighborId, currentDistance + 1);
+                    queue.push(neighborId);
+                });
+            }
+
+            return distances;
+        }
+
+        function splitClusterByConnectivity(nodeIds, neighborMap, nodeById, parts = 2) {
+            if (!Array.isArray(nodeIds) || nodeIds.length < Math.max(4, parts * 2) || parts < 2) {
+                return [nodeIds];
+            }
+
+            const clusterNodeSet = new Set(nodeIds);
+            const degree = new Map(
+                nodeIds.map(id => [
+                    id,
+                    Array.from((neighborMap.get(id) || new Map()).keys()).filter(neighborId => clusterNodeSet.has(neighborId)).length
+                ])
+            );
+            const scoreByNode = (id) => {
+                const node = nodeById.get(id) || {};
+                const order = Number.isFinite(node.order) ? node.order : Number.MAX_SAFE_INTEGER;
+                return { degree: degree.get(id) || 0, order };
+            };
+            const compareNodePriority = (a, b) => {
+                const scoreA = scoreByNode(a);
+                const scoreB = scoreByNode(b);
+                if (scoreA.degree !== scoreB.degree) return scoreB.degree - scoreA.degree;
+                return scoreA.order - scoreB.order;
+            };
+
+            const sortedByPriority = nodeIds.slice().sort(compareNodePriority);
+            const seeds = [sortedByPriority[0]];
+
+            while (seeds.length < parts) {
+                const seedDistanceMaps = seeds.map(seed => shortestDistancesWithinCluster(seed, clusterNodeSet, neighborMap));
+                let bestCandidate = null;
+                let bestDistance = -1;
+
+                nodeIds.forEach(candidateId => {
+                    if (seeds.includes(candidateId)) return;
+                    let minDistanceToSeeds = Infinity;
+                    seedDistanceMaps.forEach(distanceMap => {
+                        const distance = distanceMap.has(candidateId) ? distanceMap.get(candidateId) : Infinity;
+                        minDistanceToSeeds = Math.min(minDistanceToSeeds, distance);
+                    });
+
+                    if (minDistanceToSeeds > bestDistance) {
+                        bestCandidate = candidateId;
+                        bestDistance = minDistanceToSeeds;
+                        return;
+                    }
+                    if (minDistanceToSeeds === bestDistance && bestCandidate) {
+                        if (compareNodePriority(candidateId, bestCandidate) < 0) {
+                            bestCandidate = candidateId;
+                        }
+                    }
+                });
+
+                if (!bestCandidate || seeds.includes(bestCandidate)) {
+                    break;
+                }
+                seeds.push(bestCandidate);
+            }
+
+            if (seeds.length < 2) {
+                return [nodeIds];
+            }
+
+            const distancesBySeed = new Map(
+                seeds.map(seed => [seed, shortestDistancesWithinCluster(seed, clusterNodeSet, neighborMap)])
+            );
+            const assignedBySeed = new Map(seeds.map(seed => [seed, []]));
+            const assignmentLoad = new Map(seeds.map(seed => [seed, 0]));
+
+            const nodesByAssignmentOrder = nodeIds
+                .slice()
+                .sort((a, b) => {
+                    const degreeA = degree.get(a) || 0;
+                    const degreeB = degree.get(b) || 0;
+                    if (degreeA !== degreeB) return degreeB - degreeA;
+                    const orderA = Number.isFinite((nodeById.get(a) || {}).order) ? (nodeById.get(a) || {}).order : Number.MAX_SAFE_INTEGER;
+                    const orderB = Number.isFinite((nodeById.get(b) || {}).order) ? (nodeById.get(b) || {}).order : Number.MAX_SAFE_INTEGER;
+                    return orderA - orderB;
+                });
+
+            nodesByAssignmentOrder.forEach(nodeId => {
+                let bestSeed = seeds[0];
+                let bestDistance = Infinity;
+                let bestLoad = assignmentLoad.get(bestSeed) || 0;
+
+                seeds.forEach(seed => {
+                    const distanceMap = distancesBySeed.get(seed);
+                    const distance = distanceMap.has(nodeId) ? distanceMap.get(nodeId) : Infinity;
+                    const load = assignmentLoad.get(seed) || 0;
+                    if (distance < bestDistance) {
+                        bestSeed = seed;
+                        bestDistance = distance;
+                        bestLoad = load;
+                        return;
+                    }
+                    if (distance === bestDistance && load < bestLoad) {
+                        bestSeed = seed;
+                        bestLoad = load;
+                    }
+                });
+
+                assignedBySeed.get(bestSeed).push(nodeId);
+                assignmentLoad.set(bestSeed, (assignmentLoad.get(bestSeed) || 0) + 1);
+            });
+
+            const groups = Array.from(assignedBySeed.values()).filter(group => group.length > 0);
+            if (groups.length < 2) {
+                const ordered = nodeIds
+                    .slice()
+                    .sort((a, b) => {
+                        const orderA = Number.isFinite((nodeById.get(a) || {}).order) ? (nodeById.get(a) || {}).order : Number.MAX_SAFE_INTEGER;
+                        const orderB = Number.isFinite((nodeById.get(b) || {}).order) ? (nodeById.get(b) || {}).order : Number.MAX_SAFE_INTEGER;
+                        return orderA - orderB;
+                    });
+                const midpoint = Math.ceil(ordered.length / 2);
+                return [ordered.slice(0, midpoint), ordered.slice(midpoint)].filter(group => group.length > 0);
+            }
+
+            groups.forEach(group => {
+                group.sort((a, b) => {
+                    const orderA = Number.isFinite((nodeById.get(a) || {}).order) ? (nodeById.get(a) || {}).order : Number.MAX_SAFE_INTEGER;
+                    const orderB = Number.isFinite((nodeById.get(b) || {}).order) ? (nodeById.get(b) || {}).order : Number.MAX_SAFE_INTEGER;
+                    if (orderA !== orderB) return orderA - orderB;
+                    return String((nodeById.get(a) || {}).label || a).localeCompare(String((nodeById.get(b) || {}).label || b));
+                });
+            });
+
+            return groups;
+        }
+
+        function enforceClusterCount(initialClusters, neighborMap, nodeById, totalNodes) {
+            const clusters = initialClusters.map(cluster => cluster.slice());
+            const targetClusterCount = Math.max(
+                1,
+                Math.min(8, Math.round(Math.sqrt(Math.max(totalNodes, 1) / 1.8)))
+            );
+
+            while (clusters.length < targetClusterCount) {
+                let splitIndex = -1;
+                let splitSize = 0;
+                clusters.forEach((cluster, index) => {
+                    if (cluster.length > splitSize) {
+                        splitIndex = index;
+                        splitSize = cluster.length;
+                    }
+                });
+
+                if (splitIndex < 0 || splitSize < 5) {
+                    break;
+                }
+
+                const clusterToSplit = clusters[splitIndex];
+                const splitResult = splitClusterByConnectivity(clusterToSplit, neighborMap, nodeById, 2)
+                    .filter(group => group.length > 0);
+
+                if (splitResult.length < 2) {
+                    break;
+                }
+
+                const smallestGroupSize = Math.min(...splitResult.map(group => group.length));
+                if (smallestGroupSize < 2) {
+                    break;
+                }
+
+                clusters.splice(splitIndex, 1, ...splitResult);
+            }
+
+            return clusters;
+        }
+
+        function detectConnectivityClusters(normalizedNodes, adjacencyEdges) {
+            const neighborMap = buildUndirectedNeighborMap(normalizedNodes, adjacencyEdges);
+            const nodeById = new Map(normalizedNodes.map(node => [node.id, node]));
+
+            const hintClusters = new Map();
+            normalizedNodes.forEach(node => {
+                const hintId = node.clusterId
+                    || node.cluster_id
+                    || (node.clusterIndex !== undefined ? `hint-index-${node.clusterIndex}` : null)
+                    || (node.cluster_index !== undefined ? `hint-index-${node.cluster_index}` : null)
+                    || null;
+                if (!hintId) return;
+                if (!hintClusters.has(hintId)) {
+                    hintClusters.set(hintId, []);
+                }
+                hintClusters.get(hintId).push(node.id);
+            });
+
+            if (hintClusters.size >= 2) {
+                const sortedHintGroups = Array.from(hintClusters.values())
+                    .map(group => group.slice())
+                    .filter(group => group.length > 0)
+                    .map(group => group.sort((a, b) => {
+                        const nodeA = nodeById.get(a) || {};
+                        const nodeB = nodeById.get(b) || {};
+                        const orderA = Number.isFinite(nodeA.order) ? nodeA.order : Number.MAX_SAFE_INTEGER;
+                        const orderB = Number.isFinite(nodeB.order) ? nodeB.order : Number.MAX_SAFE_INTEGER;
+                        if (orderA !== orderB) return orderA - orderB;
+                        return String(nodeA.label || a).localeCompare(String(nodeB.label || b));
+                    }))
+                    .sort((groupA, groupB) => {
+                        if (groupA.length !== groupB.length) return groupB.length - groupA.length;
+                        const avgOrder = (group) => {
+                            const total = group.reduce((sum, id) => {
+                                const node = nodeById.get(id) || {};
+                                const order = Number.isFinite(node.order) ? node.order : 0;
+                                return sum + order;
+                            }, 0);
+                            return total / Math.max(group.length, 1);
+                        };
+                        return avgOrder(groupA) - avgOrder(groupB);
+                    });
+
+                const clusters = new Map();
+                const nodeToCluster = new Map();
+                sortedHintGroups.forEach((group, index) => {
+                    const clusterId = `cluster-${index + 1}`;
+                    clusters.set(clusterId, group);
+                    group.forEach(nodeId => nodeToCluster.set(nodeId, clusterId));
+                });
+
+                return {
+                    neighborMap,
+                    clusters,
+                    nodeToCluster,
+                    orderedClusterIds: Array.from(clusters.keys())
+                };
+            }
+
+            const labels = new Map(normalizedNodes.map(node => [node.id, node.id]));
+
+            const orderedNodeIds = normalizedNodes
+                .slice()
+                .sort((a, b) => {
+                    const degreeA = neighborMap.get(a.id).size;
+                    const degreeB = neighborMap.get(b.id).size;
+                    if (degreeA !== degreeB) return degreeB - degreeA;
+                    const orderA = Number.isFinite(a.order) ? a.order : Number.MAX_SAFE_INTEGER;
+                    const orderB = Number.isFinite(b.order) ? b.order : Number.MAX_SAFE_INTEGER;
+                    if (orderA !== orderB) return orderA - orderB;
+                    return String(a.label || a.id).localeCompare(String(b.label || b.id));
+                })
+                .map(node => node.id);
+
+            const maxIterations = 25;
+            for (let iteration = 0; iteration < maxIterations; iteration += 1) {
+                let changed = false;
+                const clusterSizes = new Map();
+                labels.forEach(label => {
+                    clusterSizes.set(label, (clusterSizes.get(label) || 0) + 1);
+                });
+
+                orderedNodeIds.forEach(nodeId => {
+                    const neighbors = neighborMap.get(nodeId);
+                    if (!neighbors || neighbors.size === 0) return;
+
+                    const currentLabel = labels.get(nodeId);
+                    const labelScores = new Map([[currentLabel, 0]]);
+
+                    neighbors.forEach((weight, neighborId) => {
+                        const neighborLabel = labels.get(neighborId);
+                        labelScores.set(neighborLabel, (labelScores.get(neighborLabel) || 0) + weight);
+                    });
+
+                    let bestLabel = currentLabel;
+                    let bestScore = -Infinity;
+
+                    labelScores.forEach((score, label) => {
+                        const size = clusterSizes.get(label) || 1;
+                        let adjustedScore = score / Math.pow(size, 0.35);
+                        if (label === currentLabel) adjustedScore += 0.08;
+
+                        if (adjustedScore > bestScore) {
+                            bestLabel = label;
+                            bestScore = adjustedScore;
+                            return;
+                        }
+                        if (adjustedScore === bestScore && String(label) < String(bestLabel)) {
+                            bestLabel = label;
+                        }
+                    });
+
+                    if (bestLabel !== currentLabel) {
+                        labels.set(nodeId, bestLabel);
+                        changed = true;
+                    }
+                });
+
+                if (!changed) break;
+            }
+
+            const labelToIds = new Map();
+            labels.forEach((label, nodeId) => {
+                if (!labelToIds.has(label)) labelToIds.set(label, []);
+                labelToIds.get(label).push(nodeId);
+            });
+
+            const singletonIds = [];
+            labelToIds.forEach(nodeIds => {
+                if (nodeIds.length !== 1) return;
+                const nodeId = nodeIds[0];
+                if ((neighborMap.get(nodeId)?.size || 0) > 0) {
+                    singletonIds.push(nodeId);
+                }
+            });
+
+            singletonIds.forEach(nodeId => {
+                const neighbors = neighborMap.get(nodeId);
+                if (!neighbors || neighbors.size === 0) return;
+
+                let bestLabel = labels.get(nodeId);
+                let bestWeight = -Infinity;
+
+                neighbors.forEach((weight, neighborId) => {
+                    const candidateLabel = labels.get(neighborId);
+                    if (candidateLabel === labels.get(nodeId)) return;
+                    if (weight > bestWeight) {
+                        bestLabel = candidateLabel;
+                        bestWeight = weight;
+                    }
+                });
+
+                if (bestLabel && bestLabel !== labels.get(nodeId)) {
+                    labels.set(nodeId, bestLabel);
+                }
+            });
+
+            const rawClusters = new Map();
+            labels.forEach((label, nodeId) => {
+                if (!rawClusters.has(label)) rawClusters.set(label, []);
+                rawClusters.get(label).push(nodeId);
+            });
+
+            const isolatedNodes = [];
+            const mixedClusters = [];
+
+            rawClusters.forEach(nodeIds => {
+                const isIsolatedCluster = nodeIds.every(nodeId => (neighborMap.get(nodeId)?.size || 0) === 0);
+                if (isIsolatedCluster) {
+                    isolatedNodes.push(...nodeIds);
+                    return;
+                }
+                mixedClusters.push(nodeIds);
+            });
+
+            if (isolatedNodes.length > 0) {
+                mixedClusters.push(isolatedNodes);
+            }
+
+            const rebalancedClusters = enforceClusterCount(
+                mixedClusters,
+                neighborMap,
+                nodeById,
+                normalizedNodes.length
+            );
+
+            rebalancedClusters.forEach(nodeIds => {
+                nodeIds.sort((a, b) => {
+                    const nodeA = nodeById.get(a) || {};
+                    const nodeB = nodeById.get(b) || {};
+                    const orderA = Number.isFinite(nodeA.order) ? nodeA.order : Number.MAX_SAFE_INTEGER;
+                    const orderB = Number.isFinite(nodeB.order) ? nodeB.order : Number.MAX_SAFE_INTEGER;
+                    if (orderA !== orderB) return orderA - orderB;
+                    return String(nodeA.label || a).localeCompare(String(nodeB.label || b));
+                });
+            });
+
+            rebalancedClusters.sort((clusterA, clusterB) => {
+                if (clusterA.length !== clusterB.length) return clusterB.length - clusterA.length;
+                const avgOrder = (cluster) => {
+                    const total = cluster.reduce((sum, id) => {
+                        const node = nodeById.get(id) || {};
+                        const order = Number.isFinite(node.order) ? node.order : 0;
+                        return sum + order;
+                    }, 0);
+                    return total / Math.max(cluster.length, 1);
+                };
+                return avgOrder(clusterA) - avgOrder(clusterB);
+            });
+
+            const clusters = new Map();
+            const nodeToCluster = new Map();
+
+            rebalancedClusters.forEach((nodeIds, index) => {
+                const clusterId = `cluster-${index + 1}`;
+                clusters.set(clusterId, nodeIds);
+                nodeIds.forEach(nodeId => nodeToCluster.set(nodeId, clusterId));
+            });
+
+            return {
+                neighborMap,
+                clusters,
+                nodeToCluster,
+                orderedClusterIds: Array.from(clusters.keys())
+            };
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatRelatedModulesHtml(relatedModules) {
+            const items = (Array.isArray(relatedModules) ? relatedModules : [])
+                .filter(item => item && item.module_title)
+                .slice(0, 10);
+
+            if (items.length === 0) {
+                return '';
+            }
+
+            const rows = items.map(item => {
+                const relationshipLabel = item.relationship_label || (item.direction === 'incoming' ? 'Depends on' : 'Related to');
+                const influenceText = Number.isFinite(Number(item.influence_percent))
+                    ? ` · ${Number(item.influence_percent).toFixed(1).replace(/\.0$/, '')}%`
+                    : '';
+                const reasonText = item.reason || item.rationale || '';
+                const directionChipColor = item.direction === 'incoming' ? '#0f766e' : '#1d4ed8';
+
+                return `
+                    <div style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; margin-top: 8px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                            <span style="display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: white; background: ${directionChipColor}; border-radius: 999px; padding: 3px 8px;">${escapeHtml(relationshipLabel)}</span>
+                            <span style="font-size: 13px; font-weight: 600; color: #0f172a;">${escapeHtml(item.module_title)}</span>
+                            <span style="font-size: 12px; color: #64748b;">${escapeHtml(influenceText)}</span>
+                        </div>
+                        <div style="font-size: 12px; color: #475569; margin-top: 6px; line-height: 1.45;">
+                            ${escapeHtml(reasonText || 'Related in the roadmap dependency graph.')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div style="margin-top: 12px; font-weight: 700; color: #0f766e;">Why This Connects To Other Modules</div>
+                <div style="margin-top: 2px; font-size: 12px; color: #64748b;">Dependencies and links from the roadmap graph</div>
+                <div>${rows}</div>
+            `;
         }
 
         // Function to create the network
@@ -1463,17 +1521,13 @@
             console.log('Container found:', container);
             console.log('Container dimensions:', container.offsetWidth, 'x', container.offsetHeight);
             
-            // Ensure container has proper styling — fill visible viewport
+            // Ensure container has proper styling
             container.style.display = 'block';
             container.style.position = 'relative';
             container.style.width = '95%';
             container.style.maxWidth = '1600px';
-            // Set height to fill remaining viewport so nodes are visible without scrolling
-            const headerOffset = container.getBoundingClientRect().top + window.scrollY;
-            const viewportHeight = window.innerHeight;
-            const containerHeight = Math.max(500, viewportHeight - headerOffset - 20);
-            container.style.minHeight = containerHeight + 'px';
-            container.style.height = containerHeight + 'px';
+            container.style.minHeight = '600px';
+            container.style.height = 'auto';
             container.style.margin = '20px auto';
             container.style.backgroundColor = 'white';
             container.style.borderRadius = '15px';
@@ -1496,87 +1550,409 @@
             const adjacencyEdges = normalizedEdges.filter(
                 edge => nodeIdSet.has(edge.from) && nodeIdSet.has(edge.to)
             );
+            const nodeById = new Map(normalizedNodes.map(node => [node.id, node]));
 
-            // ══════════════════════════════════════════════════════════════════
-            // FORCE-DIRECTED LAYOUT: Physics-based graph layout
-            // Nodes repel each other, edges pull linked nodes together
-            // Naturally clusters related topics and shows all connections
-            // ══════════════════════════════════════════════════════════════════
-            
-            nodesByLevel = new Map(); // not used for force layout but kept for compat
-            
-            // Use ALL edges from the API — these are the real prerequisite relationships
-            const finalEdges = adjacencyEdges;
-            
-            console.log('Force-directed layout with', normalizedNodes.length, 'nodes and', finalEdges.length, 'edges');
-
-            // Helper: get module quiz progress from localStorage (placeholder for backend data)
-            function getModuleProgress(moduleId) {
-                const quizResultsKey = `quiz-${moduleId}`;
-                const results = localStorage.getItem(quizResultsKey);
-                if (results) {
-                    try {
-                        const parsed = JSON.parse(results);
-                        return parsed.score !== undefined ? parsed.score : null;
-                    } catch (e) { return null; }
+            // Connectivity-based clustering:
+            // - cluster nodes by strongest adjacency relationships
+            // - place each cluster in a dedicated region
+            // - keep all original adjacency edges
+            const clusterResult = detectConnectivityClusters(normalizedNodes, adjacencyEdges);
+            const { neighborMap, clusters, nodeToCluster, orderedClusterIds } = clusterResult;
+            const clusterOrderMap = new Map(orderedClusterIds.map((clusterId, index) => [clusterId, index + 1]));
+            const deterministicJitter = (nodeId, salt = 0) => {
+                const text = `${nodeId}:${salt}`;
+                let hash = 2166136261;
+                for (let i = 0; i < text.length; i += 1) {
+                    hash ^= text.charCodeAt(i);
+                    hash = Math.imul(hash, 16777619);
                 }
-                return null; // null = not attempted
+                return (((hash >>> 0) % 1000) / 1000) - 0.5;
+            };
+
+            const posMap = new Map();
+            nodesByLevel = new Map();
+            const CLUSTER_NODE_H_SPACING = 120;
+            const CLUSTER_NODE_V_SPACING = 220;
+            const CLUSTER_JITTER_X = 24;
+            const CLUSTER_JITTER_Y = 16;
+            const SHOW_CLUSTER_LABELS = false;
+            const PILE_RING_STEP_X = 222;
+            const PILE_RING_STEP_Y = 72;
+            const PILE_MIN_DISTANCE = 206;
+            const PILE_MAX_COLLISION_PASSES = 12;
+            const NODE_BOX_GAP_X = 40;
+            const NODE_BOX_GAP_Y = 24;
+            const NODE_BOX_MIN_HEIGHT = 56;
+            const estimateNodeBox = (nodeId) => {
+                const node = nodeById.get(nodeId) || {};
+                const rawLabel = (node.label && String(node.label).trim()) ? String(node.label) : `Module ${nodeId}`;
+                const estimatedWidth = Math.max(
+                    180,
+                    Math.min(260, 126 + (rawLabel.length * 6.4))
+                );
+                return {
+                    halfW: (estimatedWidth / 2) + (NODE_BOX_GAP_X / 2),
+                    halfH: (NODE_BOX_MIN_HEIGHT / 2) + (NODE_BOX_GAP_Y / 2)
+                };
+            };
+
+            const clusterLayouts = orderedClusterIds.map((clusterId) => {
+                const clusterNodeIds = (clusters.get(clusterId) || []).slice();
+                const degreeByNode = new Map(clusterNodeIds.map(nodeId => [nodeId, neighborMap.get(nodeId)?.size || 0]));
+
+                clusterNodeIds.sort((a, b) => {
+                    const nodeA = nodeById.get(a) || {};
+                    const nodeB = nodeById.get(b) || {};
+                    const orderA = Number.isFinite(nodeA.order) ? nodeA.order : Number.MAX_SAFE_INTEGER;
+                    const orderB = Number.isFinite(nodeB.order) ? nodeB.order : Number.MAX_SAFE_INTEGER;
+                    if (orderA !== orderB) return orderA - orderB;
+                    const degreeA = degreeByNode.get(a) || 0;
+                    const degreeB = degreeByNode.get(b) || 0;
+                    if (degreeA !== degreeB) return degreeB - degreeA;
+                    return String(nodeA.label || a).localeCompare(String(nodeB.label || b));
+                });
+
+                const cols = Math.max(1, Math.ceil(Math.sqrt(clusterNodeIds.length)));
+                const rows = Math.max(1, Math.ceil(clusterNodeIds.length / cols));
+
+                let remainingForRings = Math.max(0, clusterNodeIds.length - 1);
+                let ringCount = clusterNodeIds.length > 0 ? 1 : 0;
+                let ringIndex = 1;
+                while (remainingForRings > 0) {
+                    const capacity = Math.max(4, Math.round(2 * Math.PI * ringIndex * 1.18));
+                    remainingForRings -= capacity;
+                    ringCount += 1;
+                    ringIndex += 1;
+                }
+                const radiusX = Math.max(0, (ringCount - 1) * PILE_RING_STEP_X + 95);
+                const radiusY = Math.max(0, (ringCount - 1) * PILE_RING_STEP_Y + 80);
+                const width = Math.max(420, Math.round(radiusX * 2 + 300));
+                const height = Math.max(320, Math.round(radiusY * 2 + 220));
+
+                return {
+                    clusterId,
+                    clusterNodeIds,
+                    cols,
+                    rows,
+                    ringCount,
+                    width,
+                    height
+                };
+            });
+
+            const maxClusterWidth = Math.max(...clusterLayouts.map(layout => layout.width), 420);
+            const maxClusterHeight = Math.max(...clusterLayouts.map(layout => layout.height), 320);
+            const CLUSTER_INNER_GAP_X = 110;
+            const CLUSTER_INNER_GAP_Y = 90;
+            const CLUSTER_OUTER_GAP_X = 140;
+            const CLUSTER_OUTER_GAP_Y = 120;
+            const quadrantSlots = [
+                { sx: -1, sy: -1, name: 'top-left' },
+                { sx: 1, sy: -1, name: 'top-right' },
+                { sx: -1, sy: 1, name: 'bottom-left' },
+                { sx: 1, sy: 1, name: 'bottom-right' }
+            ];
+            const primaryLayouts = [
+                clusterLayouts[0] || null,
+                clusterLayouts[1] || null,
+                clusterLayouts[2] || null,
+                clusterLayouts[3] || null
+            ];
+            const leftColumnWidth = Math.max(primaryLayouts[0]?.width || 0, primaryLayouts[2]?.width || 0);
+            const rightColumnWidth = Math.max(primaryLayouts[1]?.width || 0, primaryLayouts[3]?.width || 0);
+            const topRowHeight = Math.max(primaryLayouts[0]?.height || 0, primaryLayouts[1]?.height || 0);
+            const bottomRowHeight = Math.max(primaryLayouts[2]?.height || 0, primaryLayouts[3]?.height || 0);
+            const hasLeftColumn = !!(primaryLayouts[0] || primaryLayouts[2]);
+            const hasRightColumn = !!(primaryLayouts[1] || primaryLayouts[3]);
+            const hasTopRow = !!(primaryLayouts[0] || primaryLayouts[1]);
+            const hasBottomRow = !!(primaryLayouts[2] || primaryLayouts[3]);
+            const leftCenterX = hasRightColumn
+                ? -((leftColumnWidth / 2) + (CLUSTER_INNER_GAP_X / 2))
+                : 0;
+            const rightCenterX = hasLeftColumn
+                ? ((rightColumnWidth / 2) + (CLUSTER_INNER_GAP_X / 2))
+                : 0;
+            const topCenterY = hasBottomRow
+                ? -((topRowHeight / 2) + (CLUSTER_INNER_GAP_Y / 2))
+                : 0;
+            const bottomCenterY = hasTopRow
+                ? ((bottomRowHeight / 2) + (CLUSTER_INNER_GAP_Y / 2))
+                : 0;
+            const innerHalfWidth = (leftColumnWidth / 2) + (rightColumnWidth / 2) + (CLUSTER_INNER_GAP_X / 2);
+            const innerHalfHeight = (topRowHeight / 2) + (bottomRowHeight / 2) + (CLUSTER_INNER_GAP_Y / 2);
+            const clusterAnchors = new Array(clusterLayouts.length).fill(null);
+
+            if (clusterLayouts.length === 1) {
+                clusterAnchors[0] = { x: 0, y: 0, sx: 0, sy: 0, name: 'center', ring: 0 };
+            } else {
+                if (primaryLayouts[0]) clusterAnchors[0] = { x: leftCenterX, y: topCenterY, sx: -1, sy: -1, name: 'top-left', ring: 0 };
+                if (primaryLayouts[1]) clusterAnchors[1] = { x: rightCenterX, y: topCenterY, sx: 1, sy: -1, name: 'top-right', ring: 0 };
+                if (primaryLayouts[2]) clusterAnchors[2] = { x: leftCenterX, y: bottomCenterY, sx: -1, sy: 1, name: 'bottom-left', ring: 0 };
+                if (primaryLayouts[3]) clusterAnchors[3] = { x: rightCenterX, y: bottomCenterY, sx: 1, sy: 1, name: 'bottom-right', ring: 0 };
             }
 
-            // Create enriched nodes with styling and progress badge
-            const enrichedNodes = normalizedNodes.map((node) => {
-                const progress = getModuleProgress(node.id);
-                const hasProgress = progress !== null;
-                
-                // Build label: module name only; add progress line ONLY if a quiz was completed
-                let label = (node.label && String(node.label).trim()) ? node.label : `Module ${node.id}`;
-                if (hasProgress) {
-                    label += `\nScore: ${progress}%`;
-                }
+            for (let clusterIndex = 4; clusterIndex < clusterLayouts.length; clusterIndex += 1) {
+                const layout = clusterLayouts[clusterIndex];
+                const slot = quadrantSlots[(clusterIndex - 4) % quadrantSlots.length];
+                const ring = Math.floor((clusterIndex - 4) / quadrantSlots.length) + 1;
+                const anchorX = slot.sx * (
+                    innerHalfWidth
+                    + (layout.width / 2)
+                    + CLUSTER_OUTER_GAP_X
+                    + ((ring - 1) * (maxClusterWidth + CLUSTER_OUTER_GAP_X))
+                );
+                const anchorY = slot.sy * (
+                    innerHalfHeight
+                    + (layout.height / 2)
+                    + CLUSTER_OUTER_GAP_Y
+                    + ((ring - 1) * (maxClusterHeight + CLUSTER_OUTER_GAP_Y))
+                );
+                clusterAnchors[clusterIndex] = {
+                    x: anchorX,
+                    y: anchorY,
+                    sx: slot.sx,
+                    sy: slot.sy,
+                    name: slot.name,
+                    ring
+                };
+            }
+            const clusterLabelNodes = [];
 
-                // Color based on progress
-                let bgColor = '#1abc9c';      // default teal (no quiz taken)
-                let borderColor = '#16a085';
-                if (hasProgress) {
-                    if (progress >= 80) {
-                        bgColor = '#27ae60';    // green — high score
-                        borderColor = '#1e8449';
-                    } else if (progress >= 50) {
-                        bgColor = '#f39c12';    // orange — mid score
-                        borderColor = '#d68910';
-                    } else {
-                        bgColor = '#e74c3c';    // red — low score
-                        borderColor = '#c0392b';
+            clusterLayouts.forEach((layout, clusterIndex) => {
+                const anchor = clusterAnchors[clusterIndex] || { x: 0, y: 0, sx: 0, sy: 0, name: 'center', ring: 0 };
+                const centerX = anchor.x;
+                const centerY = anchor.y;
+                const localPositions = [];
+                let placedBeforeRing = 1;
+                let currentRing = 1;
+
+                layout.clusterNodeIds.forEach((nodeId, nodeIndex) => {
+                    if (nodeIndex === 0) {
+                        localPositions.push({ id: nodeId, x: centerX, y: centerY });
+                        return;
                     }
+
+                    while (true) {
+                        const currentRingCapacity = Math.max(4, Math.round(2 * Math.PI * currentRing * 1.18));
+                        if (nodeIndex < placedBeforeRing + currentRingCapacity) {
+                            break;
+                        }
+                        placedBeforeRing += currentRingCapacity;
+                        currentRing += 1;
+                    }
+
+                    const ringCapacity = Math.max(4, Math.round(2 * Math.PI * currentRing * 1.18));
+                    const slotIndex = nodeIndex - placedBeforeRing;
+                    const ringPhase = (clusterIndex * 0.47) + ((currentRing % 2) * 0.19);
+                    const angleJitter = deterministicJitter(nodeId, 3) * 0.34;
+                    const radialJitter = deterministicJitter(nodeId, 4) * 16;
+                    const tangentialJitter = deterministicJitter(nodeId, 5) * 10;
+                    const angle = ((slotIndex / ringCapacity) * Math.PI * 2) + ringPhase + angleJitter;
+                    const radiusX = (currentRing * PILE_RING_STEP_X) + radialJitter;
+                    const radiusY = (currentRing * PILE_RING_STEP_Y) + (radialJitter * 0.55);
+                    const mindmapLeanX = (anchor.sx || 0) * currentRing * 5;
+                    const mindmapLeanY = (anchor.sy || 0) * currentRing * 3;
+                    const jitterX = deterministicJitter(nodeId, 1) * CLUSTER_JITTER_X;
+                    const jitterY = deterministicJitter(nodeId, 2) * CLUSTER_JITTER_Y;
+
+                    localPositions.push({
+                        id: nodeId,
+                        x: centerX + Math.cos(angle) * radiusX + Math.cos(angle + Math.PI / 2) * tangentialJitter + mindmapLeanX + jitterX,
+                        y: centerY + Math.sin(angle) * radiusY + Math.sin(angle + Math.PI / 2) * (tangentialJitter * 0.7) + mindmapLeanY + jitterY
+                    });
+                });
+
+                // Light collision relaxation so nodes feel piled/organic but don't sit too close.
+                for (let pass = 0; pass < PILE_MAX_COLLISION_PASSES; pass += 1) {
+                    let moved = false;
+                    for (let i = 0; i < localPositions.length; i += 1) {
+                        for (let j = i + 1; j < localPositions.length; j += 1) {
+                            const a = localPositions[i];
+                            const b = localPositions[j];
+                            const dx = b.x - a.x;
+                            const dy = b.y - a.y;
+                            const dist = Math.hypot(dx, dy) || 0.0001;
+                            const minDist = PILE_MIN_DISTANCE + ((i === 0 || j === 0) ? 8 : 0);
+                            const boxA = estimateNodeBox(a.id);
+                            const boxB = estimateNodeBox(b.id);
+                            const absDx = Math.abs(dx);
+                            const absDy = Math.abs(dy);
+                            const overlapX = (boxA.halfW + boxB.halfW) - absDx;
+                            const overlapY = (boxA.halfH + boxB.halfH) - absDy;
+
+                            if (overlapX > 0 && overlapY > 0) {
+                                // Separate boxes along the axis with less penetration.
+                                if (overlapX <= overlapY) {
+                                    const dirX = dx === 0 ? (deterministicJitter(`${a.id}|${b.id}`, pass + 20) >= 0 ? 1 : -1) : (dx > 0 ? 1 : -1);
+                                    const pushX = (overlapX / 2) + 1;
+                                    a.x -= dirX * pushX;
+                                    b.x += dirX * pushX;
+                                } else {
+                                    const dirY = dy === 0 ? (deterministicJitter(`${a.id}|${b.id}`, pass + 30) >= 0 ? 1 : -1) : (dy > 0 ? 1 : -1);
+                                    const pushY = (overlapY / 2) + 1;
+                                    a.y -= dirY * pushY;
+                                    b.y += dirY * pushY;
+                                }
+                                moved = true;
+                            }
+
+                            if (dist < minDist) {
+                                const push = (minDist - dist) / 2;
+                                const nx = dx / dist;
+                                const ny = dy / dist;
+                                a.x -= nx * push;
+                                a.y -= ny * push;
+                                b.x += nx * push;
+                                b.y += ny * push;
+                                moved = true;
+                            }
+                        }
+                    }
+                    if (!moved) break;
                 }
 
+                localPositions.forEach(({ id, x, y }) => {
+                    posMap.set(id, { x, y });
+                });
+
+                nodesByLevel.set(clusterIndex, layout.clusterNodeIds);
+
+                clusterLabelNodes.push({
+                    id: `cluster-label-${clusterIndex + 1}`,
+                    label: `Cluster ${clusterIndex + 1} (${layout.clusterNodeIds.length} modules)`,
+                    isClusterLabel: true,
+                    clusterId: layout.clusterId,
+                    x: centerX,
+                    y: centerY - (layout.height / 2) - 38
+                });
+            });
+
+            const clusterPalette = [
+                { background: '#1e3a8a', border: '#1e40af', hover: '#1d4ed8', highlight: '#3b82f6', shadow: 'rgba(30, 58, 138, 0.34)' },
+                { background: '#1d4ed8', border: '#1e40af', hover: '#2563eb', highlight: '#60a5fa', shadow: 'rgba(29, 78, 216, 0.34)' },
+                { background: '#1e40af', border: '#1d4ed8', hover: '#2563eb', highlight: '#3b82f6', shadow: 'rgba(30, 64, 175, 0.32)' },
+                { background: '#2563eb', border: '#1d4ed8', hover: '#3b82f6', highlight: '#93c5fd', shadow: 'rgba(37, 99, 235, 0.32)' },
+                { background: '#1e429f', border: '#1d4ed8', hover: '#2563eb', highlight: '#60a5fa', shadow: 'rgba(30, 66, 159, 0.30)' },
+                { background: '#274690', border: '#1e40af', hover: '#2563eb', highlight: '#60a5fa', shadow: 'rgba(39, 70, 144, 0.30)' },
+                { background: '#2b5fbf', border: '#1d4ed8', hover: '#3b82f6', highlight: '#93c5fd', shadow: 'rgba(43, 95, 191, 0.30)' },
+                { background: '#3b82f6', border: '#2563eb', hover: '#60a5fa', highlight: '#bfdbfe', shadow: 'rgba(59, 130, 246, 0.28)' }
+            ];
+
+            const clusterColors = new Map(
+                orderedClusterIds.map((clusterId, index) => [clusterId, clusterPalette[index % clusterPalette.length]])
+            );
+
+            // Create enriched nodes with positions and styling
+            const enrichedNodes = normalizedNodes.map((node) => {
+                const pos = posMap.get(node.id) || { x: 0, y: 0 };
+                const clusterId = nodeToCluster.get(node.id) || orderedClusterIds[0] || 'cluster-1';
+                const clusterIndex = clusterOrderMap.get(clusterId) || 1;
+                const colors = clusterColors.get(clusterId) || clusterPalette[0];
+                
                 return {
                     ...node,
-                    label: label,
-                    widthConstraint: { minimum: 160, maximum: 240 },
-                    heightConstraint: { minimum: 45, valign: 'middle' },
-                    color: { background: bgColor, border: borderColor, highlight: { background: borderColor, border: '#0d6b5c' }, hover: { background: borderColor, border: '#0d6b5c' } },
-                    font: { size: 14, color: 'white', face: 'Arial', bold: true },
-                    borderWidth: 3,
+                    clusterId,
+                    clusterIndex,
+                    label: (node.label && String(node.label).trim()) ? node.label : `Module ${node.id}`,
+                    widthConstraint: { minimum: 180, maximum: 260 },
+                    heightConstraint: { minimum: 50, valign: 'middle' },
+                    x: pos.x,
+                    y: pos.y,
+                    fixed: { x: true, y: true },
+                    color: {
+                        background: colors.background,
+                        border: colors.border,
+                        hover: { background: colors.hover, border: colors.highlight },
+                        highlight: { background: colors.highlight, border: colors.highlight }
+                    },
+                    font: {
+                        size: 14,
+                        color: '#f8fafc',
+                        face: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+                        bold: true
+                    },
+                    shadow: {
+                        enabled: true,
+                        color: colors.shadow,
+                        size: 18,
+                        x: 0,
+                        y: 7
+                    },
+                    borderWidth: 2.2,
+                    shapeProperties: { borderRadius: 12 },
                     shape: 'box',
-                    margin: 12,
-                    shadow: { enabled: true, color: 'rgba(0,0,0,0.15)', size: 8, x: 2, y: 2 }
+                    margin: 13
                 };
             });
             
-            // Style edges — use solid lines for all prerequisite relationships
-            const enrichedEdges = finalEdges.map(edge => {
+            // Cluster labels can be re-enabled later, but hidden for a cleaner graph UI.
+            if (SHOW_CLUSTER_LABELS) {
+                clusterLabelNodes.forEach(labelNode => {
+                    const clusterIndex = clusterOrderMap.get(labelNode.clusterId) || 1;
+                    const colors = {
+                        background: '#f8fafc',
+                        border: clusterPalette[(clusterIndex - 1) % clusterPalette.length].highlight
+                    };
+                    
+                    enrichedNodes.push({
+                        ...labelNode,
+                        widthConstraint: { minimum: 210, maximum: 340 },
+                        heightConstraint: { minimum: 40, valign: 'middle' },
+                        fixed: { x: true, y: true },
+                        color: colors,
+                        font: {
+                            size: 13,
+                            color: '#0f172a',
+                            face: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+                            bold: true
+                        },
+                        shadow: {
+                            enabled: true,
+                            color: 'rgba(15, 23, 42, 0.10)',
+                            size: 10,
+                            x: 0,
+                            y: 4
+                        },
+                        borderWidth: 1.8,
+                        borderDashes: [4, 4],
+                        shapeProperties: { borderRadius: 18 },
+                        shape: 'box',
+                        margin: 10
+                    });
+                });
+            }
+            
+            // Style edges while keeping adjacency relations unchanged.
+            const enrichedEdges = adjacencyEdges.map(edge => {
+                const fromCluster = nodeToCluster.get(edge.from);
+                const toCluster = nodeToCluster.get(edge.to);
+                const crossesClusters = fromCluster !== toCluster;
+                
                 return {
                     ...edge,
-                    color: { color: '#95a5a6', highlight: '#1abc9c', hover: '#1abc9c' },
-                    width: 2.5,
-                    arrows: { to: { enabled: true, scaleFactor: 0.7, type: 'arrow' } },
-                    smooth: { enabled: true, type: 'dynamic' },
-                    hoverWidth: 1
+                    color: {
+                        color: crossesClusters ? '#94a3b8' : '#64748b',
+                        highlight: '#0d9488',
+                        hover: '#0d9488',
+                        inherit: false
+                    },
+                    width: crossesClusters ? 1.5 : 2.5,
+                    arrows: { to: { enabled: true, scaleFactor: crossesClusters ? 0.42 : 0.56, type: 'arrow' } },
+                    smooth: crossesClusters
+                        ? { enabled: true, type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.34 }
+                        : { enabled: true, type: 'curvedCW', roundness: 0.10 },
+                    dashes: crossesClusters ? [8, 6] : false,
+                    shadow: {
+                        enabled: !crossesClusters,
+                        color: 'rgba(30, 41, 59, 0.14)',
+                        size: 6,
+                        x: 0,
+                        y: 2
+                    }
                 };
             });
             
-            console.log('Creating DataSets with', enrichedNodes.length, 'nodes and', enrichedEdges.length, 'edges...');
+            console.log('Creating DataSets...');
             console.log('vis available:', typeof vis);
             console.log('vis.DataSet available:', typeof vis.DataSet);
             
@@ -1590,7 +1966,7 @@
             // Store globally for later access
             window.nodes = data.nodes;
             window.edges = data.edges;
-            window.nodesData = nodesData;
+            window.nodesData = enrichedNodes.filter(node => !node.isClusterLabel);
             
             console.log('Data created with', data.nodes.length, 'nodes');
             console.log('Nodes:', data.nodes.get());
@@ -1608,42 +1984,29 @@
             const options = {
                 autoResize: true,
                 layout: {
-                    improvedLayout: true,
-                    randomSeed: 42
+                    improvedLayout: false,
+                    randomSeed: 7
                 },
                 physics: {
-                    enabled: true,
-                    solver: 'forceAtlas2Based',
-                    forceAtlas2Based: {
-                        gravitationalConstant: -120,
-                        centralGravity: 0.008,
-                        springLength: 250,
-                        springConstant: 0.04,
-                        damping: 0.4,
-                        avoidOverlap: 0.8
-                    },
+                    enabled: false,
                     stabilization: {
-                        enabled: true,
-                        iterations: 300,
-                        updateInterval: 25
-                    },
-                    maxVelocity: 50,
-                    minVelocity: 0.75
+                        enabled: false
+                    }
                 },
                 interaction: {
-                    dragNodes: false,   // Nodes have fixed positions
-                    dragView: true,     // Allow panning the view
-                    zoomView: true,     // Allow zoom in/out
-                    hover: true,
-                    tooltipDelay: 200,
+                    dragNodes: false,
+                    dragView: true,
+                    zoomView: false,
                     navigationButtons: false
                 },
                 nodes: {
+                    // Default styling - individual nodes can override
                     shape: 'box',
                     borderWidth: 2
                 },
                 edges: {
-                    smooth: { enabled: true, type: 'dynamic' }
+                    // Default edge styling - individual edges override
+                    smooth: { enabled: true }
                 }
             };
 
@@ -1653,9 +2016,17 @@
             window.network = network;
             
             console.log('Network created successfully');
+            console.log('Network object:', network);
             
-            // Scroll the roadmap container into view so user sees it immediately
-            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Check canvas creation
+            const canvas = container.querySelector('canvas');
+            console.log('Canvas element after network creation:', canvas);
+            if (canvas) {
+                console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+                console.log('Canvas style:', canvas.style.cssText);
+            } else {
+                console.error('Canvas element not found in container!');
+            }
         } catch (networkError) {
             console.error('Error creating network:', networkError);
             console.error('Stack:', networkError.stack);
@@ -1667,30 +2038,52 @@
         }
         
         try {
-            // Wait for network to stabilize, then freeze physics and fit to viewport
+            // Wait for network to initialize
             network.on('stabilizationIterationsDone', function() {
-                network.setOptions({ physics: { enabled: false } });
-                console.log('Network stabilized and physics disabled');
-                
-                // Fit all nodes into the visible container
-                try {
-                    network.fit({ 
-                        animation: { duration: 600, easingFunction: 'easeInOutQuad' },
-                        padding: { top: 40, right: 40, bottom: 40, left: 40 }
-                    });
-                } catch (e) {
-                    console.error('Fit after stabilization error:', e);
-                }
+                network.setOptions({ physics: false });
+                console.log('Network initialized');
             });
 
-            // After a short delay, do a final fit to ensure everything is visible
+            // Prevent canvas from capturing scroll wheel - allow page scroll
+            container.addEventListener('wheel', (e) => {
+                // Let the event bubble up to allow page scrolling
+                return true;
+            }, { passive: true });
+
+            // Calculate and set container height based on levels
+            const nodeCount = nodesData.length;
+            const numLevels = nodesByLevel ? nodesByLevel.size : Math.ceil(nodeCount / 4);
+            const estimatedHeight = Math.max(700, numLevels * V_SPACING + 400);
+            container.style.minHeight = estimatedHeight + 'px';
+            container.style.height = estimatedHeight + 'px';
+
+            // Position nodes properly
             setTimeout(() => {
                 if (window.network) {
                     try {
+                        // Fit the network to the viewport and then resize container based on graph size
                         window.network.fit({ 
                             animation: false,
-                            padding: { top: 40, right: 40, bottom: 40, left: 40 }
+                            padding: {
+                                top: 24,
+                                right: 64,
+                                bottom: 46,
+                                left: 64
+                            }
                         });
+
+                        resizeRoadmapContainerToGraph(container, window.network, nodesData);
+
+                        window.network.fit({ 
+                            animation: false,
+                            padding: {
+                                top: 24,
+                                right: 64,
+                                bottom: 46,
+                                left: 64
+                            }
+                        });
+
                         console.log('Network fitted successfully');
                     } catch (e) {
                         console.error('Fit error:', e);
@@ -1710,96 +2103,53 @@
                     if (params.nodes.length > 0) {
                         const nodeId = params.nodes[0];
                         
-                        // Skip year label nodes (they are not interactive)
-                        if (String(nodeId).startsWith('year-label-')) {
+                        // Skip cluster label nodes (they are not interactive)
+                        if (String(nodeId).startsWith('cluster-label-')) {
                             return;
                         }
                         
                         const node = window.nodesData.find(n => n.id === nodeId || String(n.id) === String(nodeId));
                         if (node) {
                             const moduleData = modulesById.get(String(nodeId));
-                            const nodeIdStr = String(nodeId);
 
                             // Store current node ID for quiz button
                             window.currentNodeId = nodeId;
-                            window.currentTopicId = moduleTopicMap.get(nodeIdStr) || null;
+                            window.currentTopicId = moduleTopicMap.get(String(nodeId)) || null;
 
-                            // --- Title ---
-                            const title = (moduleData && moduleData.title) || node.label || `Module ${nodeId}`;
-                            document.getElementById('modal-title').textContent = title;
-
-                            // --- Description ---
-                            const description = (moduleData && moduleData.description) || 'Module details coming soon.';
-                            document.getElementById('modal-content').innerHTML = `
-                                <div class="modal-description">${description}</div>
-                            `;
-
-                            // --- Connections: DEPENDS ON + UNLOCKS ---
-                            const allEdges = window.edges ? window.edges.get() : [];
-                            const dependsOnIds = allEdges.filter(e => String(e.to) === nodeIdStr).map(e => String(e.from));
-                            const unlocksIds = allEdges.filter(e => String(e.from) === nodeIdStr).map(e => String(e.to));
-
-                            let connectionsHtml = '';
-                            if (dependsOnIds.length > 0 || unlocksIds.length > 0) {
-                                connectionsHtml += `
-                                    <div class="modal-connections-header">
-                                        <h3>Why This Connects To Other Modules</h3>
-                                        <p>Dependencies and links from the roadmap graph</p>
-                                    </div>
-                                `;
-
-                                dependsOnIds.forEach(depId => {
-                                    const depModule = modulesById.get(depId);
-                                    const depNode = window.nodesData.find(n => String(n.id) === depId);
-                                    const depTitle = (depModule && depModule.title) || (depNode && depNode.label) || `Module ${depId}`;
-                                    const depProgress = getModuleProgress(depId);
-                                    const progressText = depProgress !== null ? `${depProgress}%` : '0%';
-                                    connectionsHtml += `
-                                        <div class="connection-card" style="cursor: pointer;" onclick="navigateToModule('${depId}')">
-                                            <span class="connection-badge badge-depends">Depends On</span>
-                                            <div class="conn-title">${depTitle}</div>
-                                            <div class="conn-progress">· ${progressText}</div>
-                                            <div class="conn-desc">Builds directly on concepts from the previous module.</div>
-                                        </div>
-                                    `;
-                                });
-
-                                unlocksIds.forEach(unlId => {
-                                    const unlModule = modulesById.get(unlId);
-                                    const unlNode = window.nodesData.find(n => String(n.id) === unlId);
-                                    const unlTitle = (unlModule && unlModule.title) || (unlNode && unlNode.label) || `Module ${unlId}`;
-                                    const unlProgress = getModuleProgress(unlId);
-                                    const progressText = unlProgress !== null ? `${unlProgress}%` : '0%';
-                                    connectionsHtml += `
-                                        <div class="connection-card" style="cursor: pointer;" onclick="navigateToModule('${unlId}')">
-                                            <span class="connection-badge badge-unlocks">Unlocks</span>
-                                            <div class="conn-title">${unlTitle}</div>
-                                            <div class="conn-progress">· ${progressText}</div>
-                                            <div class="conn-desc">Builds directly on concepts from the previous module.</div>
-                                        </div>
-                                    `;
-                                });
-                            } else {
-                                connectionsHtml = '<p class="no-connections">No direct connections to other modules.</p>';
-                            }
-                            document.getElementById('modal-connections').innerHTML = connectionsHtml;
-
-                            // --- Topics ---
-                            const topics = (moduleData && moduleData.topics) || [];
-                            if (topics.length > 0) {
-                                const topicsItems = topics.map(t => `<li>${t.title}</li>`).join('');
-                                document.getElementById('modal-topics').innerHTML = `
-                                    <div class="modal-topics-header">Topics</div>
-                                    <ul class="modal-topics-list">${topicsItems}</ul>
+                            if (moduleData) {
+                                document.getElementById('modal-title').textContent = moduleData.title;
+                                const topicsList = (moduleData.topics || []).map(t => `<li>${t.title}</li>`).join('');
+                                const topicsHtml = topicsList ? `<ul style="margin: 10px 0 0 18px;">${topicsList}</ul>` : '<p style="margin-top: 10px; color: #666;">No topics listed.</p>';
+                                const relatedModulesHtml = formatRelatedModulesHtml(moduleData.related_modules);
+                                
+                                const clusterInfo = node.clusterIndex
+                                    ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">🧩 Cluster ${node.clusterIndex}</div>`
+                                    : (node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">📅 Year ${node.year}</div>` : '');
+                                
+                                document.getElementById('modal-content').innerHTML = `
+                                    ${clusterInfo}
+                                    <div style="font-size: 14px; color: #555;">${moduleData.description || 'Module details coming soon.'}</div>
+                                    ${relatedModulesHtml}
+                                    <div style="margin-top: 10px; font-weight: 600; color: #1abc9c;">Topics</div>
+                                    ${topicsHtml}
                                 `;
                             } else {
-                                document.getElementById('modal-topics').innerHTML = '';
+                                const clusterInfo = node.clusterIndex
+                                    ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">🧩 Cluster ${node.clusterIndex}</div>`
+                                    : (node.year ? `<div style="margin-bottom: 10px; font-size: 12px; color: #888;">📅 Year ${node.year}</div>` : '');
+                                document.getElementById('modal-title').textContent = node.label;
+                                document.getElementById('modal-content').innerHTML = `
+                                    ${clusterInfo}
+                                    <div style="font-size: 14px; color: #555;">Detailed resources for learning ${node.label} will appear here.</div>
+                                `;
                             }
 
-                            // --- Quiz score ---
+                            // Check if quiz has been completed for this module
                             const quizResultsKey = `quiz-${nodeId}`;
                             const quizResults = JSON.parse(localStorage.getItem(quizResultsKey));
+                            
                             if (quizResults) {
+                                // Show quiz score
                                 document.getElementById('quiz-score').textContent = `Your Quiz Score: ${quizResults.score}%`;
                                 document.getElementById('quiz-score').style.display = 'block';
                             } else {
@@ -1831,21 +2181,6 @@
 
         function closeModal() {
             document.getElementById('node-modal').style.display = 'none';
-        }
-
-        function navigateToModule(moduleId) {
-            // Close current modal, focus the network on the target node, then simulate a click to open its modal
-            closeModal();
-            if (window.network) {
-                window.network.focus(moduleId, { scale: 1.2, animation: { duration: 500, easingFunction: 'easeInOutQuad' } });
-                // Simulate click after animation
-                setTimeout(() => {
-                    window.network.selectNodes([moduleId]);
-                    // Trigger the click handler manually
-                    const event = { nodes: [moduleId] };
-                    window.network.body.emitter.emit('click', event);
-                }, 550);
-            }
         }
 
         function openQuiz() {
@@ -1937,10 +2272,10 @@
                         easingFunction: 'easeInOutQuad'
                     },
                     padding: {
-                        top: 70,
-                        right: 80,
-                        bottom: 70,
-                        left: 80
+                        top: 24,
+                        right: 64,
+                        bottom: 46,
+                        left: 64
                     }
                 });
             }
@@ -2285,26 +2620,79 @@
                         return;
                     }
 
-                    const graphResponse = await ApiService.getRoadmapGraph(roadmapIdParam);
-                    if (graphResponse.ok && graphResponse.data) {
-                        const graphData = graphResponse.data;
+	                    const graphResponse = await ApiService.getRoadmapGraph(roadmapIdParam);
+	                    if (graphResponse.ok && graphResponse.data) {
+	                        const graphData = graphResponse.data;
+	                        const normalizeTitle = (value) => String(value || '').trim().toLowerCase();
+	                        const toStringId = (value) => {
+	                            if (value === undefined || value === null) return null;
+	                            if (typeof value === 'object') {
+	                                if (value.id !== undefined && value.id !== null) return String(value.id);
+	                                if (value.pk !== undefined && value.pk !== null) return String(value.pk);
+	                                return null;
+	                            }
+	                            const asString = String(value).trim();
+	                            return asString ? asString : null;
+	                        };
+	                        const edgeEndpointFromCandidate = (candidate) => {
+	                            if (candidate === undefined || candidate === null) return null;
+	                            if (typeof candidate === 'object') {
+	                                return toStringId(
+	                                    candidate.id ??
+	                                    candidate.pk ??
+	                                    candidate.node_id ??
+	                                    candidate.nodeId ??
+	                                    candidate.title ??
+	                                    candidate.label ??
+	                                    candidate.name
+	                                );
+	                            }
+	                            return toStringId(candidate);
+	                        };
+	                        const pickFirstPresent = (...values) => {
+	                            for (const value of values) {
+	                                const parsed = edgeEndpointFromCandidate(value);
+	                                if (parsed !== null) return parsed;
+	                            }
+	                            return null;
+	                        };
+	                        const graphModuleIdByTitle = new Map();
 
-                        const extractModulesFromPayload = (payload) => {
-                            if (!payload || typeof payload !== 'object') return [];
+	                        const extractModulesFromPayload = (payload) => {
+	                            if (!payload || typeof payload !== 'object') return [];
                             if (Array.isArray(payload.modules)) return payload.modules;
                             if (payload.roadmap && Array.isArray(payload.roadmap.modules)) return payload.roadmap.modules;
                             if (payload.data && Array.isArray(payload.data.modules)) return payload.data.modules;
                             return [];
                         };
 
-                        const moduleNodes = (graphData.nodes || [])
-                            .filter(node => node.type === 'module')
-                            .sort((a, b) => (a.order || 0) - (b.order || 0));
-                        const topicNodes = (graphData.nodes || [])
-                            .filter(node => node.type === 'topic');
+	                        const moduleNodes = (graphData.nodes || [])
+	                            .filter(node => node.type === 'module')
+	                            .sort((a, b) => (a.order || 0) - (b.order || 0));
+	                        moduleNodes.forEach((moduleNode) => {
+	                            const titleKey = normalizeTitle(moduleNode.title);
+	                            const moduleId = toStringId(moduleNode.id);
+	                            if (titleKey && moduleId) {
+	                                graphModuleIdByTitle.set(titleKey, moduleId);
+	                            }
+	                        });
+	                        const topicNodes = (graphData.nodes || [])
+	                            .filter(node => node.type === 'topic');
+	                        const resolveCanonicalModuleId = (module, index) => {
+	                            const graphIdFromTitle = graphModuleIdByTitle.get(normalizeTitle(module.title));
+	                            const explicitId = pickFirstPresent(
+	                                module.id,
+	                                module.module_id,
+	                                module.node_id,
+	                                module.nodeId,
+	                                module.graph_node_id,
+	                                module.graphNodeId
+	                            );
+	                            return graphIdFromTitle || toStringId(explicitId) || `module-${index + 1}`;
+	                        };
 
-                        // Fetch full roadmap details and prefer it when it has more modules than graph payload
-                        let fullRoadmap = null;
+	                        // Fetch full roadmap details and prefer it when it has more modules than graph payload
+	                        let fullRoadmap = null;
                         const fullRoadmapResponse = await ApiService.getRoadmap(roadmapIdParam);
                         if (fullRoadmapResponse.ok) {
                             fullRoadmap = fullRoadmapResponse.data;
@@ -2318,39 +2706,51 @@
                             : [];
 
                         let modulesForDisplay;
-                        if (fullRoadmapModules.length > 0) {
-                            modulesForDisplay = fullRoadmapModules
-                                .slice()
-                                .sort((a, b) => (a.order || 0) - (b.order || 0))
+	                        if (fullRoadmapModules.length > 0) {
+	                            modulesForDisplay = fullRoadmapModules
+	                                .slice()
+	                                .sort((a, b) => (a.order || 0) - (b.order || 0))
                                 .map((module, index) => ({
-                                    id: module.id ?? module.module_id ?? `full-${index + 1}`,
+                                    id: resolveCanonicalModuleId(module, index),
                                     title: module.title,
                                     description: module.description || '',
+                                    cluster_id: module.cluster_id || module.clusterId || null,
+                                    cluster_label: module.cluster_label || module.clusterLabel || null,
+                                    cluster_index: module.cluster_index || module.clusterIndex || null,
+                                    related_modules: Array.isArray(module.related_modules) ? module.related_modules : [],
                                     topics: (module.topics || [])
                                         .slice()
                                         .sort((a, b) => (a.order || 0) - (b.order || 0))
                                         .map(topic => ({ id: topic.id, title: topic.title, description: topic.description || '' }))
                                 }));
-                        } else if (graphPayloadModules.length > 0) {
-                            modulesForDisplay = graphPayloadModules
-                                .slice()
-                                .sort((a, b) => (a.order || 0) - (b.order || 0))
+	                        } else if (graphPayloadModules.length > 0) {
+	                            modulesForDisplay = graphPayloadModules
+	                                .slice()
+	                                .sort((a, b) => (a.order || 0) - (b.order || 0))
                                 .map((module, index) => ({
-                                    id: module.id ?? module.module_id ?? `graph-${index + 1}`,
+                                    id: resolveCanonicalModuleId(module, index),
                                     title: module.title,
                                     description: module.description || '',
+                                    cluster_id: module.cluster_id || module.clusterId || null,
+                                    cluster_label: module.cluster_label || module.clusterLabel || null,
+                                    cluster_index: module.cluster_index || module.clusterIndex || null,
+                                    related_modules: Array.isArray(module.related_modules) ? module.related_modules : [],
                                     topics: (module.topics || [])
                                         .slice()
                                         .sort((a, b) => (a.order || 0) - (b.order || 0))
                                         .map(topic => ({ id: topic.id, title: topic.title, description: topic.description || '' }))
                                 }));
-                        } else {
+	                        } else {
                             modulesForDisplay = moduleNodes.map(moduleNode => ({
-                                id: moduleNode.id,
+                                id: toStringId(moduleNode.id) || `module-node-${moduleNode.order || 0}`,
                                 title: moduleNode.title,
                                 description: moduleNode.description || '',
+                                cluster_id: moduleNode.cluster_id || moduleNode.clusterId || null,
+                                cluster_label: moduleNode.cluster_label || moduleNode.clusterLabel || null,
+                                cluster_index: moduleNode.cluster_index || moduleNode.clusterIndex || null,
+                                related_modules: Array.isArray(moduleNode.related_modules) ? moduleNode.related_modules : [],
                                 topics: topicNodes
-                                    .filter(topic => topic.parent_module_id === moduleNode.id)
+                                    .filter(topic => String(topic.parent_module_id) === String(moduleNode.id))
                                     .sort((a, b) => (a.order || 0) - (b.order || 0))
                                     .map(topic => ({ id: topic.id, title: topic.title, description: topic.description || '' }))
                             }));
@@ -2368,52 +2768,41 @@
                                     id: `cached-${index + 1}`,
                                     title: moduleTitle,
                                     description: '',
+                                    related_modules: [],
                                     topics: []
                                 }));
                             modulesForDisplay = modulesForDisplay.concat(missingCached);
                         }
 
-                        const seenModuleIds = new Set();
-                        modulesForDisplay = modulesForDisplay
-                            .filter(module => module && module.title)
-                            .map((module, index) => {
-                                let resolvedId = module.id;
-                                if (resolvedId === undefined || resolvedId === null || seenModuleIds.has(String(resolvedId))) {
-                                    resolvedId = `module-${index + 1}`;
-                                }
-                                seenModuleIds.add(String(resolvedId));
-                                return {
-                                    ...module,
-                                    id: String(resolvedId)
-                                };
-                            });
+	                        const seenModuleIds = new Set();
+	                        modulesForDisplay = modulesForDisplay
+	                            .filter(module => module && module.title)
+	                            .map((module, index) => {
+	                                const resolvedId = toStringId(module.id) || resolveCanonicalModuleId(module, index);
+	                                return {
+	                                    ...module,
+	                                    id: String(resolvedId)
+	                                };
+	                            })
+	                            .filter(module => {
+	                                if (seenModuleIds.has(module.id)) {
+	                                    return false;
+	                                }
+	                                seenModuleIds.add(module.id);
+	                                return true;
+	                            });
 
-                        // Extract edges for year inference (exclude 'contains' edges)
-                        const rawEdgesForInference = (graphData.edges || [])
-                            .filter(e => e.edge_type !== 'contains')
-                            .map(e => ({
-                                source: String(e.source),
-                                target: String(e.target)
-                            }));
-                        
-                        // Infer years from prerequisite relationships
-                        const inferredYears = inferYearsFromEdges(modulesForDisplay, rawEdgesForInference);
-                        
-                        // Calculate year distribution (fallback)
+                        // Calculate year distribution
                         const totalModules = modulesForDisplay.length;
                         const modulesPerYear = Math.ceil(totalModules / 3);
                         
                         const nodesData = modulesForDisplay.map((moduleNode, index) => {
-                            // Determine year from module data, edges, or infer from order
+                            // Determine year from module data or infer from order
                             let year = 1;
-                            const moduleId = String(moduleNode.id);
                             if (moduleNode.year !== undefined) {
                                 year = moduleNode.year;
                             } else if (moduleNode.level !== undefined) {
                                 year = moduleNode.level;
-                            } else if (inferredYears.has(moduleId) && inferredYears.get(moduleId) > 0) {
-                                // Use year inferred from prerequisite edges
-                                year = inferredYears.get(moduleId);
                             } else {
                                 year = Math.floor(index / modulesPerYear) + 1;
                                 year = Math.min(year, 3);
@@ -2423,7 +2812,10 @@
                                 id: moduleNode.id,
                                 label: moduleNode.title,
                                 year: year,
-                                order: moduleNode.order || index
+                                order: moduleNode.order || index,
+                                clusterId: moduleNode.cluster_id || moduleNode.clusterId || null,
+                                clusterLabel: moduleNode.cluster_label || moduleNode.clusterLabel || null,
+                                clusterIndex: moduleNode.cluster_index || moduleNode.clusterIndex || null
                             };
                         });
 
@@ -2437,60 +2829,61 @@
                             }
                         });
 
-                        const moduleIdSet = new Set(nodesData.map(n => String(n.id)));
-                        // Also build a set of topic IDs to explicitly exclude edges involving topics
-                        const topicIdSet = new Set(topicNodes.map(n => String(n.id)));
-                        
-                        const isValidDependencyEdge = (edge) => {
-                            // Skip 'contains' edges — those are module→topic parent-child relationships
-                            if (edge.edge_type === 'contains') return false;
-                            // Skip edges where source or target is a topic node
-                            if (topicIdSet.has(String(edge.source)) || topicIdSet.has(String(edge.target))) return false;
-                            // Only include edges with a meaningful weight/score if available
-                            if (edge.weight !== undefined && edge.weight < 0.5) return false;
-                            if (edge.score !== undefined && edge.score < 0.5) return false;
-                            return true;
-                        };
-                        
-                        let edgesData = (graphData.edges || [])
-                            .filter(isValidDependencyEdge)
-                            .map(edge => ({ from: String(edge.source), to: String(edge.target) }))
-                            .filter(edge => moduleIdSet.has(edge.from) && moduleIdSet.has(edge.to));
+	                        const moduleIdSet = new Set(nodesData.map(n => String(n.id)));
+	                        const moduleIdByTitle = new Map(
+	                            nodesData.map(node => [normalizeTitle(node.label), String(node.id)])
+	                        );
+	                        const resolveEndpointToModuleId = (endpointValue) => {
+	                            if (!endpointValue) return null;
+	                            if (moduleIdSet.has(endpointValue)) return endpointValue;
+	                            return moduleIdByTitle.get(normalizeTitle(endpointValue)) || null;
+	                        };
+	                        const normalizeEdge = (edge) => {
+	                            if (!edge || typeof edge !== 'object') return null;
+	                            const fromRaw = pickFirstPresent(
+	                                edge.source,
+	                                edge.from,
+	                                edge.source_id,
+	                                edge.sourceId,
+	                                edge.src,
+	                                edge.u
+	                            );
+	                            const toRaw = pickFirstPresent(
+	                                edge.target,
+	                                edge.to,
+	                                edge.target_id,
+	                                edge.targetId,
+	                                edge.dst,
+	                                edge.v
+	                            );
+	                            const fromId = resolveEndpointToModuleId(fromRaw);
+	                            const toId = resolveEndpointToModuleId(toRaw);
+	                            if (!fromId || !toId) return null;
+	                            return { from: fromId, to: toId };
+	                        };
+	                        const filterModuleEdges = (edgeCollection) => {
+	                            const dedupe = new Set();
+	                            return (edgeCollection || [])
+	                                .map(normalizeEdge)
+	                                .filter(Boolean)
+	                                .filter(edge => moduleIdSet.has(edge.from) && moduleIdSet.has(edge.to))
+	                                .filter(edge => {
+	                                    const signature = `${edge.from}->${edge.to}`;
+	                                    if (dedupe.has(signature)) return false;
+	                                    dedupe.add(signature);
+	                                    return true;
+	                                });
+	                        };
+	                        let edgesData = filterModuleEdges(graphData.edges);
 
-                        if (edgesData.length === 0 && fullRoadmap && Array.isArray(fullRoadmap.edges)) {
-                            edgesData = fullRoadmap.edges
-                                .filter(isValidDependencyEdge)
-                                .map(edge => ({ from: String(edge.source), to: String(edge.target) }))
-                                .filter(edge => moduleIdSet.has(edge.from) && moduleIdSet.has(edge.to));
-                        }
+	                        if (edgesData.length === 0 && fullRoadmap && Array.isArray(fullRoadmap.edges)) {
+	                            edgesData = filterModuleEdges(fullRoadmap.edges);
+	                        }
 
                         const roadmapTitle = (fullRoadmap && fullRoadmap.title) || graphData.roadmap_title || 'Roadmap';
                         const progressValue = graphData.overall_progress_percent || (fullRoadmap && fullRoadmap.overall_progress_percent) || 0;
                         document.getElementById('input-display').textContent = `Tailored Roadmap for: ${roadmapTitle}`;
                         document.getElementById('university-display').textContent = `📚 Progress: ${progressValue}%`;
-                        console.log('=== EDGE DEBUG ===');
-                        console.log('graphData.edges raw (' + (graphData.edges || []).length + ' total):', JSON.stringify(graphData.edges));
-                        // Show edge_type breakdown
-                        const edgesByType = {};
-                        (graphData.edges || []).forEach(e => {
-                            const t = e.edge_type || 'unknown';
-                            if (!edgesByType[t]) edgesByType[t] = [];
-                            edgesByType[t].push({ source: e.source, target: e.target });
-                        });
-                        console.log('Edge types breakdown:', Object.keys(edgesByType).map(t => t + ': ' + edgesByType[t].length).join(', '));
-                        console.log('Edges by type detail:', JSON.stringify(edgesByType, null, 2));
-                        // Find edges involving "Professional Practice"
-                        const ppNode = nodesData.find(n => n.label && n.label.toLowerCase().includes('professional practice'));
-                        if (ppNode) {
-                            const ppId = String(ppNode.id);
-                            const ppEdgesAll = (graphData.edges || []).filter(e => String(e.source) === ppId || String(e.target) === ppId);
-                            console.log('=== Professional Practice (id=' + ppId + ') ALL raw edges ===', JSON.stringify(ppEdgesAll));
-                            const ppEdgesFiltered = edgesData.filter(e => String(e.from) === ppId || String(e.to) === ppId);
-                            console.log('=== Professional Practice FILTERED edges (shown in graph) ===', JSON.stringify(ppEdgesFiltered));
-                        }
-                        console.log('fullRoadmap edges raw:', fullRoadmap && fullRoadmap.edges ? fullRoadmap.edges.length + ' edges' : 'none');
-                        console.log('Final edgesData passed to createNetwork (' + edgesData.length + '):', JSON.stringify(edgesData));
-                        console.log('nodesData ids:', nodesData.map(n => n.id + ' (' + n.label + ')'));
                         createNetwork(nodesData, edgesData);
                         return;
                     }
@@ -2525,8 +2918,15 @@
                             };
                         });
 
-                        // No edges for manual input — only API-provided edges are used
+                        // Create edges only between sequential modules (basic chain)
+                        // Real edges will come from the relationship matrix when loaded from API
                         const edgesData = [];
+                        for (let i = 0; i < nodesData.length - 1; i++) {
+                            edgesData.push({ 
+                                from: nodesData[i].id, 
+                                to: nodesData[i+1].id
+                            });
+                        }
 
                         createNetwork(nodesData, edgesData);
                     } else {
