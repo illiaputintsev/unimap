@@ -738,6 +738,15 @@ class RoadmapDetailAPIView(APIView):
         )
         return Response(_serialize_roadmap(roadmap, request.user))
 
+    def delete(self, request, roadmap_id):
+        roadmap = get_object_or_404(
+            Roadmap.objects.select_related("course", "course__university"),
+            id=roadmap_id,
+            user=request.user,
+        )
+        roadmap.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class RoadmapGraphAPIView(APIView):
     permission_classes = [IsAuthenticated]
