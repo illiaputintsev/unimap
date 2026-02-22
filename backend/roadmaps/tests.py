@@ -91,3 +91,59 @@ class RoadmapAPITests(APITestCase):
         self.assertEqual(updated_topic["mastery_percent"], 80.0)
         self.assertGreater(update_response.data["modules"][0]["progress_percent"], 0)
         self.assertGreater(update_response.data["overall_progress_percent"], 0)
+
+    def test_get_roadmap_graph_returns_nodes_and_edges(self):
+        generate_response = self.client.post(
+            "/api/roadmaps/generate/",
+            {"manual_course_title": "Computer Science"},
+            format="json",
+        )
+        self.assertEqual(generate_response.status_code, status.HTTP_201_CREATED)
+
+        roadmap_id = generate_response.data["id"]
+        response = self.client.get(f"/api/roadmaps/{roadmap_id}/graph/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["roadmap_id"], roadmap_id)
+        self.assertIn("nodes", response.data)
+        self.assertIn("edges", response.data)
+
+        node_types = {node["type"] for node in response.data["nodes"]}
+        self.assertIn("module", node_types)
+        self.assertIn("topic", node_types)
+
+    def test_get_roadmap_graph_summary_returns_counts(self):
+        generate_response = self.client.post(
+            "/api/roadmaps/generate/",
+            {"manual_course_title": "Computer Science"},
+            format="json",
+        )
+        self.assertEqual(generate_response.status_code, status.HTTP_201_CREATED)
+        roadmap_id = generate_response.data["id"]
+
+        response = self.client.get(f"/api/roadmaps/{roadmap_id}/graph/summary/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["roadmap_id"], roadmap_id)
+        self.assertGreater(response.data["modules_count"], 0)
+        self.assertGreater(response.data["topics_count"], 0)
+        self.assertGreater(response.data["edges_count"], 0)
+
+    def test_graph_topic_progress_update_endpoint(self):
+        generate_response = self.client.post(
+            "/api/roadmaps/generate/",
+            {"manual_course_title": "Computer Science"},
+            format="json",
+        )
+        self.assertEqual(generate_response.status_code, status.HTTP_201_CREATED)
+        roadmap_id = generate_response.data["id"]
+        topic_id = generate_response.data["modules"][0]["topics"][0]["id"]
+
+        response = self.client.patch(
+            f"/api/roadmaps/{roadmap_id}/graph/topics/{topic_id}/progress/",
+            {"mastery_percent": 55},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        topic_payload = next(node for node in response.data["nodes"] if node["id"] == topic_id)
+        self.assertEqual(topic_payload["mastery_percent"], 55.0)

@@ -23,10 +23,8 @@ def _safe_float(value, default=0.0):
         return default
 
 
-def _serialize_roadmap(roadmap, user):
+def _build_progress_maps(roadmap, user):
     nodes = list(roadmap.nodes.all().order_by("order", "id"))
-    edges = list(roadmap.edges.select_related("source", "target").all())
-
     progress_map = {
         progress.node_id: progress.mastery
         for progress in TopicProgress.objects.filter(user=user, node__roadmap=roadmap)
@@ -37,17 +35,98 @@ def _serialize_roadmap(roadmap, user):
         if node.type == "topic" and node.parent_module_id:
             topics_by_module.setdefault(node.parent_module_id, []).append(node)
 
+    module_progress_map = {}
+    for module in [node for node in nodes if node.type == "module"]:
+        topics = topics_by_module.get(module.id, [])
+        topic_mastery_values = [progress_map.get(topic.id, 0.0) for topic in topics]
+        module_progress = (
+            sum(topic_mastery_values) / len(topic_mastery_values) if topic_mastery_values else 0.0
+        )
+        module_progress_map[module.id] = module_progress
+
+    return nodes, progress_map, topics_by_module, module_progress_map
+
+
+def _serialize_roadmap_graph(roadmap, user):
+    nodes, progress_map, topics_by_module, module_progress_map = _build_progress_maps(roadmap, user)
+    edges = list(roadmap.edges.select_related("source", "target").all())
+
+    if module_progress_map:
+        overall_progress = sum(module_progress_map.values()) / len(module_progress_map)
+    else:
+        overall_progress = 0.0
+
+    graph_nodes = []
+    for node in nodes:
+        payload = {
+            "id": node.id,
+            "type": node.type,
+            "title": node.title,
+            "description": node.description,
+            "order": node.order,
+            "parent_module_id": node.parent_module_id,
+        }
+
+        if node.type == "module":
+            payload["progress_percent"] = round(module_progress_map.get(node.id, 0.0) * 100, 1)
+            payload["topics_count"] = len(topics_by_module.get(node.id, []))
+        else:
+            payload["mastery_percent"] = round(progress_map.get(node.id, 0.0) * 100, 1)
+            payload["impact_weight_percent"] = round(node.impact_weight * 100, 1)
+
+        graph_nodes.append(payload)
+
+    return {
+        "roadmap_id": roadmap.id,
+        "roadmap_title": roadmap.title,
+        "overall_progress_percent": round(overall_progress * 100, 1),
+        "nodes": graph_nodes,
+        "edges": [
+            {
+                "id": edge.id,
+                "source": edge.source_id,
+                "target": edge.target_id,
+                "edge_type": edge.edge_type,
+                "influence_percent": round(edge.influence * 100, 1),
+                "rationale": edge.rationale,
+            }
+            for edge in edges
+        ],
+    }
+
+
+def _serialize_roadmap_graph_summary(roadmap, user):
+    nodes, _, _, module_progress_map = _build_progress_maps(roadmap, user)
+    module_count = sum(1 for node in nodes if node.type == "module")
+    topic_count = sum(1 for node in nodes if node.type == "topic")
+    edge_count = roadmap.edges.count()
+
+    if module_progress_map:
+        overall_progress = sum(module_progress_map.values()) / len(module_progress_map)
+    else:
+        overall_progress = 0.0
+
+    return {
+        "roadmap_id": roadmap.id,
+        "modules_count": module_count,
+        "topics_count": topic_count,
+        "edges_count": edge_count,
+        "overall_progress_percent": round(overall_progress * 100, 1),
+    }
+
+
+def _serialize_roadmap(roadmap, user):
+    nodes, progress_map, topics_by_module, module_progress_map = _build_progress_maps(roadmap, user)
+    edges = list(roadmap.edges.select_related("source", "target").all())
+
     module_payload = []
-    module_progress_values = []
 
     for module in [node for node in nodes if node.type == "module"]:
         topics = topics_by_module.get(module.id, [])
         topic_payload = []
-        topic_mastery_values = []
 
         for topic in topics:
             mastery = progress_map.get(topic.id, 0.0)
-            topic_mastery_values.append(mastery)
             topic_payload.append(
                 {
                     "id": topic.id,
@@ -59,10 +138,7 @@ def _serialize_roadmap(roadmap, user):
                 }
             )
 
-        module_progress = (
-            sum(topic_mastery_values) / len(topic_mastery_values) if topic_mastery_values else 0.0
-        )
-        module_progress_values.append(module_progress)
+        module_progress = module_progress_map.get(module.id, 0.0)
 
         module_payload.append(
             {
@@ -76,7 +152,7 @@ def _serialize_roadmap(roadmap, user):
         )
 
     overall_progress = (
-        sum(module_progress_values) / len(module_progress_values) if module_progress_values else 0.0
+        sum(module_progress_map.values()) / len(module_progress_map) if module_progress_map else 0.0
     )
 
     course_payload = None
@@ -241,6 +317,30 @@ class RoadmapDetailAPIView(APIView):
         return Response(_serialize_roadmap(roadmap, request.user))
 
 
+class RoadmapGraphAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, roadmap_id):
+        roadmap = get_object_or_404(
+            Roadmap.objects.select_related("course", "course__university"),
+            id=roadmap_id,
+            user=request.user,
+        )
+        return Response(_serialize_roadmap_graph(roadmap, request.user))
+
+
+class RoadmapGraphSummaryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, roadmap_id):
+        roadmap = get_object_or_404(
+            Roadmap.objects.select_related("course", "course__university"),
+            id=roadmap_id,
+            user=request.user,
+        )
+        return Response(_serialize_roadmap_graph_summary(roadmap, request.user))
+
+
 class TopicProgressUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -265,3 +365,30 @@ class TopicProgressUpdateAPIView(APIView):
         )
 
         return Response(_serialize_roadmap(topic_node.roadmap, request.user))
+
+
+class RoadmapGraphTopicProgressUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, roadmap_id, topic_id):
+        topic_node = get_object_or_404(
+            Node.objects.select_related("roadmap"),
+            id=topic_id,
+            type="topic",
+            roadmap_id=roadmap_id,
+            roadmap__user=request.user,
+        )
+
+        serializer = TopicProgressUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        mastery_percent = serializer.validated_data["mastery_percent"]
+        mastery = mastery_percent / 100.0
+
+        TopicProgress.objects.update_or_create(
+            user=request.user,
+            node=topic_node,
+            defaults={"mastery": mastery},
+        )
+
+        return Response(_serialize_roadmap_graph(topic_node.roadmap, request.user))
