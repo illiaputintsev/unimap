@@ -1241,13 +1241,17 @@
             console.log('Container found:', container);
             console.log('Container dimensions:', container.offsetWidth, 'x', container.offsetHeight);
             
-            // Ensure container has proper styling
+            // Ensure container has proper styling — fill visible viewport
             container.style.display = 'block';
             container.style.position = 'relative';
             container.style.width = '95%';
             container.style.maxWidth = '1600px';
-            container.style.minHeight = '600px';
-            container.style.height = 'auto';
+            // Set height to fill remaining viewport so nodes are visible without scrolling
+            const headerOffset = container.getBoundingClientRect().top + window.scrollY;
+            const viewportHeight = window.innerHeight;
+            const containerHeight = Math.max(500, viewportHeight - headerOffset - 20);
+            container.style.minHeight = containerHeight + 'px';
+            container.style.height = containerHeight + 'px';
             container.style.margin = '20px auto';
             container.style.backgroundColor = 'white';
             container.style.borderRadius = '15px';
@@ -1367,9 +1371,9 @@
                     minVelocity: 0.75
                 },
                 interaction: {
-                    dragNodes: true,
-                    dragView: true,
-                    zoomView: true,
+                    dragNodes: false,   // Nodes have fixed positions
+                    dragView: true,     // Allow panning the view
+                    zoomView: true,     // Allow zoom in/out
                     hover: true,
                     tooltipDelay: 200,
                     navigationButtons: false
@@ -1389,17 +1393,9 @@
             window.network = network;
             
             console.log('Network created successfully');
-            console.log('Network object:', network);
             
-            // Check canvas creation
-            const canvas = container.querySelector('canvas');
-            console.log('Canvas element after network creation:', canvas);
-            if (canvas) {
-                console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
-                console.log('Canvas style:', canvas.style.cssText);
-            } else {
-                console.error('Canvas element not found in container!');
-            }
+            // Scroll the roadmap container into view so user sees it immediately
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } catch (networkError) {
             console.error('Error creating network:', networkError);
             console.error('Stack:', networkError.stack);
@@ -1411,62 +1407,30 @@
         }
         
         try {
-            // Wait for network to stabilize, then freeze physics for performance
+            // Wait for network to stabilize, then freeze physics and fit to viewport
             network.on('stabilizationIterationsDone', function() {
                 network.setOptions({ physics: { enabled: false } });
                 console.log('Network stabilized and physics disabled');
                 
-                // Fit to viewport after stabilization
+                // Fit all nodes into the visible container
                 try {
                     network.fit({ 
-                        animation: { duration: 500, easingFunction: 'easeInOutQuad' },
-                        padding: { top: 60, right: 60, bottom: 60, left: 60 }
+                        animation: { duration: 600, easingFunction: 'easeInOutQuad' },
+                        padding: { top: 40, right: 40, bottom: 40, left: 40 }
                     });
-                    resizeRoadmapContainerToGraph(container, network, nodesData);
                 } catch (e) {
                     console.error('Fit after stabilization error:', e);
                 }
             });
 
-            // Prevent canvas from capturing scroll wheel - allow page scroll
-            container.addEventListener('wheel', (e) => {
-                // Let the event bubble up to allow page scrolling
-                return true;
-            }, { passive: true });
-
-            // Set a comfortable container height
-            const nodeCount = nodesData.length;
-            const estimatedHeight = Math.max(700, Math.min(1200, nodeCount * 80 + 400));
-            container.style.minHeight = estimatedHeight + 'px';
-            container.style.height = estimatedHeight + 'px';
-
-            // Position nodes properly
+            // After a short delay, do a final fit to ensure everything is visible
             setTimeout(() => {
                 if (window.network) {
                     try {
-                        // Fit the network to the viewport and then resize container based on graph size
                         window.network.fit({ 
                             animation: false,
-                            padding: {
-                                top: 70,
-                                right: 80,
-                                bottom: 70,
-                                left: 80
-                            }
+                            padding: { top: 40, right: 40, bottom: 40, left: 40 }
                         });
-
-                        resizeRoadmapContainerToGraph(container, window.network, nodesData);
-
-                        window.network.fit({ 
-                            animation: false,
-                            padding: {
-                                top: 70,
-                                right: 80,
-                                bottom: 70,
-                                left: 80
-                            }
-                        });
-
                         console.log('Network fitted successfully');
                     } catch (e) {
                         console.error('Fit error:', e);
